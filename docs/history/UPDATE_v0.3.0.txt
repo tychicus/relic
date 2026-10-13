@@ -1,0 +1,182 @@
+RELIC FRONTIER v0.3.0 — STORAGE, CREATURES & OWNER MAP
+
+INSTALL
+Stop your current game with Ctrl+C in its launcher and wait for Progress saved.
+Keep the old folder as a backup. Extract this ZIP into a NEW folder, then open
+Relic_Frontier/Start_Game.cmd. The launcher and room panel should say v0.3.0.
+The launcher now prints the exact folder it is running from. If the browser
+shows an older version, stop the old launcher, start this copy, and press Ctrl+F5.
+No new Python packages are required. Ctrl+C and automatic saving are unchanged.
+
+This update uses the world and saved character from the v0.2.0 ZIP, as requested.
+Progress or edits made on your PC after that ZIP are not included. Do not
+replace content/world.json with an older file: that would remove the new areas,
+metadata and shop. Keep a complete backup when testing.
+
+1. TEN-MINUTE DROPPED-ITEM CLEANUP
+Ordinary items you DROP disappear after 600 seconds on the ground. Each dropped
+copy has its own timer. GET cancels that timer; dropping it again starts a fresh
+one. The timer persists across restarts and includes time while the game is off.
+Expired items are removed on restart or the next game tick.
+
+Keys, cages (empty or occupied), and storage chests NEVER expire. Chest contents
+do not expire. An uncaged captured creature that you DROP is an ordinary timed
+drop, so put valuable captives in a cage. Keys are still consumed when used in
+matching locks, and selling a cage to Jake intentionally removes it.
+
+Only player DROP actions start timers. Uncollected discovery treasure, overflow
+loot, and ground items already in the old save are left alone because their
+origin cannot reliably be identified as player drops. Pick up and drop an old
+ordinary item if you want its cleanup timer to start.
+
+TEST: DROP POTION, wait ten minutes, LOOK. Try GET before the deadline to cancel.
+Cages, keys and chests remain even after the timer would have expired.
+
+2. PURCHASE AND USE A STORAGE CHEST
+Anthony's Supply now sells a Storage chest for 60 gold. Edit its price/capacity
+under Weapons & items. Default capacity: 30 items. Each item counts as one slot,
+even when several identical items display as a stack. A full cage counts as one
+stored item; the creatures inside stay in that cage.
+
+  BUY STORAGE CHEST
+  LOOK CHEST 1
+  PUT POTION IN CHEST 1
+  GET POTION FROM CHEST 1
+  DROP CHEST 1
+  GET CHEST 1
+
+Use the actual chest number shown in your inventory. Numbering is shared with
+individual cages and captures, so your first chest might be chest 3 or 7.
+PUT/GET transfers one item at a time. The chest can be carried or on the ground
+in your current visible room. Occupied chests can be moved and keep their items
+through saving/restarting. A chest uses one bag slot, regardless of contents.
+Chests are protected from random death item loss. Occupied chests cannot be sold;
+empty chests sell at a normal shop for half price. Chests cannot go inside other
+chests. Full storage or a full bag leaves items in their original place.
+
+3. JAKE'S CRITTERS
+From Anthony's Supply: WEST to Center Square, SOUTH to South Market Street,
+then EAST into Jake's Critters. There is no direct doorway between the shops.
+Return exits are present. Jake buys occupied cages only.
+
+  SELL                shows offers for occupied cages in your inventory
+  SELL CAGE 1         sells that cage and ALL its occupants
+
+Payout = creature sale value x count. Three beetles worth 10 each pay 30 gold.
+The cage adds no extra payment and is removed with its occupants. Empty cages,
+loose creatures and other items are not bought here. Occupied cages are still
+refused at ordinary shops. A value of zero means Jake will not buy that species.
+You can also use the inventory Sell cage button when inside Jake's shop.
+
+Owner editor > Enemies > choose creature > Sale value per captured creature.
+Initial values: beetle 10, goblin 20, vampire 75, hare 12, wolf 25, boar 35,
+raider 45, ridge lion 60, cave troll 150. Sentinel remains uncapturable/value 0.
+The room option Buys occupied cages can give another shop Jake's trading rules.
+
+4. ENEMY CHOICES, RESPAWN POOLS AND ROOM TIMERS
+Owner editor > Rooms > choose room > Enemy spawning mode:
+
+A. Repeat starting enemy: the previous behavior, with an optional room timer.
+B. Choose from a respawn pool: choose a Starting enemy and add the possible next
+   creatures, each with a positive weight. After death or capture, the room waits
+   its timer and selects one creature. Equal weights mean equal chances. Weight
+   3 is three times as likely as weight 1. One creature occupies the room at a
+   time. An unconscious enemy must be picked up before its replacement timer
+   starts. The new creature can be a different species.
+C. Rare entry-roll encounter: keeps the cave-troll system. Chance/cooldown rolls
+   happen on eligible entry only. A room cannot use both a pool and entry rolls.
+
+Room respawn delay is in seconds. Blank uses the defeated/captured creature's
+normal respawn time. With a pool but no Starting enemy, the room starts empty;
+its first spawn waits the room timer (60 seconds if blank), beginning when the
+room is first checked by the game. An empty pool makes no replacement enemies.
+Timers include offline time; elapsed normal respawns appear when the room is
+next evaluated. Entry encounters still require reentry, even after their timer.
+The entry-roll cooldown and the post-defeat respawn delay must BOTH have elapsed.
+
+Existing living enemies are retained if still allowed by the starting choice or
+pool. Changing Starting enemy is not a reset button. Removing the current species
+from all room choices clears that spawn. Timer edits affect future defeats and
+captures; existing countdowns keep their deadlines. Finish combat before editing.
+Safe rooms cannot have resident, pooled or random enemies. Defeat-triggered room
+discoveries can target a creature in the pool as well as the starting enemy.
+
+TEST in a backup copy: select a room with a neutral beetle, add a hare to its
+respawn pool, set a 10-second timer, save, kill/capture the beetle, then wait.
+Existing room behavior is unchanged until you configure a pool or room timer.
+
+5. HIDDEN CREATURE CONVERSATIONS
+Owner editor > Enemies > choose creature > Add secret phrase.
+Set the exact phrase, the response/action text, and whether it starts an attack.
+Add as many rules as you want. An optional default response handles unknown
+phrases. Players are not shown the trigger list or rules in the game display.
+This remains a local owner-editable game; the owner editor can inspect all rules.
+
+  SAY HELLO TO VAMPIRE
+  SAY YOU DON'T SCARE ME TO VAMPIRE
+  SAY HELLO TO CAGE 1
+
+Matching ignores case and repeated spaces, but otherwise uses the full phrase,
+including punctuation. The vampire has example rules for hello (peaceful) and
+you don't scare me (starts combat). Neutral creatures can become hostile from a
+rule. A response with Attack = No does not stop an already active fight.
+Caged creatures respond, but their cages always prevent them from attacking.
+Specify a cage number to address a captive when a free creature is also present.
+You must be able to see a free creature; unconscious creatures cannot converse.
+
+6. REGIONS, PERMANENT ROOM REFERENCES AND OWNER MAP
+Owner editor > Owner map. All rooms are included, including hidden ones.
+Rooms have an editable Region name and a permanent reference such as TOWN-001
+or PRA-004. Room names and regions may change; existing codes stay fixed.
+The normal game room panel also displays its code and region for easy reference.
+
+- Click a room on the map, or its button in the room list, to open its editor.
+- Search by name, code, or region; optionally filter to one region.
+- Scroll the map for larger areas. Elevations appear as separate labeled panels.
+- Arrows indicate travel directions. Dashed links connect elevations.
+- Export labeled map (SVG) downloads the current filtered view, readable in a
+  browser and suitable for sending with your game ZIP.
+- Export room directory (JSON) downloads all room names, codes, regions,
+  positions and exits in a compact reference file.
+- Exports reflect the editor draft; save your changes before exporting a final map.
+
+TO ADD A SPACE NEXT TO AN EXISTING ROOM
+Click the existing room > Add connected room > choose a direction > enter a
+name and description > Create room and both exits > Save world changes.
+
+The editor places the new room one step in that direction, gives it the same
+region and a new permanent code, and adds both travel directions automatically.
+UP and DOWN create a new elevation. New rooms start with no enemy; configure
+spawning, shops, discoveries and objects in their room settings afterward.
+
+An existing exit will NOT be overwritten. Open existing exit takes you to its
+room. If another room already occupies the destination position, creation is
+refused; use the normal exit fields to connect those existing rooms. Manual
+exit editing does not move rooms or automatically add reverse exits. The map
+will draw the travel connections you actually configured. Two rooms cannot be
+saved at the same coordinate on the same elevation.
+
+Generic Add room / place still creates an unconnected room at a free map position
+under Unsorted. Use Add connected room for normal world expansion. Regions are
+labels you can type, not player travel restrictions. Tell me a room code when
+requesting future expansions, and include your latest ZIP or exported directory.
+
+7. SAVE COMPATIBILITY / SCOPE
+Your v0.2.0 character and existing content are retained. New state fields migrate
+automatically on startup. Tests run in isolated temporary copies. Keep the whole
+folder when backing up; older versions cannot safely read these new containers.
+For your son's fresh game: copy the folder, stop the game, delete saves ONLY in
+his copy, and start it. World customizations remain; character progress resets.
+
+No player-facing exploration map or multiplayer has been added. No shortcut
+changes were made. Secret reactions are text plus optional attack, not scripted
+quests, item gifts, or spells. These can be extended later.
+
+VERIFICATION
+66 isolated Python tests pass, covering prior mechanics and new item timers,
+chest capacity/movement, cage sales, respawn pools, conversation reactions,
+permanent room references, validation and save migration. JavaScript map and
+creation-helper tests pass. DOM/API interaction checks exercised the owner map,
+connected-room creation and saving, pool controls, phrase editing, search, and
+export handlers, plus the one-column shop styling. Browser rendering and the
+Windows launcher have not been visually tested on a Windows PC here.

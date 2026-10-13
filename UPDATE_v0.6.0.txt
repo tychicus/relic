@@ -1,0 +1,57 @@
+RELIC FRONTIER v0.6.0 - September 27, 2026
+
+This is the current game, built from your latest edited v0.5.0 folder.
+Your world, content history and character save were copied without changes.
+No character reset or save-schema change is required.
+
+WHAT CHANGED
+- Completed the React/TypeScript interface release and rebuilt both game
+  and owner-editor pages from the included source and locked dependencies.
+- Added consistent v0.6.0 labels to the launcher, game and owner editor.
+- Preserved your terminal-style interface, map, dodge mechanics and edits.
+- Added an owner control for each defeat-triggered discovery:
+  Rooms > Core settings & existing content > placement >
+  Hide again when this creature returns.
+  Default Yes preserves the vampire key/box behavior you requested.
+  Collected items and opened containers stay saved; rewards do not refill.
+- Fixed a test that incorrectly assumed room descriptions were the last
+  log line even when a custom NPC also appeared in the room.
+- Added Build_UI.cmd and development instructions.
+
+PLAY
+Use PLAY_MY_GAME.cmd in the outer working folder. It always starts this
+version and refuses to start if the existing character save is missing.
+You can also use Start_Game.cmd inside this folder.
+Stop old running copies first. Ctrl+C in the launcher stops and saves.
+Refresh the browser with Ctrl+F5 if it displays an old version.
+
+OWNER EDITOR
+http://127.0.0.1:8765/admin while the game is running.
+All your existing balance values remain as authored. The proposed slower
+XP curve was only a recommendation and has not been applied here.
+
+FILES
+content/world.json       Your authored world and balance
+content/history/         Earlier world edits
+saves/game.sqlite3       Your character and world progress
+ui/src/                  Editable React interface source
+static/                  Built interface; do not edit by hand
+docs/history/            Older update notes, blueprint and verification
+../Archive/Before_v0.6.0  Entire previous working folder, kept for recovery
+
+DEVELOPMENT
+Node and npm are needed only to rebuild the UI; playing needs Python 3.11+.
+Build_UI.cmd installs locked dependencies when needed and rebuilds static/.
+Run_Tests.cmd runs the Python tests and, if Node is available, UI helper tests.
+See README.md for development-server instructions.
+
+VALIDATION
+115 Python tests passed; TypeScript and production UI build passed.
+Both Node helper suites passed. Temporary-copy browser checks covered the
+saved character, commands, dashboard, visual map, room controls and saving
+then reloading a discovery setting. Browser checks reported no warnings or
+errors. All save and authored-content files were verified byte-for-byte.
+
+This remains a local single-player game. Existing gameplay limitations and
+deferred multiplayer/quest/Moon plans are unchanged. Historical notes are
+in docs/history; do not treat old release reports as current results.

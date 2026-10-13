@@ -1,0 +1,23 @@
+RELIC FRONTIER v0.6.0 - SHARED DEVELOPMENT COPY
+
+1. Install Python 3.11 or newer if it is not already available.
+2. Extract the downloaded ZIP before starting the game.
+3. On Windows, double-click Start_Game.cmd in this folder.
+   On Mac/Linux, run python3 server.py from this folder.
+4. Create your own character in the browser when prompted.
+
+Play: http://127.0.0.1:8765
+Owner editor: http://127.0.0.1:8765/admin
+
+Stop older running copies first with Ctrl+C in their launcher.
+Closing the browser does not stop combat; Ctrl+C stops and saves the game.
+
+This repository includes the authored world and game code. It does not
+include anyone's saved character or archived backups. Your new local save
+will be created in saves/game.sqlite3 and is excluded from version control.
+
+The game runs locally. Hosting this repository does not create an online
+multiplayer server.
+
+Read README.md for controls and development, and CONTRIBUTING.md for
+working together. Historical release notes describe older packaged copies.

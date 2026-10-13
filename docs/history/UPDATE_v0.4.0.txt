@@ -1,0 +1,132 @@
+RELIC FRONTIER v0.4.0 — TYPED EXPLORATION & UNLOCKABLE SKILLS
+
+INSTALL
+Stop the old game with Ctrl+C in its launcher. Keep its folder as a backup.
+Extract this ZIP into a NEW folder, then open Relic_Frontier/Start_Game.cmd.
+The launcher and game room panel should say v0.4.0. If an old version appears,
+stop the old launcher and refresh the browser with Ctrl+F5 after starting this one.
+No additional Python packages are needed. Autosave and Ctrl+C are unchanged.
+
+This release starts from your uploaded Relic_Frontier030.rar, including its
+saved character, your 29 rooms, expanded dungeon, renamed shop, custom vampire
+stats/dialogue and other world edits. It does not start from an older release.
+The incoming world is copied to content/history/world-before-v0.4.0.json.
+
+1. STARTING INVENTORY CHECK
+Your edit was correct. New characters start with:
+- Two healing potions
+- 30 gold
+- Equipped rusted sword and leather vest
+- NO lantern in the bag
+
+Existing characters keep their possessions. The lantern item still exists and
+can be placed in shops or loot by the owner. Your dark rooms still require a
+carried light. This release does not automatically give anyone a lantern.
+
+2. TYPED EXPLORATION
+The player screen no longer has clickable exit buttons or an inspectable-object
+list. Exits appear as plain text: Exits: north, east, etc. Type N, NORTH, E, etc.
+Use room descriptions as clues and type LOOK <object>. An unsuccessful LOOK no
+longer gives away the room's object names. The owner map stays clickable.
+Descriptions and inspectable objects you authored have been preserved. If you
+want a player to discover an object, put a subtle clue in your room description.
+Item, shop, combat and revealed-container controls remain available.
+The command-box placeholder is exactly: What do you do?
+
+3. ALPHABETICAL EDITOR DROPDOWNS
+Room and weapon/item dropdowns sort by displayed name, ignoring capitalization.
+This includes the main entry selector, room exit destinations, item references,
+keys and loot choices. New or renamed entries sort automatically. Changing an
+entry's name does not change its internal ID or permanent room code.
+
+4. CREATE WORKING SKILLS
+Owner editor > Add something to your world > Skill > enter a normal name >
+Create and edit. In Skills, configure:
+- Description
+- Effect type: Damage attack, Healing, or Knockout / capture
+- Unlock level (whole number 1–100)
+- Cooldown in seconds
+- Effect strength: damage multiplier, HP restored, or base knockout chance
+- Classes allowed to unlock it
+- Races allowed to unlock it
+Then Save world changes outside combat.
+
+Any class / Any race includes all current and future choices. To restrict a
+category, uncheck Any and check the desired entries. If BOTH categories are
+restricted, the character must match BOTH. A restricted list with nothing
+checked allows nobody. Unlock level is one shared requirement for that skill.
+The game's XP level thresholds still control which levels can be reached; a
+level-10 skill will remain locked if progression currently stops at level 8.
+
+Examples you can create:
+- Elven Healing: Healing, 25 HP, level 5, any class, Elf race only.
+- Shadow Strike: Damage attack, 2x damage, level 8, Rogue class, Elf race.
+- Sleep: Knockout / capture, 80% base chance, level 3, Mage class, any race.
+Create the Elf/Rogue/Mage race or class entries first to select them in skills.
+These examples are instructions, not pre-added races/classes/skills.
+
+Damage attacks require an active fight (ATTACK first) and a visible target.
+They multiply the normal attack damage, including class base damage, weapon
+bonus and level bonus. Hit and enemy dodge rolls still apply. A miss/dodge spends
+the cooldown. These attacks have no elemental weakness system or mana cost yet.
+
+Healing restores the configured number of HP, capped at maximum health. It works
+inside or outside combat. Attempting it at full health spends no cooldown.
+
+Knockout uses the configured base chance, modified by the target's capture
+resistance. The target still needs low enough HP and must be capturable. Success
+ends combat and awards no kill rewards. Each named skill has its own cooldown.
+An invalid/locked/ineligible attempt spends no cooldown.
+
+5. USING AND UNLOCKING SKILLS
+  SKILLS                 lists skills for your class/race and their levels
+  CAST ELVEN HEALING      uses a skill by its displayed name
+  CAST elven_healing      also accepts its internal ID
+  SKILL ELVEN HEALING     alias for CAST
+  BASH                   original shortcut remains
+  KNOCKOUT VAMPIRE        original shortcut remains
+
+CAST targets the current enemy for offensive skills; do not add TO <enemy>.
+The character panel shows eligible skills and upcoming unlock levels. Unlocked
+skills have action buttons, with cooldowns. Other race/class skills are omitted.
+Reaching a skill's level unlocks it automatically and announces it in the log.
+Existing characters immediately receive any skills for which they qualify.
+Owner changes can also grant or revoke eligibility; the server enforces the
+current rules even if a player types a command or uses an old browser button.
+
+Your existing Bash and Knockout stats are preserved. Both remain level 1 for
+Warriors of any race until you change their settings. No unlock levels were
+chosen for you beyond preserving these existing abilities.
+
+Skills is now the authoritative editor for class/race eligibility. Older
+Classes > Available skills checkboxes have been replaced by guidance to the
+Skills section. The old class.skills lists may still appear in full JSON as
+legacy compatibility data, but skills with explicit eligibility use the new
+settings. Set eligibility in Skills for new classes as well as existing ones.
+
+6. RACE AND CLASS CHOICES FOR NEW CHARACTERS
+New-character creation now has Race and Class dropdowns. All entries in the
+owner editor are selectable and shown alphabetically. Add races/classes through
+Add something to your world. Set a race's HP bonus and a class's base HP/damage,
+then assign skills through the Skills section.
+
+Starting maximum HP = class base HP + race HP bonus. All choices currently use
+the same starting room, gold, inventory and equipment from the starting settings.
+Existing characters keep their current race/class and progress. No character
+reset is required to use newly eligible skills. To test another race/class,
+make a separate copy of the game and delete saves ONLY in that testing copy.
+
+7. CHECKS AND LIMITATIONS
+80 isolated Python tests pass, including starting without a lantern, alternate
+race/class creation, unlock restrictions, AND eligibility rules, custom effects,
+cooldowns, save/reload, existing-save migration, and earlier game mechanics.
+JavaScript map and creation checks pass. DOM/API tests exercised sorted menus,
+rename sorting, creating/saving skill eligibility/effects, new Elf Mage creation,
+plain-text exits, the exact placeholder and skill unlock display/notifications.
+No visual Windows browser or launcher test was performed here.
+
+The original uploaded save database is preserved in the ZIP. Tests used temporary
+copies. World content is preserved except for adding explicit eligibility/effect
+metadata to the existing skills. New spell mechanics beyond these three effect
+types still require a code update. Hidden creature conversations, chests, cage
+sales, respawn pools and the owner map continue to work as before.

@@ -1,0 +1,1714 @@
+{
+  "title": "Relic Frontier",
+  "settings": {
+    "attack_interval": 2,
+    "hit_chance": 0.88,
+    "flee_chance": 0.65,
+    "gold_loss": 0.1,
+    "item_loss_chance": 0.15,
+    "bag_capacity": 15,
+    "level_xp": [
+      0,
+      30,
+      100,
+      250,
+      550,
+      1100,
+      2200,
+      4500
+    ],
+    "hp_per_level": 12,
+    "damage_per_level": 2
+  },
+  "races": {
+    "human": {
+      "name": "Human",
+      "hp_bonus": 0
+    },
+    "elf": {
+      "name": "Elf",
+      "hp_bonus": 0
+    }
+  },
+  "classes": {
+    "warrior": {
+      "name": "Warrior",
+      "hp": 65,
+      "damage": [
+        4,
+        7
+      ],
+      "skills": [
+        "bash",
+        "knockout"
+      ]
+    },
+    "mage": {
+      "name": "Mage",
+      "hp": 40,
+      "damage": [
+        4,
+        8
+      ],
+      "skills": []
+    }
+  },
+  "skills": {
+    "bash": {
+      "name": "Bash",
+      "cooldown": 10,
+      "multiplier": 1.8,
+      "description": "A heavy strike. Can be used between automatic attacks.",
+      "effect": "damage",
+      "unlock_level": 1,
+      "allowed_classes": [
+        "warrior"
+      ],
+      "allowed_races": null
+    },
+    "knockout": {
+      "name": "Knockout",
+      "description": "Weaken a capturable enemy, then attempt to knock it unconscious. Chance is reduced by its capture resistance. Success ends combat without kill rewards.",
+      "cooldown": 12,
+      "multiplier": 1,
+      "chance": 70,
+      "effect": "knockout",
+      "unlock_level": 1,
+      "allowed_classes": null,
+      "allowed_races": null
+    },
+    "fireball": {
+      "name": "Fireball",
+      "effect": "damage",
+      "unlock_level": 2,
+      "cooldown": 12,
+      "multiplier": 1.6,
+      "allowed_classes": [
+        "mage"
+      ],
+      "allowed_races": null,
+      "description": "A fire attack; 25% chance to scorch for three pulses. No mana cost.",
+      "initiates": true,
+      "status_effects": [
+        {
+          "effect": "scorched",
+          "chance": 25,
+          "duration": 3
+        }
+      ]
+    },
+    "lightning": {
+      "name": "Lightning",
+      "effect": "damage",
+      "unlock_level": 4,
+      "cooldown": 16,
+      "multiplier": 2,
+      "allowed_classes": [
+        "mage"
+      ],
+      "allowed_races": null,
+      "description": "A forceful lightning attack; 15% chance to slow the target.",
+      "initiates": true,
+      "status_effects": [
+        {
+          "effect": "slowed",
+          "chance": 15,
+          "duration": 4
+        }
+      ]
+    },
+    "charge": {
+      "name": "Charge",
+      "effect": "damage",
+      "unlock_level": 2,
+      "cooldown": 14,
+      "multiplier": 1.5,
+      "allowed_classes": [
+        "warrior"
+      ],
+      "allowed_races": null,
+      "description": "Initiate a fight or strike your current opponent. No movement between rooms.",
+      "initiates": true
+    },
+    "sharpening": {
+      "name": "Sharpening",
+      "effect": "sharpen",
+      "unlock_level": 2,
+      "cooldown": 30,
+      "multiplier": 1,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "description": "Out of combat, sharpen your right-hand weapon temporarily."
+    },
+    "enchanting": {
+      "name": "Enchanting",
+      "effect": "enchant",
+      "unlock_level": 3,
+      "cooldown": 15,
+      "multiplier": 1,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "description": "Train proficiency by enchanting your right-hand weapon. Costs gold; failure can damage or destroy it. See Crafting & balance in the owner editor."
+    }
+  },
+  "items": {
+    "rusted_sword": {
+      "name": "Rusted sword",
+      "kind": "weapon",
+      "damage": 2,
+      "price": 8,
+      "description": "An old blade with a serviceable edge."
+    },
+    "leather_vest": {
+      "name": "Leather vest",
+      "kind": "armor",
+      "armor": 1,
+      "price": 10,
+      "description": "Patched leather keeps the worst of a blow away."
+    },
+    "potion": {
+      "name": "Healing potion",
+      "kind": "consumable",
+      "heal": 35,
+      "price": 8,
+      "description": "Restores 35 HP. USE POTION, even during combat."
+    },
+    "lantern": {
+      "name": "Lumen lantern",
+      "kind": "light",
+      "price": 12,
+      "protected": true,
+      "description": "An enclosed crystal provides light while carried. No fuel required."
+    },
+    "iron_sword": {
+      "name": "Iron sword",
+      "kind": "weapon",
+      "damage": 5,
+      "price": 35,
+      "description": "A balanced frontier blade."
+    },
+    "chain_vest": {
+      "name": "Chain vest",
+      "kind": "armor",
+      "armor": 3,
+      "price": 40,
+      "description": "Close iron links protect the torso."
+    },
+    "relic_blade": {
+      "name": "Elvish Blade",
+      "kind": "weapon",
+      "damage": 15,
+      "price": 95,
+      "rarity": "uncommon",
+      "description": "A curved, sleek blade that looks timeless.  It shows not a single sign of wear.  It constantly glows blue and hums lightly."
+    },
+    "scrap": {
+      "name": "Ancient scrap",
+      "kind": "loot",
+      "price": 6,
+      "description": "A small fragment of machinery. The shop buys these."
+    },
+    "elven_sword": {
+      "name": "Elven Sword",
+      "description": "A elegant ageless sword.  It is magically sharpened and glows a faint blue.  When you hold it, you hear a light humming.",
+      "kind": "weapon",
+      "price": 100,
+      "damage": 20,
+      "rarity": "uncommon"
+    },
+    "rubber_boots": {
+      "name": "Rubber Boots",
+      "description": "Simple.  Dependable.  Nice Rubber Boots.  They smell slightly like new tires.",
+      "kind": "armor",
+      "price": 5,
+      "armor": 1
+    },
+    "iron_cage": {
+      "name": "Iron cage",
+      "description": "A portable barred cage. It holds up to five creatures of one type, even while carried. Use PUT <creature> IN CAGE <number>, LOOK CAGE <number>, or DROP CAGE <number>.",
+      "kind": "cage",
+      "capacity": 5,
+      "price": 45,
+      "protected": true
+    },
+    "rusty_crypt_key": {
+      "name": "Old rusty key",
+      "description": "A brittle iron key found behind the vampire. It fits the old crypt box and crumbles after one use.",
+      "kind": "key",
+      "price": 0,
+      "protected": true
+    },
+    "dawnfang": {
+      "name": "Dawnfang",
+      "description": "A pale steel sword hidden in the vampire’s crypt. Its sunburst guard feels warm against your palm.",
+      "kind": "weapon",
+      "damage": 22,
+      "price": 140,
+      "rarity": "uncommon"
+    },
+    "storage_chest": {
+      "name": "Storage chest",
+      "kind": "chest",
+      "description": "A sturdy portable chest. Store items with PUT <item> IN CHEST <number>; retrieve them with GET <item> FROM CHEST <number>.",
+      "capacity": 30,
+      "price": 60,
+      "protected": true
+    },
+    "recall_scroll": {
+      "name": "Recall scroll",
+      "kind": "consumable",
+      "price": 150,
+      "description": "USE RECALL SCROLL to return to Center Square outside combat. A blocked recall preserves the scroll by default.",
+      "heal": 0,
+      "recall": true
+    },
+    "buckler": {
+      "name": "Wooden buckler",
+      "kind": "armor",
+      "price": 30,
+      "description": "A small left-hand shield. Adds 1 armor; cannot share a two-handed weapon.",
+      "armor": 1,
+      "shield": true
+    },
+    "apple": {
+      "name": "Prairie apple",
+      "kind": "consumable",
+      "price": 3,
+      "description": "A crisp fruit. EAT PRAIRIE APPLE restores a little health outside combat.",
+      "heal": 5,
+      "food": true
+    },
+    "raw_venison": {
+      "name": "Raw venison",
+      "kind": "loot",
+      "price": 3,
+      "description": "Harvested deer meat. Cook at a fire."
+    },
+    "raw_turkey": {
+      "name": "Raw turkey",
+      "kind": "loot",
+      "price": 2,
+      "description": "Harvested turkey meat. Cook at a fire."
+    },
+    "beetle_meat": {
+      "name": "Beetle meat",
+      "kind": "loot",
+      "price": 1,
+      "description": "Edible beetle flesh. Cook at a fire."
+    },
+    "roast_venison": {
+      "name": "Roast venison",
+      "kind": "consumable",
+      "price": 9,
+      "description": "Fire-roasted venison restores 16 HP.",
+      "heal": 16,
+      "food": true
+    },
+    "roast_turkey": {
+      "name": "Roast turkey",
+      "kind": "consumable",
+      "price": 7,
+      "description": "Roasted turkey restores 12 HP.",
+      "heal": 12,
+      "food": true
+    },
+    "toasted_beetle": {
+      "name": "Toasted beetle",
+      "kind": "consumable",
+      "price": 5,
+      "description": "A crunchy frontier snack restores 8 HP.",
+      "heal": 8,
+      "food": true
+    }
+  },
+  "enemies": {
+    "beetle": {
+      "name": "Copper beetle",
+      "hp": 18,
+      "damage": [
+        2,
+        4
+      ],
+      "xp": 12,
+      "gold": [
+        2,
+        5
+      ],
+      "aggressive": false,
+      "respawn": 25,
+      "description": "A knee-high beetle noses through the grass. It ignores you.",
+      "loot": [
+        {
+          "item": "scrap",
+          "weight": 3
+        },
+        {
+          "item": "potion",
+          "weight": 1
+        },
+        {
+          "item": null,
+          "weight": 6
+        }
+      ],
+      "dodge": 2,
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 10,
+      "battle_cry_chance": 20,
+      "battle_cries": [],
+      "defeat_messages": [],
+      "captive_description": "Copper beetle watches from behind the bars.",
+      "captive_actions": [],
+      "captive_value": 10,
+      "conversations": [],
+      "conversation_default": "",
+      "harvest": [
+        {
+          "item": "beetle_meat",
+          "count": 1
+        }
+      ]
+    },
+    "goblin": {
+      "name": "Relic goblin",
+      "hp": 28,
+      "damage": [
+        3,
+        6
+      ],
+      "xp": 20,
+      "gold": [
+        4,
+        9
+      ],
+      "aggressive": true,
+      "respawn": 40,
+      "description": "A goblin in scavenged copper plates guards the tunnel.",
+      "loot": [
+        {
+          "item": "scrap",
+          "weight": 4
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        },
+        {
+          "item": "iron_sword",
+          "weight": 1
+        },
+        {
+          "item": null,
+          "weight": 4
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 10,
+      "battle_cry_chance": 20,
+      "battle_cries": [
+        "The goblin snarls, “Mine! All mine!”"
+      ],
+      "defeat_messages": [
+        "The goblin drops its weapon and falls silent."
+      ],
+      "captive_description": "Relic goblin watches from behind the bars.",
+      "captive_actions": [
+        "The goblin rattles the bars and complains about the food."
+      ],
+      "captive_value": 20,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "sentinel": {
+      "name": "Broken sentinel",
+      "hp": 65,
+      "damage": [
+        6,
+        10
+      ],
+      "xp": 55,
+      "gold": [
+        15,
+        28
+      ],
+      "aggressive": true,
+      "respawn": 120,
+      "description": "An ancient machine rises on brass legs. Its cracked core burns blue. Random sounds of hissing spurt out from worn pistons. ",
+      "loot": [
+        {
+          "item": "relic_blade",
+          "weight": 3
+        },
+        {
+          "item": "chain_vest",
+          "weight": 2
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        },
+        {
+          "item": "scrap",
+          "weight": 2
+        }
+      ],
+      "capturable": false,
+      "capture_health": 35,
+      "capture_resistance": 10,
+      "battle_cry_chance": 20,
+      "battle_cries": [],
+      "defeat_messages": [],
+      "captive_description": "Broken sentinel watches from behind the bars.",
+      "captive_actions": [],
+      "captive_value": 0,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "vampire": {
+      "name": "Dark Vampire",
+      "description": "She stands motionless at the far end of the dungeon chamber, where the torchlight seems reluctant to reach.\n\nAt first, she could almost be mistaken for a prisoner. Her skin is unnaturally pale beneath the grime of the dungeon, and long black hair falls loosely over her shoulders. Her clothing was once elegant—a dark, fitted dress of fine fabric—but time and captivity have left it torn and stained.\n\nHer eyes glow a deep, unnatural crimson.\n\nShe is beautiful, but there is something predatory in the stillness of her face. When she notices you watching, the corner of her mouth lifts into the faintest smile, revealing the tip of a single white fang.\n\nHeavy iron shackles hang from her wrists, but the chains that once held them to the wall lie broken across the stone floor.\n\nShe doesn't approach.\n\nShe simply watches you.",
+      "hp": 100,
+      "damage": [
+        20,
+        40
+      ],
+      "xp": 60,
+      "gold": [
+        50,
+        60
+      ],
+      "aggressive": false,
+      "respawn": 300,
+      "loot": [
+        {
+          "item": "potion",
+          "weight": 15
+        },
+        {
+          "item": "relic_blade",
+          "weight": 1
+        },
+        {
+          "item": "elven_sword",
+          "weight": 1
+        },
+        {
+          "item": "rusted_sword",
+          "weight": 10
+        },
+        {
+          "item": "leather_vest",
+          "weight": 5
+        }
+      ],
+      "dodge": 50,
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 38,
+      "battle_cry_chance": 20,
+      "battle_cries": [
+        "The vampire hisses, “Your warmth will be mine!”",
+        "The vampire bares its fangs and lunges.",
+        "Stares hungrily at the vein in your neck and jumps reaching toward your face."
+      ],
+      "defeat_messages": [
+        "The vampire looks at you wide eyed and then crumples to the floor.  It lets out a low hiss as its body turns to dust."
+      ],
+      "captive_description": "The vampire grips the iron bars, pale eyes following your every movement.\n",
+      "captive_actions": [
+        "“Open this cage, mortal,” the vampire whispers.",
+        "The vampire recoils from a shaft of light.",
+        "\"You cannot keep me in here forever,\" she whispers."
+      ],
+      "captive_value": 500,
+      "conversations": [
+        {
+          "phrase": "hello",
+          "response": "The vampire smiles. “A polite visitor. How unusual.”",
+          "attack": false
+        },
+        {
+          "phrase": "you don't scare me",
+          "response": "The vampire bares her fangs. “How about now.”",
+          "attack": true
+        }
+      ],
+      "conversation_default": ""
+    },
+    "prairie_wolf": {
+      "name": "Prairie wolf",
+      "hp": 42,
+      "damage": [
+        5,
+        9
+      ],
+      "xp": 28,
+      "gold": [
+        3,
+        8
+      ],
+      "description": "A lean grey wolf moves low through the grass, watching for weakness.",
+      "aggressive": true,
+      "dodge": 12,
+      "respawn": 90,
+      "loot": [
+        {
+          "item": null,
+          "weight": 7
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 15,
+      "battle_cry_chance": 20,
+      "battle_cries": [],
+      "defeat_messages": [
+        "Prairie wolf sinks into the grass and lies still."
+      ],
+      "captive_description": "Prairie wolf shifts restlessly behind the bars.",
+      "captive_actions": [
+        "Prairie wolf tests the iron bars, then settles back."
+      ],
+      "captive_value": 25,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "horned_hare": {
+      "name": "Horned hare",
+      "hp": 30,
+      "damage": [
+        3,
+        7
+      ],
+      "xp": 18,
+      "gold": [
+        1,
+        4
+      ],
+      "description": "A jackrabbit with small curved horns freezes beside a clump of seed grass.",
+      "aggressive": false,
+      "dodge": 20,
+      "respawn": 90,
+      "loot": [
+        {
+          "item": null,
+          "weight": 7
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 15,
+      "battle_cry_chance": 20,
+      "battle_cries": [],
+      "defeat_messages": [
+        "Horned hare sinks into the grass and lies still."
+      ],
+      "captive_description": "Horned hare shifts restlessly behind the bars.",
+      "captive_actions": [
+        "Horned hare tests the iron bars, then settles back."
+      ],
+      "captive_value": 12,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "grassland_boar": {
+      "name": "Grassland boar",
+      "hp": 70,
+      "damage": [
+        8,
+        13
+      ],
+      "xp": 42,
+      "gold": [
+        5,
+        12
+      ],
+      "description": "A scarred boar roots beneath the turf, its tusks bright with scraped earth.",
+      "aggressive": false,
+      "dodge": 3,
+      "respawn": 90,
+      "loot": [
+        {
+          "item": null,
+          "weight": 7
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 15,
+      "battle_cry_chance": 20,
+      "battle_cries": [],
+      "defeat_messages": [
+        "Grassland boar sinks into the grass and lies still."
+      ],
+      "captive_description": "Grassland boar shifts restlessly behind the bars.",
+      "captive_actions": [
+        "Grassland boar tests the iron bars, then settles back."
+      ],
+      "captive_value": 35,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "prairie_raider": {
+      "name": "Prairie raider",
+      "hp": 85,
+      "damage": [
+        10,
+        16
+      ],
+      "xp": 65,
+      "gold": [
+        12,
+        24
+      ],
+      "description": "A weather-beaten raider waits beside the trail, one hand on a chipped blade.",
+      "aggressive": true,
+      "dodge": 10,
+      "respawn": 90,
+      "loot": [
+        {
+          "item": null,
+          "weight": 7
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 15,
+      "battle_cry_chance": 20,
+      "battle_cries": [],
+      "defeat_messages": [
+        "Prairie raider sinks into the grass and lies still."
+      ],
+      "captive_description": "Prairie raider shifts restlessly behind the bars.",
+      "captive_actions": [
+        "Prairie raider tests the iron bars, then settles back."
+      ],
+      "captive_value": 45,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "ridge_lion": {
+      "name": "Ridge lion",
+      "hp": 100,
+      "damage": [
+        12,
+        19
+      ],
+      "xp": 80,
+      "gold": [
+        8,
+        16
+      ],
+      "description": "A tawny mountain lion lies among the rocks, its tail flicking against the stone.",
+      "aggressive": true,
+      "dodge": 15,
+      "respawn": 90,
+      "loot": [
+        {
+          "item": null,
+          "weight": 7
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 15,
+      "battle_cry_chance": 20,
+      "battle_cries": [],
+      "defeat_messages": [
+        "Ridge lion sinks into the grass and lies still."
+      ],
+      "captive_description": "Ridge lion shifts restlessly behind the bars.",
+      "captive_actions": [
+        "Ridge lion tests the iron bars, then settles back."
+      ],
+      "captive_value": 60,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "cave_troll": {
+      "name": "Cave troll",
+      "hp": 220,
+      "damage": [
+        18,
+        30
+      ],
+      "xp": 180,
+      "gold": [
+        25,
+        45
+      ],
+      "description": "A huge cave troll has wandered down from the mountain caves. Dusty stone plates cover its shoulders; each breath rolls like thunder.",
+      "aggressive": true,
+      "dodge": 8,
+      "respawn": 300,
+      "loot": [
+        {
+          "item": null,
+          "weight": 7
+        },
+        {
+          "item": "potion",
+          "weight": 3
+        }
+      ],
+      "capturable": true,
+      "capture_health": 25,
+      "capture_resistance": 50,
+      "battle_cry_chance": 20,
+      "battle_cries": [
+        "The cave troll bellows, “BACK TO THE LOWLANDS!”",
+        "The troll slams its fists into the earth and roars."
+      ],
+      "defeat_messages": [
+        "The cave troll buckles, shaking the ground as it falls."
+      ],
+      "captive_description": "The troll crouches in its cage, glaring out beneath a ridged brow.",
+      "captive_actions": [
+        "The troll drums thick fingers against the bars.",
+        "A rumbling complaint rises from the cage."
+      ],
+      "captive_value": 150,
+      "conversations": [],
+      "conversation_default": ""
+    },
+    "deer": {
+      "name": "Coppergrass deer",
+      "description": "A coppergrass deer watches the open grassland.",
+      "hp": 26,
+      "damage": [
+        2,
+        4
+      ],
+      "xp": 6,
+      "gold": [
+        0,
+        1
+      ],
+      "aggressive": false,
+      "respawn": 180,
+      "dodge": 5,
+      "loot": [
+        {
+          "item": null,
+          "weight": 1
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 10,
+      "captive_value": 5,
+      "harvest": [
+        {
+          "item": "raw_venison",
+          "count": 1
+        }
+      ]
+    },
+    "turkey": {
+      "name": "Prairie turkey",
+      "description": "A prairie turkey watches the open grassland.",
+      "hp": 14,
+      "damage": [
+        1,
+        2
+      ],
+      "xp": 6,
+      "gold": [
+        0,
+        1
+      ],
+      "aggressive": false,
+      "respawn": 180,
+      "dodge": 5,
+      "loot": [
+        {
+          "item": null,
+          "weight": 1
+        }
+      ],
+      "capturable": true,
+      "capture_health": 35,
+      "capture_resistance": 10,
+      "captive_value": 5,
+      "harvest": [
+        {
+          "item": "raw_turkey",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "rooms": {
+    "square": {
+      "name": "Center Square",
+      "description": "Rain-dark flagstones surround a fountain threaded with blue light. Beyond the roofs, the frontier waits. A brass sign points travelers toward the northern gate.  A crumbled stone sits half buried in the ground.",
+      "safe": true,
+      "exits": {
+        "north": "gate",
+        "east": "shop",
+        "west": "inn",
+        "south": "south_street"
+      },
+      "objects": {
+        "fountain": "Water circles a humming crystal. No one remembers who built it.  It seems to hum magically.",
+        "sign": "EAST: Anthony's General Supply.\nWEST: Local Inn.\nNORTH: Out of Town\nSouth: Jake's Acquisitions  ",
+        "crumbled stone": "It looks ancient.  If you look carefully there is a small inscription carved into the stone.  It reads: \"Nic and Anthony were here\""
+      },
+      "region": "Town",
+      "code": "TOWN-001",
+      "map_position": [
+        0,
+        0,
+        0
+      ]
+    },
+    "shop": {
+      "name": "Anthony's General Store",
+      "description": "Dried herbs hang above jars of luminous powder. Anthony taps the counter: 'A potion before trouble is cheaper than a funeral.' Type BUY to see his stock.",
+      "safe": true,
+      "exits": {
+        "west": "square"
+      },
+      "shop": [
+        "potion",
+        "lantern",
+        "iron_sword",
+        "chain_vest",
+        "iron_cage",
+        "storage_chest",
+        "recall_scroll",
+        "buckler",
+        "apple"
+      ],
+      "objects": {
+        "mara": "Anthony buys spare equipment and ancient scrap. BUY or SELL an item by name.",
+        "counter": "Potions, a crystal lantern, and dependable ironwork."
+      },
+      "region": "Town",
+      "code": "TOWN-002",
+      "map_position": [
+        1,
+        0,
+        0
+      ]
+    },
+    "inn": {
+      "name": "The Quiet Coil",
+      "description": "A wood fire competes with the soft glow of a salvaged heater. Clean beds line the far wall. Type REST to recover fully at no cost.",
+      "safe": true,
+      "rest": true,
+      "exits": {
+        "east": "square",
+        "down": "dungeon"
+      },
+      "objects": {
+        "heater": "The machine warms the room without smoke. Someone has painted flowers on it."
+      },
+      "region": "Town",
+      "code": "TOWN-003",
+      "map_position": [
+        -1,
+        0,
+        0
+      ],
+      "cooking_fire": true
+    },
+    "gate": {
+      "name": "North Gate",
+      "description": "Timber walls end at an arch of older metal. The road continues north between wind-bent grasses.",
+      "safe": true,
+      "exits": {
+        "south": "square",
+        "north": "road"
+      },
+      "objects": {
+        "arch": "Tiny lettering runs beneath the rust: TRANSIT / SECTOR 04."
+      },
+      "region": "Town",
+      "code": "TOWN-004",
+      "map_position": [
+        0,
+        -1,
+        0
+      ]
+    },
+    "road": {
+      "name": "Frontier Road",
+      "description": "Cart ruts fade into the open meadow. Farther north, a black opening cuts into the hillside.",
+      "exits": {
+        "south": "gate",
+        "north": "meadow"
+      },
+      "objects": {
+        "ruts": "Fresh bootprints overlap the tracks of something with jointed metal feet."
+      },
+      "region": "Coppergrass Road",
+      "code": "ROAD-001",
+      "map_position": [
+        0,
+        -2,
+        0
+      ]
+    },
+    "meadow": {
+      "name": "Coppergrass Meadow",
+      "description": "Copper-tipped grass brushes your knees. A cave mouth lies to the east, its edges too perfectly round to be natural.",
+      "exits": {
+        "south": "road",
+        "east": "mouth",
+        "west": "prairie_3_0"
+      },
+      "enemy": "beetle",
+      "objects": {
+        "grass": "The stems collect flecks of rust-colored mineral dust."
+      },
+      "region": "Coppergrass Road",
+      "code": "ROAD-002",
+      "map_position": [
+        0,
+        -3,
+        0
+      ]
+    },
+    "mouth": {
+      "name": "Relic Cave Entrance",
+      "description": "Daylight reaches a ring of smooth stone. Steps descend north into darkness. Scratches score the walls at goblin height.",
+      "exits": {
+        "west": "meadow",
+        "north": "tunnel"
+      },
+      "objects": {
+        "scratches": "Warning marks. Something here does not welcome visitors.",
+        "steps": "Stone gives way to riveted metal beneath the dust."
+      },
+      "region": "Relic Caverns",
+      "code": "CAVE-001",
+      "map_position": [
+        1,
+        -3,
+        0
+      ]
+    },
+    "tunnel": {
+      "name": "Dark Conduit",
+      "description": "Your light finds bundled cables in the walls. Water drips from a broken pipe, counting the seconds. The passage runs north toward a pale mechanical glow.",
+      "dark": true,
+      "exits": {
+        "south": "mouth",
+        "north": "vault"
+      },
+      "enemy": "goblin",
+      "objects": {
+        "cables": "Copper veins disappear into a sealed service hatch.",
+        "hatch": "The hatch is fused shut. Its engraving reads: KEEP THE SENTINEL ASLEEP."
+      },
+      "region": "Relic Caverns",
+      "code": "CAVE-002",
+      "map_position": [
+        1,
+        -4,
+        0
+      ]
+    },
+    "vault": {
+      "name": "The Sleeping Engine",
+      "description": "A vast ring of silent equipment surrounds a fractured pedestal. Blue pulses crawl across the floor. This place was a laboratory long before it became a legend.",
+      "dark": true,
+      "exits": {
+        "south": "tunnel"
+      },
+      "enemy": "sentinel",
+      "objects": {
+        "pedestal": "An empty cradle holds the outline of a slender blade.",
+        "equipment": "Most panels are dead. One repeats a single word: CONTAINMENT."
+      },
+      "region": "Relic Caverns",
+      "code": "CAVE-003",
+      "map_position": [
+        1,
+        -5,
+        0
+      ]
+    },
+    "dungeon": {
+      "name": "Hidden Dungeon",
+      "description": "Behind the false stone wall, a narrow passage descends into a chamber untouched for years. The air is unnaturally cold, carrying the smell of damp stone and ancient dust. Faded symbols have been carved around the doorway, as though meant to keep something inside.\n\nA cracked stone coffin rests against one wall, surrounded by rusted chains, extinguished candles, and scattered bones.",
+      "exits": {
+        "up": "inn",
+        "south": "hidden_dungeon_bedroom"
+      },
+      "objects": {},
+      "enemy": "vampire",
+      "discoveries": [
+        {
+          "id": "crypt_key",
+          "name": "Old rusty key",
+          "kind": "item",
+          "item": "rusty_crypt_key",
+          "trigger": "defeat",
+          "target": "vampire",
+          "message": "With the vampire defeated, you spot an old rusty key among the stones behind its resting place."
+        },
+        {
+          "id": "crypt_box",
+          "name": "Old crypt box",
+          "kind": "container",
+          "key": "rusty_crypt_key",
+          "contents": [
+            "dawnfang"
+          ],
+          "trigger": "defeat",
+          "target": "vampire",
+          "description": "A narrow ironbound box stood concealed behind the vampire. A rusted lock seals its lid.",
+          "message": "Behind the fallen vampire, an you spot an old crypt box. ",
+          "open_message": "The old lock snaps open. A gust of nasty, thick rancid air gushes out of the chest.  Dawnfang rests inside on brittle, cracked leather."
+        }
+      ],
+      "region": "Town",
+      "code": "TOWN-005",
+      "map_position": [
+        -1,
+        0,
+        -1
+      ],
+      "dark": true,
+      "obscured_from_outside": true,
+      "shop": [
+        "rusted_sword"
+      ]
+    },
+    "prairie_0_0": {
+      "name": "Sundown Flats",
+      "description": "Long bands of copper and silver grass roll west beneath an enormous sky. Wind carries the smell of dry earth; far north, blue mountains stand above the prairie.",
+      "exits": {
+        "east": "prairie_1_0",
+        "north": "prairie_0_1"
+      },
+      "objects": {
+        "wind-carved stones": "Smooth stones rise from the turf like the backs of sleeping animals."
+      },
+      "enemy": "horned_hare",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-001",
+      "map_position": [
+        -4,
+        -3,
+        0
+      ],
+      "population": [
+        {
+          "id": "wildlife",
+          "enemy": "deer",
+          "count": 1,
+          "pool": [],
+          "chance": 35,
+          "trigger": "entry",
+          "respawn": true,
+          "delay": 180,
+          "roam": true,
+          "roam_seconds": 45,
+          "roam_rooms": [
+            "prairie_0_0",
+            "prairie_0_1"
+          ]
+        }
+      ]
+    },
+    "prairie_1_0": {
+      "name": "Larkspur Sea",
+      "description": "Violet larkspur nods among waist-high grasses. Skylarks wheel overhead, and faint game trails spread in every direction beneath the open sky.",
+      "exits": {
+        "west": "prairie_0_0",
+        "east": "prairie_2_0",
+        "north": "prairie_1_1"
+      },
+      "objects": {
+        "larkspur": "Bees disappear into the violet blooms. Beyond them, the grass ripples for miles."
+      },
+      "enemy": "prairie_wolf",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-002",
+      "map_position": [
+        -3,
+        -3,
+        0
+      ]
+    },
+    "prairie_2_0": {
+      "name": "Old Wagon Trace",
+      "description": "Two shallow wheel ruts cross the open prairie and fade beneath new grass. To the north the land rises gently toward distant grey foothills.",
+      "exits": {
+        "west": "prairie_1_0",
+        "east": "prairie_3_0",
+        "north": "prairie_2_1"
+      },
+      "objects": {
+        "broken wheel": "Half a wagon wheel rests in the turf, bleached by many summers."
+      },
+      "enemy": "prairie_raider",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-003",
+      "map_position": [
+        -2,
+        -3,
+        0
+      ]
+    },
+    "prairie_3_0": {
+      "name": "Coppergrass Reach",
+      "description": "Coppergrass Meadow opens westward into a broad sweep of prairie. Amber stems brush your legs and the mountains stretch across the northern horizon.",
+      "exits": {
+        "west": "prairie_2_0",
+        "north": "prairie_3_1",
+        "east": "meadow"
+      },
+      "objects": {
+        "trail marker": "A low stack of stones marks the way east to Coppergrass Meadow."
+      },
+      "enemy": "horned_hare",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-004",
+      "map_position": [
+        -1,
+        -3,
+        0
+      ],
+      "population": [
+        {
+          "id": "wildlife",
+          "enemy": "turkey",
+          "count": 1,
+          "pool": [],
+          "chance": 35,
+          "trigger": "entry",
+          "respawn": true,
+          "delay": 180,
+          "roam": true,
+          "roam_seconds": 45,
+          "roam_rooms": [
+            "prairie_3_0",
+            "prairie_3_1"
+          ]
+        }
+      ]
+    },
+    "prairie_0_1": {
+      "name": "Buffalo Hollow",
+      "description": "A wide shallow hollow shelters thick, sweet grass. Old hoofprints quilt its edges, and a dry breeze hums over the surrounding rises.",
+      "exits": {
+        "east": "prairie_1_1",
+        "south": "prairie_0_0",
+        "north": "prairie_0_2"
+      },
+      "objects": {
+        "hoofprints": "Heavy tracks cross lighter deer prints in the baked mud."
+      },
+      "enemy": "grassland_boar",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-005",
+      "map_position": [
+        -4,
+        -4,
+        0
+      ]
+    },
+    "prairie_1_1": {
+      "name": "Whistling Grass",
+      "description": "Tall seed heads hiss and whistle in the wind. The prairie stretches unbroken east and west, while northern slopes show darker seams of exposed rock.",
+      "exits": {
+        "west": "prairie_0_1",
+        "east": "prairie_2_1",
+        "south": "prairie_1_0",
+        "north": "prairie_1_2"
+      },
+      "objects": {
+        "seed heads": "Their copper tips scatter fine seeds into the moving air."
+      },
+      "enemy": "prairie_wolf",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-006",
+      "map_position": [
+        -3,
+        -4,
+        0
+      ]
+    },
+    "prairie_2_1": {
+      "name": "Sunken Creek",
+      "description": "A narrow stream threads a grassy depression, its clear water bright over flat stones. On either side, low banks give way to the open prairie.",
+      "exits": {
+        "west": "prairie_1_1",
+        "east": "prairie_3_1",
+        "south": "prairie_2_0",
+        "north": "prairie_2_2"
+      },
+      "objects": {
+        "stream": "Tiny fish hold their place in the current beneath a shelf of stone."
+      },
+      "enemy": "grassland_boar",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-007",
+      "map_position": [
+        -2,
+        -4,
+        0
+      ]
+    },
+    "prairie_3_1": {
+      "name": "Hawk’s Rise",
+      "description": "A gentle swell lifts you above the grass. Hawks circle on rising air, and you can see the route back to the meadow far to the southeast.",
+      "exits": {
+        "west": "prairie_2_1",
+        "south": "prairie_3_0",
+        "north": "prairie_3_2"
+      },
+      "objects": {
+        "hawk perch": "A dead tree offers the only high perch for a long way around."
+      },
+      "enemy": "prairie_raider",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-008",
+      "map_position": [
+        -1,
+        -4,
+        0
+      ]
+    },
+    "prairie_0_2": {
+      "name": "Redstone Shelf",
+      "description": "Rust-red slabs break through the grass as the ground begins to climb. The prairie remains wide and open behind you, but mountain shadows reach this far at dusk.",
+      "exits": {
+        "east": "prairie_1_2",
+        "south": "prairie_0_1",
+        "north": "prairie_0_3"
+      },
+      "objects": {
+        "redstone": "Thin red layers crumble at the edges; older grey stone lies beneath."
+      },
+      "enemy": "ridge_lion",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-009",
+      "map_position": [
+        -4,
+        -5,
+        0
+      ]
+    },
+    "prairie_1_2": {
+      "name": "Split Boulder Plain",
+      "description": "A split boulder stands alone in a field of pale grass. Small animal trails run between scattered stones toward the rising foothills.",
+      "exits": {
+        "west": "prairie_0_2",
+        "east": "prairie_2_2",
+        "south": "prairie_1_1",
+        "north": "prairie_1_3"
+      },
+      "objects": {
+        "split boulder": "A narrow cleft divides the boulder. Wind whistles through it like a distant flute."
+      },
+      "enemy": "grassland_boar",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-010",
+      "map_position": [
+        -3,
+        -5,
+        0
+      ]
+    },
+    "prairie_2_2": {
+      "name": "Last Camp",
+      "description": "A cold circle of camp stones sits on a breezy rise. Beyond it, the mountains fill the northern sky; behind you, the prairie rolls toward copper-colored lowlands.",
+      "exits": {
+        "west": "prairie_1_2",
+        "east": "prairie_3_2",
+        "south": "prairie_2_1",
+        "north": "prairie_2_3"
+      },
+      "objects": {
+        "camp stones": "Ash has washed into the soil. A snapped tent peg remains between two stones."
+      },
+      "enemy": "prairie_raider",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-011",
+      "map_position": [
+        -2,
+        -5,
+        0
+      ]
+    },
+    "prairie_3_2": {
+      "name": "Lionwatch Knoll",
+      "description": "Dry grass clings to a broad knoll dotted with grey rock. There is little cover here, and the slopes ahead are scarred by gullies running down from the mountains.",
+      "exits": {
+        "west": "prairie_2_2",
+        "south": "prairie_3_1",
+        "north": "prairie_3_3"
+      },
+      "objects": {
+        "scratched rock": "Deep claw marks score the stone beside a patch of flattened grass."
+      },
+      "enemy": "ridge_lion",
+      "region": "Coppergrass Prairie",
+      "code": "PRA-012",
+      "map_position": [
+        -1,
+        -5,
+        0
+      ]
+    },
+    "prairie_0_3": {
+      "name": "Western Scree Edge",
+      "description": "Open grass thins against a fan of mountain scree. High to the north, dark cave mouths puncture the cliffs. There is no safe mountain route here yet.",
+      "exits": {
+        "east": "prairie_1_3",
+        "south": "prairie_0_2"
+      },
+      "objects": {
+        "cave mouths": "The openings are distant and deep in shadow. Something large has disturbed the scree below them."
+      },
+      "encounter": {
+        "enemy": "cave_troll",
+        "chance": 5,
+        "cooldown": 300
+      },
+      "region": "Coppergrass Prairie",
+      "code": "PRA-013",
+      "map_position": [
+        -4,
+        -6,
+        0
+      ]
+    },
+    "prairie_1_3": {
+      "name": "Thunderstone Foothill",
+      "description": "A low rolling foothill meets the first steep mountain face. Broken boulders lie scattered over short grass, and deep echoes sometimes drift down from hidden caves.",
+      "exits": {
+        "west": "prairie_0_3",
+        "east": "prairie_2_3",
+        "south": "prairie_1_2"
+      },
+      "objects": {
+        "boulders": "Several stones bear fresh scrapes much higher than your head."
+      },
+      "encounter": {
+        "enemy": "cave_troll",
+        "chance": 5,
+        "cooldown": 300
+      },
+      "region": "Coppergrass Prairie",
+      "code": "PRA-014",
+      "map_position": [
+        -3,
+        -6,
+        0
+      ]
+    },
+    "prairie_2_3": {
+      "name": "Coldwater Fan",
+      "description": "A cold mountain trickle spreads over gravel before vanishing into the prairie soil. The northern cliffs loom above, their cave mouths black against pale stone.",
+      "exits": {
+        "west": "prairie_1_3",
+        "east": "prairie_3_3",
+        "south": "prairie_2_2"
+      },
+      "objects": {
+        "gravel": "Large uneven footprints cross the gravel and disappear among the rocks."
+      },
+      "encounter": {
+        "enemy": "cave_troll",
+        "chance": 5,
+        "cooldown": 300
+      },
+      "region": "Coppergrass Prairie",
+      "code": "PRA-015",
+      "map_position": [
+        -2,
+        -6,
+        0
+      ]
+    },
+    "prairie_3_3": {
+      "name": "Eastern Mountain Verge",
+      "description": "The prairie reaches the foot of a long grey escarpment. Wind pours from northern ravines and sweeps the low grass flat. The mountains remain beyond reach for now.",
+      "exits": {
+        "west": "prairie_2_3",
+        "south": "prairie_3_2"
+      },
+      "objects": {
+        "ravines": "The narrow clefts are too steep to climb here. Loose stones sometimes tumble from above."
+      },
+      "encounter": {
+        "enemy": "cave_troll",
+        "chance": 5,
+        "cooldown": 300
+      },
+      "region": "Coppergrass Prairie",
+      "code": "PRA-016",
+      "map_position": [
+        -1,
+        -6,
+        0
+      ]
+    },
+    "south_street": {
+      "name": "South Market Street",
+      "description": "Warm brick walls border a short street south of Center Square. A painted beetle hangs above the eastern doorway, where an occasional chirp or low growl escapes from Jake’s Critters.",
+      "exits": {
+        "north": "square",
+        "east": "jakes_critters"
+      },
+      "safe": true,
+      "objects": {
+        "painted beetle": "The sign reads: Jake’s Critters. Fair coin for unusual company. Cages included."
+      },
+      "region": "Town",
+      "code": "TOWN-006",
+      "map_position": [
+        0,
+        1,
+        0
+      ]
+    },
+    "jakes_critters": {
+      "name": "Jake's Critters",
+      "description": "Clean straw, polished cage bars, and shelves of feed fill Jake’s little shop. Jake looks up from his ledger. “Bring me a creature in a cage and I’ll make you an offer. Every occupant counts—and the cage stays with me.”",
+      "exits": {
+        "west": "south_street"
+      },
+      "safe": true,
+      "creature_buyer": true,
+      "objects": {
+        "ledger": "Jake prices each creature separately and multiplies by the number in its cage. Type SELL to see offers for the occupied cages you carry."
+      },
+      "region": "Town",
+      "code": "TOWN-007",
+      "map_position": [
+        1,
+        1,
+        0
+      ]
+    },
+    "hidden_dungeon_bedroom": {
+      "name": "Hidden dungeon Bedroom",
+      "description": "A small room covered in inches of dust that looks almost completely undisturbed.  It is a small room that looks like it once belonged to an ancient day prepper.  There is a cot still made up neatly along one wall and the other is lined with random tools, preserved food, and wooden barrels that once presumably held water.",
+      "exits": {
+        "north": "dungeon"
+      },
+      "objects": {},
+      "region": "Town",
+      "code": "TOWN-008",
+      "map_position": [
+        -1,
+        1,
+        -1
+      ],
+      "dark": true,
+      "obscured_from_outside": true,
+      "rest": true,
+      "cooking_fire": true
+    }
+  },
+  "starting": {
+    "room": "square",
+    "gold": 30,
+    "inventory": [
+      "potion",
+      "potion"
+    ],
+    "equipment": {
+      "weapon": "rusted_sword",
+      "armor": "leather_vest"
+    }
+  },
+  "revision": {
+    "dual_level": 3,
+    "dual_classes": [
+      "warrior"
+    ],
+    "offhand_scale": 0.35,
+    "dual_hit_penalty": 0.1,
+    "perception_distance": 3,
+    "perception_chance": 85,
+    "perception_per_level": 2,
+    "perception_distance_penalty": 20,
+    "food_cooldown": 8,
+    "food_in_combat": false,
+    "recall_failure_consumes": false,
+    "corpse_seconds": 300,
+    "enchant_base": 50,
+    "enchant_gain": 0.4,
+    "enchant_difficulty": 12,
+    "enchant_destroy": 10,
+    "enchant_damage": 1,
+    "enchant_bonus": 1,
+    "enchant_cap": 3,
+    "enchant_cost": 20,
+    "enchant_growth": 2,
+    "sharpen_bonus": 2,
+    "sharpen_seconds": 120,
+    "enchant_proficiency_cap": 100
+  },
+  "status_effects": {
+    "scorched": {
+      "name": "Scorched",
+      "description": "Lingering heat deals 2 damage each combat pulse.",
+      "kind": "damage",
+      "damage": 2,
+      "duration": 3,
+      "slow": 1.5,
+      "stacking": "refresh",
+      "max_stacks": 3,
+      "application": "{target} is affected by {effect}.",
+      "ongoing": "{effect} affects {target}.",
+      "expiration": "{effect} fades from {target}.",
+      "failure": "{target} resists {effect}."
+    },
+    "poisoned": {
+      "name": "Poisoned",
+      "description": "A mild poison; refreshes rather than stacking.",
+      "kind": "damage",
+      "damage": 1,
+      "duration": 4,
+      "slow": 1.5,
+      "stacking": "refresh",
+      "max_stacks": 3,
+      "application": "{target} is affected by {effect}.",
+      "ongoing": "{effect} affects {target}.",
+      "expiration": "{effect} fades from {target}.",
+      "failure": "{target} resists {effect}."
+    },
+    "stunned": {
+      "name": "Stunned",
+      "description": "Cannot attack or use skills for two pulses.",
+      "kind": "stun",
+      "damage": 0,
+      "duration": 2,
+      "slow": 1.5,
+      "stacking": "refresh",
+      "max_stacks": 3,
+      "application": "{target} is affected by {effect}.",
+      "ongoing": "{effect} affects {target}.",
+      "expiration": "{effect} fades from {target}.",
+      "failure": "{target} resists {effect}."
+    },
+    "slowed": {
+      "name": "Slowed",
+      "description": "Slower recovery between automatic attacks.",
+      "kind": "slow",
+      "damage": 0,
+      "duration": 4,
+      "slow": 3,
+      "stacking": "refresh",
+      "max_stacks": 3,
+      "application": "{target} is affected by {effect}.",
+      "ongoing": "{effect} affects {target}.",
+      "expiration": "{effect} fades from {target}.",
+      "failure": "{target} resists {effect}."
+    }
+  },
+  "recipes": {
+    "roast_venison": {
+      "name": "Roast venison",
+      "input": "raw_venison",
+      "output": "roast_venison",
+      "count": 1,
+      "output_count": 1,
+      "fire": true,
+      "chance": 100,
+      "consume_failure": false,
+      "message": "Roast venison is ready."
+    },
+    "roast_turkey": {
+      "name": "Roast turkey",
+      "input": "raw_turkey",
+      "output": "roast_turkey",
+      "count": 1,
+      "output_count": 1,
+      "fire": true,
+      "chance": 100,
+      "consume_failure": false,
+      "message": "Roast turkey is ready."
+    },
+    "toast_beetle": {
+      "name": "Toast beetle",
+      "input": "beetle_meat",
+      "output": "toasted_beetle",
+      "count": 1,
+      "output_count": 1,
+      "fire": true,
+      "chance": 100,
+      "consume_failure": false,
+      "message": "Toast beetle is ready."
+    }
+  },
+  "npcs": {
+    "tamsin": {
+      "name": "Tamsin",
+      "room": "square",
+      "appearance": "A traveler warms her hands around a tin cup.",
+      "description": "Her pack smells faintly of woodsmoke and dried herbs.",
+      "interactions": [
+        "look",
+        "talk"
+      ],
+      "dialogue": [
+        {
+          "phrase": "hello",
+          "response": "Hello, traveler. The inn keeps a cooking fire ready."
+        },
+        {
+          "phrase": "cooking",
+          "response": "HARVEST defeated deer, turkeys or beetles, then COOK their recipe at a fire."
+        }
+      ],
+      "default_response": "I know a little about cooking. Ask me about cooking."
+    },
+    "lilla": {
+      "name": "Lilla",
+      "room": "gate",
+      "appearance": "Lilla is a beautiful little fairy, barely three inches tall, with bright eyes and delicate wings that shimmer with iridescent light.",
+      "description": "Lilla darts here and there, trailing tiny sparks of magic, her musical laughter making ordinary moments feel enchanted.\n\nAn adult fairy with boundless youthful spunk, she finds delight in the smallest things. Depending on her mood, she can be a perfect little angel—tenderhearted and eager to help—or a mischievous pest, delivering teasing remarks and insults before darting just beyond reach.\n\nFor all her tiny stature, Lilla has a wonderfully bold spirit. She sees a world full of friends to meet, secrets to discover, and rules that might be more fun with a few exceptions.",
+      "interactions": [
+        "look",
+        "talk"
+      ],
+      "dialogue": [
+        {
+          "phrase": "hello",
+          "response": "Hello, traveler."
+        },
+        {
+          "phrase": "What are you?",
+          "response": "Uhh... A fairy... Duh"
+        },
+        {
+          "phrase": "Why are you so small?",
+          "response": "Why are you so big?"
+        }
+      ],
+      "default_response": "Hello, traveler."
+    }
+  }
+}

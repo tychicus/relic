@@ -1,0 +1,232 @@
+RELIC FRONTIER v0.5.0 — THE LIVING FRONTIER
+
+START THE NEW VERSION
+1. Stop any running game with Ctrl+C in its launcher.
+2. Keep Relic_Frontier_v0.4.0 as your backup.
+3. Open Start_Game.cmd inside Relic_Frontier_v0.5.0.
+4. Check that the launcher and game both say v0.5.0. Refresh the browser
+   with Ctrl+F5 if needed. The normal address is http://127.0.0.1:8765.
+
+The supplied saved game is included unchanged. Your character's level, XP,
+possessions, custom world, discoveries and timers carry forward. New save
+fields are added at first launch. Always keep an old save with its old game;
+do not copy a v0.5 save back into v0.4. No new starting lantern is added.
+
+WHAT CHANGED
+
+OWNER WORKSHOP
+The editor opens to a dashboard. Category navigation, a record-name filter,
+alphabetical selectors, collapsible forms and related-record links keep
+editing manageable. Visual world map still opens rooms when you click their
+blocks and still creates connected rooms and exports reference maps.
+
+Use Add something to your world for an NPC, status effect or cooking recipe,
+as well as the existing record types. New mechanics use normal forms:
+
+- Rooms > Spawning, roaming, visibility & crafting
+- Creatures > Status effects, resistance & harvesting
+- Items & equipment > Hands, food, recall & effects
+- Skills & spells > Combat initiation & status effects
+- Characters > Races > Perception & resistance
+- Status effects, NPCs & dialogue, Cooking recipes, Crafting & balance
+
+Save world changes to apply your draft. Content saves retain a history copy.
+Complete combat before saving world changes. Existing deadlines retain their
+scheduled times; changed delays apply to subsequent events. Occupied extra
+spawn slots and active effects cannot be removed until no longer in use.
+
+COMBAT AND TARGETING
+Basic attacks continue automatically. The existing 2-second alternating
+player/enemy pulse is preserved: normally the player attacks every 4 seconds
+and each engaged creature attacks every 4 seconds. This avoids doubling the
+old combat speed. Combat & progression changes the pulse interval.
+
+Several creatures can share a room. Each has its own health, effects,
+identity and respawn slot. Hostile arrivals join an ongoing fight. Neutral
+creatures join when attacked or manually targeted during combat. Combat
+retargets engaged/hostile opponents when a target dies, leaves or is knocked
+out; it does not automatically attack unrelated neutral wildlife.
+
+  TARGET scarred copper beetle
+  ATTACK watchful copper beetle
+  CAST BASH
+  FLEE
+
+The creature panel offers Target and Attack buttons. Duplicate display names
+gain persistent descriptive traits; ambiguous commands ask for a distinct
+description. Manual selection remains until changed or invalidated.
+
+Commands resolve immediately between automatic pulses, subject to cooldowns
+and eligibility. They never reset the automatic attack schedule. There are no
+turn-choice prompts. Combat still continues when the browser is closed.
+Restarting the server schedules the next combat pulse in the future; it does
+not replay an offline combat burst.
+
+STATUS EFFECTS
+Create reusable effects with damage, stun or slow mechanics. Burning and
+poison can be separate damage effects with different names and messages.
+Attach them to skills, weapons or creature attacks. Each attachment has its
+own chance and optional duration override; 0 uses the effect's default.
+
+Damage effects deal their configured damage on every combat pulse. Stun
+prevents automatic attacks and skill use, but still permits target selection,
+potions and flee attempts. Slow changes automatic attack recovery; rounding
+to available actor pulses can extend the delay. A recovery already scheduled
+by Slow may finish after the effect fades. Skills retain their own cooldowns.
+
+Choose refresh, stack (up to a configurable cap), or ignore for repeat hits.
+Stacking multiplies damage, not stun/slow strength. Application probability
+is attachment chance x (1 - resistance / 100). Define creature resistance in
+Creatures and player resistance in Races. Effects on weapons/skills apply
+only after a successful damaging hit against a surviving opponent. No effect
+is applied on a miss, dodge or kill. Effects pause outside combat and offline;
+remaining combat pulses persist through save/restart. Death and capture clear
+the affected creature/player's effects.
+
+Messages accept {target}, {effect}, and {damage}. All are plain text.
+
+DRAFT SKILLS
+These are adjustable starting values; existing Bash and Knockout are intact.
+
+Skill        Level  Eligibility  Cooldown  Initial behavior
+Fireball       2    Mage          12 s     1.6x damage; 25% Scorched, 3 pulses
+Lightning      4    Mage          16 s     2.0x damage; 15% Slowed, 4 pulses
+Charge         2    Warrior       14 s     1.5x damage; may start a fight
+Sharpening     2    Any           30 s     +2 weapon damage for 120 seconds
+Enchanting     3    Any           15 s     Train proficiency; risky weapon work
+
+All allow any race initially. Fireball and Lightning can also initiate combat.
+Spells use the existing damage formula and cooldown resource model: class
+roll + primary weapon + level bonus, multiplied by skill strength. There is
+no mana or elemental damage-resistance model in this release; named status
+resistances provide secondary-effect resistance. Charge does not move rooms.
+
+  FIREBALL / LIGHTNING / CHARGE
+  SHARPEN (or CAST SHARPENING)
+  ENCHANT (or CAST ENCHANTING)
+
+Sharpening and Enchanting require a right-hand weapon and no active combat.
+They make that particular weapon an individual object. Other copies of the
+same weapon template are unchanged. Individual weapons retain their changes
+when dropped, stored in a chest, equipped or reloaded. Sharpening refreshes
+its duration rather than stacking, and its timer includes offline time.
+
+ENCHANTING DEFAULTS — ALL IN CRAFTING & BALANCE
+- Each valid attempt costs 20 gold and grants 2 proficiency, up to 100.
+- Success = 50% + proficiency x 0.4% - existing rank x 12%, clamped to 0–100%.
+- Success adds 1 weapon damage and 1 rank; maximum rank is 3.
+- A failed attempt has a 10% chance to destroy the weapon. Otherwise it loses
+  1 damage, down to zero base weapon damage. Training still occurs.
+- Invalid attempts spend no money, proficiency or cooldown.
+
+HAND EQUIPMENT
+  EQUIP iron sword RIGHT
+  EQUIP iron sword LEFT
+  EQUIP wooden buckler
+  UNEQUIP LEFT / UNEQUIP RIGHT
+
+The old WEAPON slot is retained internally as the right hand for compatibility.
+The player interface labels the hand slots. Body armor remains separate.
+A shield occupies the left hand and adds its armor value to incoming damage
+reduction. A two-handed weapon occupies the right hand and requires the left
+hand to be empty. Set Hands required in the item's additional fields.
+
+Dual wielding initially requires Warrior level 3. The offhand contributes
+35% of its weapon damage to the same attack, and dual wielding subtracts 0.10
+from hit chance. It does not add another full class/level attack. Eligibility,
+unlock level, contribution and penalty are editable in Crafting & balance.
+A lone one-handed weapon can be used in either hand without the dual penalty.
+
+SPAWNING AND ROAMING
+Existing fixed enemies, weighted respawn pools and rare entry encounters keep
+their old definitions and timers. Additional independent spawn groups work
+alongside them. A group's permanent ID and slot count identify its saved
+creatures. Use a fixed creature or weighted pool, 0–100% chance per attempt,
+entry/timer trigger, respawn toggle, retry delay and roaming options.
+
+Failed rolls produce nothing and still start the retry delay. A disabled
+respawn permits the first successful appearance, then no replacement after
+death/capture. Entry groups roll only on actual entry, never LOOK or polling.
+Timer groups first initialize when the location is visited/evaluated; roaming
+timer groups may initialize as the world clock evaluates them.
+
+Roaming moves only across an existing exit to a checked, non-safe destination.
+Include the home room among allowed destinations if the creature may return.
+An empty destination list prevents movement. Fighting and unconscious
+creatures do not roam. The home slot remains occupied while its creature is
+away; death/capture schedules replacement at that original home.
+
+Legacy enemies have separate respawn and roaming controls in the same room
+panel. Their spawn chance applies to replacement attempts, while their fixed
+starting enemy is preserved. Group rules support chance on initial appearance.
+Rare legacy encounter rooms retain their encounter chance and cooldown.
+
+Two light wildlife additions illustrate the system without increasing the
+existing hostile populations: deer near Sundown Flats and turkeys near
+Coppergrass Reach have a 35% entry chance, one slot each, 180-second retries,
+and restricted 45-second roaming. All their values are editable.
+
+NPCS
+Tamsin is in Center Square as an example. LOOK TAMSIN or SAY HELLO TO TAMSIN.
+NPC forms edit placement, appearance, description, dialogue and enabled
+Look/Talk interactions. Dialogue matches complete phrases ignoring case and
+extra spaces. Shops, quest chains and branching conversations remain future
+work; the placed-NPC model is ready to be extended.
+
+PERCEPTION
+  LOOK NORTH 2
+The default maximum distance is 3 rooms. Near, clear views are reliable.
+Farther views roll: 85% + 2% per level after level 1 + racial bonus - 20% per
+extra room - the strongest fog penalty along the observed path, clamped to
+0–100%. Directional looking follows connected exits in the same direction.
+Darkness, blocked outside views, sight limits, missing exits and failed checks
+stop further details. Nearer visible rooms may be revealed before a distant
+view fails. Looking does not create enemies or roll encounters.
+
+Use room Fog / weather visibility penalty and Maximum sight through this room
+to author weather/terrain restrictions. A sight limit of 0 prevents onward
+view; obscured-from-outside prevents seeing into that room. Weather is
+owner-authored, not a dynamically simulated weather cycle.
+
+RECALL, FOOD AND COOKING
+Anthony's General Store sells a 150-gold recall scroll, a 30-gold wooden
+buckler and 3-gold prairie apples. RECALL or USE RECALL SCROLL returns to the
+starting square and consumes one scroll. Combat or Recall disabled on the
+current room blocks it. Blocked attempts preserve the scroll by default;
+Crafting & balance can change that rule explicitly.
+
+EAT <food> heals up to maximum HP. Food is preserved at full HP and when an
+attempt is blocked. Defaults: outside combat, 8 seconds between meals.
+Ordinary healing potions retain their previous behavior.
+
+  HARVEST <creature description>
+  COOK roast venison
+  COOK roast turkey
+  COOK toast beetle
+
+Defeated deer, turkeys and copper beetles leave harvestable remains for 300
+seconds. Each corpse is harvested once; a full bag preserves it. Capture and
+killing released captives grant no harvesting rewards. Creature harvest
+fields choose distinct output items and quantities. The Quiet Coil has a
+cooking fire. Recipes choose input/output quantities, fire/tool/skill
+requirements, success chance and whether failure consumes ingredients.
+Initial cooking is guaranteed, needs a fire, and requires no tool or skill.
+Venison heals 16 HP, turkey 12 HP, beetle 8 HP and apples 5 HP.
+
+PRESERVATION AND LIMITS
+The original 29 rooms, names, descriptions, IDs, map positions, starting
+inventory, old creature stats, race/class choices and skill settings remain.
+Changes to existing records are additive: shop stock, a cooking fire, beetle
+harvest yields and the two wildlife spawn rules. Your original save bytes
+are included in the distribution and migrate on first launch.
+
+This remains one local character with a loopback-only browser server. New
+player effects/proficiency/target state live on the player, and creatures,
+home slots and corpses live in world state with independent identities.
+This prepares useful boundaries without implementing multiplayer, accounts,
+roles, full NPC shops/quests, technology regions or Moon content.
+
+Balance is a conservative starting point, not a claim of exhaustive playtest
+balance. All new gameplay balance settings described above are editor-managed.
+Use a separate copy for experiments. A later player-created save must always
+stay with its matching content and game version.

@@ -1,0 +1,77 @@
+RELIC FRONTIER v0.1.2
+Obscured rooms, easier creation, quaffing, and inventory display
+
+INSTALL
+Stop the game with Ctrl+C in the launcher. Keep your old folder as a backup.
+Extract this ZIP into a NEW folder and run its Start_Game.cmd. Refresh the
+browser and any owner-editor tab. The game should show v0.1.2.
+This package preserves your world, history and save as uploaded on September 17.
+Only run one game copy at a time.
+
+IF YOU HAVE MADE MORE CHANGES SINCE UPLOADING
+Stop your current game and back up its folder. Copy these updated files into
+the matching locations of your current game folder instead of using this ZIP's
+older snapshot of your save:
+  engine.py
+  server.py
+  static/admin.html
+  static/admin.js
+  static/editor-helpers.js (new file)
+  static/app.js
+  static/index.html
+  static/style.css
+Do NOT replace your current content or saves folders. Restart and refresh.
+You can also copy this guide, README.md, and the new test files if desired.
+
+BLOCK LOOKING INTO A ROOM
+Owner editor > Rooms > select a room.
+Set "Block looking in from neighboring rooms" to Yes.
+Enter a custom message, for example "A thick mist hides everything beyond."
+Leave the message blank to use: "It is too dark; you cannot see anything."
+Save world changes when out of combat.
+From an adjacent room, LOOK toward it. Its name, description, and enemy are
+hidden by that message. The exit remains listed, and you can move through it.
+Lanterns cannot remove this outside-view obstruction. Once inside, normal
+visibility applies; "Requires a carried light" still controls darkness inside.
+This option does not hide the route or require discovering a secret passage.
+Existing rooms keep their previous behavior until you enable the option.
+
+EASIER CREATION
+At the top of Owner editor, choose Add room / place, Add weapon, Add item, or
+Add enemy. The type menu also offers armor, potions, lights and other entries.
+Type an ordinary name such as "Silver Sword". Spaces, capitals and punctuation
+are accepted. Click Create and edit. The editor opens the appropriate fields.
+Internal IDs are generated automatically; duplicate names get distinct IDs
+instead of overwriting existing entries. Display names remain as typed.
+Edit the details, then Save world changes. Creation alone is an unsaved draft.
+Use the section menu and "Edit existing" selector for existing content.
+
+To place a ROOM: set its exits, then edit a neighboring room and add an exit
+leading to it. Return exits are still set separately.
+To place a WEAPON or ITEM: add it under a room's Shop stock or an enemy's loot.
+To place an ENEMY: select it under a room's Resident enemy field.
+Guidance now appears in the editor. Creating races/classes/skills still only
+adds content records; new playable behaviors remain a future engine feature.
+
+QUAFFING AND INVENTORY
+QUAFF POTION heals and consumes one potion. You can quaff during combat.
+The potion buttons say Quaff. USE POTION remains a compatibility alias.
+INVENTORY (or I) now prints one vertical line per item type, with duplicates
+stacked. The sidebar uses the same naming format and a vertical list:
+  (Healing potion) (x3)
+  [Iron sword] (x2)
+  [Chain vest]
+  (Lumen lantern)
+Weapons and armor use square brackets; other items use parentheses.
+Individual copies still occupy bag slots, and actions affect one copy at a time.
+This is display grouping; no inventory entries or saved items were removed.
+
+VERIFICATION
+30 Python gameplay/API tests passed, including prior dodge tests and new
+visibility, quaffing, and inventory checks. Node checks cover editor creation
+and JavaScript syntax. Saved-game compatibility is checked on a disposable
+copy. World, history and save bytes match the uploaded ZIP.
+Visual browser testing and Windows launcher execution were not performed here.
+Python tests: Run_Tests.cmd
+Optional developer-only creation tests: node tests/test_editor_helpers.js
+Players do not need Node.

@@ -1,0 +1,172 @@
+RELIC FRONTIER v0.2.0 — TESTING AND CUSTOMIZATION
+
+Use START_HERE.txt for installation. Work in the NEW extracted folder, keeping
+your previous game untouched as a backup. Automatic migration adds the new
+save fields on startup. No character reset is required.
+
+1. SHOPS AND INVENTORY
+Visit Anthony's Supply and type BUY. Each grouped entry has its own line:
+  (Healing potion) — 8 gold each
+  [Iron sword] — 35 gold each
+Duplicate entries show (x2), (x3), etc. Shop entries are an unlimited catalogue,
+not finite stock. Bag limits still count individual ordinary items, even when
+the display stacks them. Each cage occupies one bag slot, regardless of its
+occupants. Uncaged creatures each occupy one slot. Equipped items are separate.
+
+2. EXPLORE THE PRAIRIE
+From Center Square: N, N, N reaches Coppergrass Meadow. Then W enters the new
+prairie. It is a four-by-four area with connecting paths north/south/east/west.
+Mountain cliffs border the four northern locations. Mountain travel is reserved
+for a later expansion. LOOK at each location's landscape objects for details.
+
+Prairie creatures include horned hares, wolves, boars, raiders, and ridge lions.
+Some attack on sight. Bring potions; your original vampire and other enemy
+stats were not weakened. The cave troll has 220 HP and damage of 18–30 before
+armor, making it a serious encounter even for an equipped level 6–8 character.
+Enemy difficulty here comes from its stats; enemies do not have player levels.
+
+Cave troll entry rolls:
+- Each northern foothill room has a 5% chance on an eligible entry.
+- Each roll, successful OR unsuccessful, starts that room's 300-second timer.
+- LOOK, browser refresh, polling, and standing still never make extra rolls.
+- Leaving/reentering before the timer expires does not make another roll.
+- A spawned troll stays until killed or captured; reentry cannot duplicate it.
+- A killed/captured troll also observes its 300-second respawn delay. The next
+  eligible ENTRY is required; it will not respawn while you stand there.
+- Each room has its own timer. Timers persist through restarts.
+
+Owner editor > Rooms > choose one of:
+  Western Scree Edge / Thunderstone Foothill / Coldwater Fan /
+  Eastern Mountain Verge
+Set Random enemy on entering this room, Chance on entry (%), and Time between
+eligible rolls (seconds). Use 5 for 5%, not 0.05. Clear Resident enemy and Safe
+town room before adding random encounters to another room.
+For a quick test, set an unvisited northern room to 100%, save outside combat,
+and enter it. Restore 5% afterward. A timer already running still applies.
+
+3. VAMPIRE TREASURE
+From Center Square: W enters the inn; DOWN reaches the vampire's dungeon.
+KILL the vampire. Capturing it does not reveal its treasure. After a kill:
+  GET RUSTY KEY
+  LOOK BOX
+  UNLOCK BOX
+  GET DAWNFANG
+
+The key and box cannot be seen before that kill. The rusty key must be in your
+inventory, disappears on successful unlocking, and cannot be sold. A wrong
+key or missing key opens nothing and consumes nothing. Dawnfang is a new +22
+damage weapon. Its presence in the box can be changed in the owner editor.
+
+The discovery is permanent. Vampire respawns do not hide it again, generate
+another key, refill the box, or duplicate its weapon. Unlocking puts treasure
+on the ground, so even a full bag does not lose it. Open boxes remain in place.
+The first qualifying kill in this updated save reveals these new placements;
+old kills are not retroactively counted.
+
+4. ADD YOUR OWN HIDDEN ITEMS OR LOCKED BOXES
+A. Create any needed item, weapon, and Key using Add something to your world.
+B. Rooms > select a room > Add discoverable item / container.
+C. Select Loose item or Locked container and give the placement a normal name.
+D. Choose when it appears:
+   - Player looks in the room: available when the room can be seen.
+   - Player looks at an object: select an inspectable object in that room.
+   - Room enemy is killed: select its resident or random encounter enemy.
+E. For a loose item, select Item to discover. For a container, choose its
+   Required key and check the Treasure inside. Add descriptions/messages.
+F. Save world changes outside combat.
+
+Each placement is one-time per saved game. For another independent treasure,
+add another placement. Already discovered placements cannot be deleted or have
+their type changed; this prevents save corruption. Editing contents of an
+already opened box does not refill it. An unopened box uses your current
+contents selection. Use different key items for locks that should not share
+keys. The matching key is always consumed after successful opening.
+
+5. CUSTOM ENEMY WORDS AND ACTIONS
+Owner editor > Enemies > choose the creature. New fields:
+- Battle cries / actions: one possible line per row.
+- Chance of battle line per attack (%): 20 means 20% per enemy attack turn.
+- Defeat words / actions: one random line when killed (not knocked out).
+- Description when looking into its cage: shown on LOOK CAGE <number>.
+- Possible captive words / actions: one random line per cage inspection.
+Leave line lists empty for silence. These are descriptive text; they do not
+change damage or grant items. The vampire and cave troll include examples.
+
+6. CAPTURE AND PORTABLE CAGES
+Buy a cage at Anthony's Supply:
+  BUY IRON CAGE
+It costs 45 gold and holds up to five creatures of ONE type. Edit its price or
+capacity under Weapons & items > Iron cage. Occupied cages cannot be sold.
+Empty cages may be sold for half their purchase price, rounded down.
+
+Weaken an enemy and use KNOCKOUT. Default health requirement: 35% HP or less;
+cave trolls require 25% or less. Knockout has a 12-second cooldown and 70% base
+success chance, reduced by resistance:
+  actual chance = base chance x (1 - resistance / 100)
+For example, vampire resistance 35% gives 70% x 65% = 45.5% success.
+The enemy must have Can be knocked out and captured = Yes. The mechanical
+sentinel is not capturable. Attempts above the health threshold consume no
+cooldown. A valid failed attempt consumes the cooldown and combat continues.
+
+After success:
+  GET VAMPIRE
+  PUT VAMPIRE IN CAGE 1
+  LOOK CAGE 1
+  DROP CAGE 1
+  GET CAGE 1
+
+Use the enemy's actual name and the cage's actual displayed number. Each cage
+has a unique number; it may not start at 1 if you have already captured things.
+If multiple cages match, specify the number. Capturing another vampire and
+putting it in the same cage increases its count. Different creature types need
+different cages. Full/mismatched cages leave the creature in your inventory.
+
+Successful knockout stops combat. Unconscious creatures do not wake up on a
+timer in this version. If your bag is full, they remain in the room until GET
+can succeed. Capturing gives no kill XP, gold, loot, or defeat-triggered
+revelations. The original spawn may return after its normal respawn delay,
+starting when you pick up the unconscious creature.
+
+A cage can be carried full, dropped in a room, inspected there, and picked up
+again with exactly the same occupants. Cages and captured creatures are
+protected from random item loss on death. Their contents survive save/reload.
+Captured creatures are collectibles for now: they do not fight for you, breed,
+need food, or escape. Capacity is editable; lowering it below current occupancy
+is rejected. A cage's description is also editable if you change its capacity.
+
+Optional RELEASE CAGE 1 releases ONE occupant into the current room. It requires
+a visible non-safe room with no other creature and no active fight. Aggressive
+creatures attack again. Released creatures give no kill rewards or hidden
+item revelations, preventing repeated reward farming. An emptied cage can
+hold a different creature type.
+
+Quick capture test without risking a kill:
+In a separate testing copy, set a neutral creature's capture health to 100%,
+resistance to 0%, and Skills > Knockout > Base success chance to 100%. Save
+outside combat, then use KNOCKOUT on that creature at full health. Restore the
+normal settings after testing. This avoids automatic attacks killing weak
+creatures before you can knock them out.
+
+7. NOTES ABOUT YOUR EXISTING GAME
+- Your saved character, gold, equipment, inventory, room and custom content
+  were retained from the uploaded archive. Tests never used the bundled save
+  directly; migration was tested on a temporary copy.
+- Current XP thresholds and character level are preserved, even if previous
+  threshold edits mean the level and total XP currently look out of step.
+- Existing dodge, darkness, blocked directional views, quaff, stacking, and
+  item markers remain available.
+- Saving world edits keeps living enemies' current HP, capped if their maximum
+  was lowered. It no longer heals every living enemy. Respawn gives full HP.
+- Human Warrior remains the playable character choice. Bash and Knockout are
+  implemented skills; adding arbitrary skill records does not create mechanics.
+- content/history/world-before-v0.2.0.json preserves the incoming world data.
+  Restore your entire old game folder to undo this update, not just that JSON.
+
+VERIFICATION
+45 Python tests passed, including prior mechanics, new content connections,
+key consumption, discovery persistence, capture failure/success, full bags,
+separate cages, type/capacity limits, movement/reload, encounter timers, editor
+validation, API access, and original-save migration. JavaScript helper and
+syntax checks passed. Windows launch and visual browser testing remain for
+your PC. Please describe any unexpected behavior and send the stopped game's
+current ZIP when requesting the next update.

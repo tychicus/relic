@@ -1,0 +1,140 @@
+Persistent Text RPG — Master Game Blueprint
+Version 0.2 • Prototype handoff • September 2026
+1. Vision
+•
+Persistent multiplayer, text-only RPG inspired by classic MUDs.
+•
+Setting: high fantasy with a science-fiction/futuristic twist—swords, magic and traditional fantasy life alongside mysterious advanced relics, machines and scientific technology.
+•
+Keyboard-first play; no graphics or minimap required. Exploration, mystery, danger, progression and rare loot are central.
+2. Exploration & Commands
+•
+Movement: NORTH/N, SOUTH/S, EAST/E, WEST/W; UP/DOWN or special exits where appropriate.
+•
+LOOK/L describes the current room, visible objects, creatures and players. LOOK <target> examines something more closely. LOOK <direction> attempts to see into an adjacent area before entering.
+•
+Visibility depends on darkness, terrain, obstruction, weather/visibility rules and potentially character abilities or light sources.
+•
+Other core commands: INVENTORY/I, EQUIPMENT, ATTACK, BASH, FLEE, GET, DROP, USE, EQUIP, BUY, SELL, HELP. Multiplayer communication/group commands come later.
+3. Character & Progression
+•
+Prototype starts with one race (Human) and one class (Warrior); both systems must be data-driven so more can be added later.
+•
+Characters gain XP from enemies; level thresholds increase appropriate stats such as maximum HP and can unlock skills.
+•
+Progress saves automatically: character, location, XP/level, gold, inventory, equipment and learned abilities. Architecture should permit multiple characters per account later.
+4. Combat
+•
+Combat is fast and automatic rather than slow menu-turn combat. It alternates: player basic attack, about 2 seconds, enemy attack, about 2 seconds, repeating. Timing must be owner-adjustable.
+•
+Players can type active commands while automatic attacks continue. BASH is the prototype Warrior ability: stronger than a normal attack with a cooldown.
+•
+Hit/damage outcomes use hidden random rolls modified by stats, gear, skills and enemy attributes. The game engine—not AI—owns rolls, HP, timing, cooldowns and outcomes.
+•
+Enemies may be aggressive (attack on entry), passive/neutral, defensive or future behavior types. FLEE is a probabilistic, configurable escape attempt.
+5. Inventory, Shops & Loot
+•
+Inventory has limited bag capacity that can later be upgraded. Weapons and armor modify combat effectiveness.
+•
+Include merchants such as a potion/general shop.
+•
+Enemies use weighted loot tables: gold, consumables, normal equipment and occasional uncommon/rare exciting drops. Tougher enemies generally offer better rewards without guaranteeing them.
+•
+Item stats, prices, drop chances, bag capacity and economy values must be editable.
+6. Death
+•
+Death should matter without being excessively punishing. Prototype starting value: lose about 10% of carried gold; make this configurable.
+•
+Also roll for a configurable chance of losing one eligible non-equipped inventory item. Key/important items can later be protected.
+•
+Death should discourage using suicide merely as a convenient way to escape being lost. Respawn at the town/safe starting area for the prototype.
+7. Persistent World & Multiplayer
+•
+Eventually multiple players can occupy the world simultaneously, see one another, communicate, group and cooperate in combat.
+•
+Enemy state is shared. A killed creature remains absent until its respawn time.
+•
+Use timestamps (for example defeated_at and respawn_at) instead of continuously simulating an empty world. This should make the world feel always-on while minimizing hosting/processing.
+•
+The prototype may be solo-first, but the architecture must support multiplayer later without a major rewrite.
+8. Owner/Admin Editing — Essential
+•
+The game must be data-driven. Rooms, exits, descriptions, enemies, HP, damage, XP, respawn times, weapons, armor, items, prices, loot tables, races, classes, skills, cooldowns and progression values must be separate from core engine logic.
+•
+Changing a goblin from 25 HP to 35 HP must not require changing combat code.
+•
+Design toward a simple owner-only admin editor to add/edit areas, connect exits, create enemies/items, change difficulty and loot, edit shops and tune progression.
+•
+Validate edits and eventually provide backup/change history.
+9. Version 0.1 Prototype World
+•
+The player begins in the CENTER SQUARE of a small futuristic-fantasy frontier town.
+•
+Build only enough world to prove the game: Center Square, a few nearby town locations, potion/general shop, road out of town, meadow/frontier area and a dark relic cave.
+•
+The relic cave mixes fantasy atmosphere with ancient scientific/technological remnants.
+•
+Include a few ordinary enemies, at least one aggressive goblin-style enemy, one non-aggressive creature and one mini-boss.
+•
+Include a small set of weapons, armor, potions and loot, including at least one uncommon/exciting possible drop.
+•
+The cave must demonstrate darkness, directional looking, detailed object inspection, combat, loot and respawning.
+10. Prototype Success Criteria
+•
+Create a Human Warrior and enter Center Square; move and use LOOK, LOOK <target> and LOOK <direction>.
+•
+Buy/use a potion; manage inventory/equipment; fight aggressive and passive enemies.
+•
+Automatic alternating combat accepts BASH and FLEE and uses randomized server-controlled rolls.
+•
+Gain XP/gold/loot, level up, die with configured penalties, log out and return with progress preserved.
+•
+Enemy respawns use timestamps.
+•
+Owner can change enemy HP, weapon damage, room descriptions, loot chances and combat timing without modifying core combat code.
+11. AI/Development Efficiency Rules
+•
+This blueprint is the source of truth. Do not redesign established requirements unless explicitly requested.
+•
+Do not build the whole world. Build and test the smallest vertical slice first and preserve working code between milestones.
+•
+Do not rewrite unrelated working components to fix a local issue.
+•
+Use deterministic code for dice, combat, saving, XP, inventory, cooldowns, loot and respawns. Runtime AI is not required for core gameplay.
+•
+AI may help draft descriptions, lore and structured content later. Define stable schemas before generating lots of content.
+•
+Optimize the early prototype for low/no-cost hosting and low processing requirements.
+12. Open Decisions — Leave TBD
+•
+Game/world name and deeper lore; additional races/classes; full stat formulas; mana/stamina systems; final death item-loss probability; PvP; trading/banks/crafting/quests/guilds; dynamic weather/day-night; maximum group size; endgame; final production hosting stack.
+13. Ready-to-Paste ChatGPT Work Handoff Prompt
+Use this Master Game Blueprint as the source of truth. Your first objective is NOT the complete game. Build Version 0.1 as a small, fully playable vertical slice.
+Before substantial coding, review the blueprint and identify only genuine technical ambiguities that block the prototype. Propose a concise architecture, technology stack, project structure and data/database schema. Favor low/no-cost early hosting. Explicitly show how rooms, enemies, items, loot, combat settings, races, classes and skills remain data-driven and owner-editable. Design so multiplayer can be added without rewriting the game, even if implementation begins solo-first.
+Then implement in small, testable milestones. Start in the CENTER SQUARE of a futuristic-fantasy frontier town and extend through a shop, road, outdoor area and dark relic cave containing a few enemies and a mini-boss.
+Engineering constraints:
+• Server/game engine is authoritative.
+• Do not use AI for dice rolls, HP, combat timing, loot rolls, cooldowns, XP, inventory or respawns.
+• Combat alternates automatically, initially about two seconds between player and enemy attacks, while accepting BASH and FLEE.
+• Combat timing and balance values are editable.
+• Use timestamp-based enemy respawns instead of unnecessary continuous simulation.
+• Persist character progress.
+• Keep content/data separate from engine logic.
+• Do not overbuild or silently invent major systems marked TBD.
+• Preserve working code when making changes.
+• Include setup/run instructions and basic automated tests.
+• At each milestone, report what works, what remains and exactly how I can test it.
+Most importantly, design toward a simple owner/admin editor so a non-programmer can add areas, enemies, weapons and other content or adjust values such as enemy HP without changing core engine code.
+14. Suggested Build Milestones
+1.
+Project skeleton, data schema, save/auth structure, command parser, Center Square, movement and LOOK.
+2.
+Connected prototype world, directional looking, darkness, inspectable objects, inventory, equipment and shop.
+3.
+Enemies, alternating combat, rolls, BASH, FLEE, potions, death, XP, leveling and loot.
+4.
+Persistent character/world state and timestamp enemy respawns.
+5.
+Owner-editable content/admin path; prove it by changing goblin HP and adding a room/item without changing engine code.
+6.
+Test/harden the slice, then evaluate multiplayer before expanding content.

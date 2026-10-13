@@ -1,0 +1,59 @@
+RELIC FRONTIER v0.1.1 — ENEMY DODGE
+
+EASY FIRST UPDATE
+1. Stop the running game with Ctrl+C in its launcher window.
+2. Keep your current game folder as a backup.
+3. Extract this updated ZIP into a NEW, separate folder, such as
+   Desktop\Relic_Dodge_Test. Do not run the game from inside the ZIP.
+4. Open the extracted Relic_Frontier folder and run Start_Game.cmd there.
+5. Refresh any open game/editor browser tabs. The game should show v0.1.1.
+
+This full package includes your world, Dark Vampire, dungeon, content history,
+and character save exactly as they were in the ZIP you sent. Only run one copy
+of the game at a time. After testing, keep using the updated folder.
+
+IF YOU HAVE PLAYED OR EDITED YOUR WORLD SINCE SENDING THE ZIP
+To preserve newer progress, stop the game and back up your current folder.
+Instead of switching to the included save, copy ONLY these three runtime files
+from this package into their matching locations in your current game folder:
+  engine.py
+  static\admin.js
+  static\index.html
+Allow replacement of those three files. Do NOT copy content or saves.
+You may also copy tests\test_dodge.py and this instruction file.
+Start your current folder's Start_Game.cmd again and refresh the browser tabs.
+
+TRY DODGE
+1. Open Owner editor > Enemies > Copper beetle.
+2. Find Dodge chance (%). Existing enemies initially show 0.
+3. Enter 100 and click Save world changes. Finish any combat before saving.
+4. From Center Square, go N, N, N to Coppergrass Meadow.
+5. ATTACK the beetle, then try BASH.
+   Successful hit rolls will display messages such as:
+   "Copper beetle dodges your attack! No damage dealt."
+   "Copper beetle dodges your Bash! No damage dealt."
+   Ordinary misses still display as misses. The beetle can still hurt you.
+6. Use FLEE to leave the fight (retry when allowed if it fails).
+7. Once out of combat, set its Dodge chance to 20 or back to 0, and save.
+
+RULES
+- Dodge is a separate server-side roll AFTER the normal hit roll succeeds.
+- Enter 20 for 20%, not 0.20. Decimal percentages are supported.
+- A successful dodge prevents ALL damage from that attack.
+- Both automatic basic attacks and Bash can be dodged.
+- A dodged basic attack still uses its turn; a dodged Bash uses its cooldown.
+- Dodge does not change the enemy's own attacks or your chance to flee.
+- Valid values range from 0 to 100. Missing values behave as 0 for old worlds.
+- New enemies start at 0%. No existing enemy's balance was changed for you.
+- At 88% hit chance and 20% dodge, roughly 70.4% of attacks land overall.
+
+VERIFICATION
+All 14 original regression tests and 7 new dodge tests passed on Linux/Python.
+The owner script passed its JavaScript syntax check. Windows/browser visual
+execution was not tested here. Content, history, and save files were checked
+byte for byte against your upload; the actual save was smoke-tested only on
+a disposable copy.
+
+Only three runtime files changed. This ZIP is a complete package for convenient
+installation, not a rebuild of your world. UPDATE_DODGE.txt, the README update,
+and tests/test_dodge.py document and test the change.

@@ -1,9 +1,52 @@
 """Temporary item enchantments and slow, player-specific crafting progression."""
 import copy
 import math
+from equipment import SLOT_ALIASES
+from magic_progression import progress_text
 
 
 class Enchanting:
+    def repair_available(self):
+        rules=self.rules()
+        return bool(rules['repair_enabled'] and (rules['repair_anywhere'] or self.w['rooms'][self.p['room']].get('repair_service',False)))
+
+    def repair_price(self,inst):
+        points=max(0,-inst.get('bonus',0))
+        rules=self.rules()
+        return rules['repair_base_cost']+points*rules['repair_cost_per_point'] if points else 0
+
+    def repair_item(self,target):
+        if not self.rules()['repair_enabled']:raise ValueError('Equipment repair is disabled in this world.')
+        if self.p['combat']:raise ValueError('Finish combat before repairing equipment.')
+        if not self.repair_available():raise ValueError('Visit a shop offering equipment repairs. Look for a repair service in the room.')
+        carried=list(dict.fromkeys(self.p['inventory']+list(self.p['equipment'].values())))
+        if not target:
+            damaged=[i for i in carried if self.item(i)['kind'] in ('weapon','armor') and self.state['instances'].get(i,{}).get('bonus',0)<0]
+            self.log('Equipment repairs:\n'+('\n'.join(f'{self.item(i)["name"]}: {self.repair_price(self.state["instances"][i])} gold. REPAIR {i}' for i in damaged) if damaged else 'Your carried and equipped gear needs no repairs.'))
+            return
+        aliases={**SLOT_ALIASES,**{slot:slot for slot in self.p['equipment']}}
+        if target in aliases:
+            iid=self.p['equipment'].get(aliases[target])
+            if not iid:raise ValueError('That equipment slot is empty.')
+        else:iid=self.match(target,carried)
+        spec=self.item(iid);inst=self.state['instances'].get(iid,{})
+        if spec['kind'] not in ('weapon','armor'):raise ValueError('Only weapons and armor can be repaired.')
+        if inst.get('bonus',0)>=0:raise ValueError('That item is undamaged. No gold was spent.')
+        cost=self.repair_price(inst)
+        if self.p['gold']<cost:raise ValueError(f'Repairing {spec["name"]} costs {cost} gold. You do not have enough gold.')
+        self.p['gold']-=cost
+        inst['bonus']=0
+        self.log(f'Repaired {self.item(iid)["name"]} for {cost} gold. Its damage penalty is removed; magic experience and active enchantments are preserved.','reward')
+
+    def extra_command(self,verb,target):
+        if verb=='repair':self.repair_item(target);return True
+        return super().extra_command(verb,target)
+
+    def extra_snapshot(self,result):
+        result=super().extra_snapshot(result)
+        if self.p:result['room']['repair_service']=self.repair_available()
+        return result
+
     def skill_command(self, verb, target):
         if verb in ('cast', 'skill'):
             matches = [(alias, sid) for sid,s in self.w['skills'].items() if s.get('effect') == 'enchant'
@@ -60,7 +103,8 @@ class Enchanting:
     def modified_item(self, inst):
         item = copy.deepcopy(self.w['items'][inst['item']])
         stat = 'damage' if item['kind'] == 'weapon' else 'armor'
-        base = max(0, item.get(stat, 0) + inst.get('bonus', 0))
+        progress = self.item_magic_progress(inst)
+        base = max(0, (progress['power'] if progress else item.get(stat, 0)) + inst.get('bonus', 0))
         sharpen = inst.get('sharpen_bonus', 0) if inst.get('sharpen_until', 0) > self.clock() else 0
         effect = inst.get('enchantment', {})
         active = effect.get('until', 0) > self.clock()
@@ -75,12 +119,18 @@ class Enchanting:
         item.update(instance=True, enchantment_bonus=magic, enchanted=active,
                     enchantment_remaining=max(0, effect.get('until', 0)-self.clock()),
                     enchantment_description=glow, sharpen_bonus=sharpen)
+        item.update(damage_penalty=max(0,-inst.get('bonus',0)),repair_cost=self.repair_price(inst))
         item['name'] += f' [{inst["number"]}]' + (' (enchanted)' if active else '')
         if inst.get('bonus', 0) < 0:
             item['name'] += ' (damaged)'
         if sharpen:
             item['name'] += ' (sharpened)'
         item['description'] += '\n' + self.gear_stats(item)
+        if item['damage_penalty']:
+            item['description'] += f'\nDamage penalty: -{item["damage_penalty"]}. Repair price: {item["repair_cost"]} gold at a repair service.'
+        if progress:
+            item['magic_progress'] = progress
+            item['description'] += '\nMagic ' + progress_text(progress)
         if glow:
             item['description'] += '\n' + glow + f' The enchantment lasts another {math.ceil(item["enchantment_remaining"])} seconds.'
         return item
@@ -102,8 +152,7 @@ class Enchanting:
         slots = {slot:iid for slot,iid in eq.items()
                  if self.item(iid)['kind'] == 'armor' or
                  (slot in ('weapon', 'left_hand') and self.item(iid)['kind'] == 'weapon')}
-        aliases = {'left':'left_hand', 'left hand':'left_hand', 'right':'weapon', 'right hand':'weapon',
-                   'body':'armor', 'armor':'armor'}
+        aliases = {**SLOT_ALIASES, **{slot:slot for slot in eq}}
         if target in aliases:
             slot = aliases[target]
             if slot in slots:

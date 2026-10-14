@@ -1,0 +1,240 @@
+RELIC FRONTIER v0.9.0 - MECHANICS AND CHARACTER DEVELOPMENT
+Mechanics update, October 14, 2026
+
+START AND PRESERVE
+The connected development folder has been updated directly. Start_Game.cmd opens
+it on port 8765 and continues your existing character. Stop any older launcher
+first, and refresh the browser with Ctrl+F5 after launching the new version.
+
+Try_Relic_Frontier_Update.cmd in this chat's outputs folder starts a fresh,
+separate preview on port 8877. Each launch copies the current world into its own
+preview-sessions folder and uses a separate character database. Owner changes in
+the preview affect only that copied world. Preview sessions are retained.
+Your original save and content history have not been modified by testing.
+A complete pre-update backup is also in the chat's outputs folder.
+
+CHARACTER LEVELS AND ABILITY CHOICES
+Characters can reach level 100. The first eight XP thresholds are preserved;
+level 10 requires 15,000 total XP and level 100 requires 6,697,500.
+Each new character begins with ONE learned combat ability:
+  Warrior: Swordplay, passive training for automatic weapon attacks.
+  Mage: Fireball.
+  Rogue: Backstab, a stronger physical strike.
+ATTACK / KILL still starts automatic basic combat for all classes.
+
+Every character level after the first grants one learning point. Points can be
+saved. LEARN lists choices; LEARN KICK or the learning panel spends points to
+learn an eligible ability. LEARN on a known ability improves its chosen rank.
+Most abilities have five ranks and each later rank adds 10% power. Each later
+rank requires five more character levels beyond its previous requirement.
+Swordplay rank 1 is the normal weapon attack; later ranks strengthen it.
+Learning is blocked during combat. Rejected choices spend nothing.
+SKILLS lists learned abilities. Reaching an unlock level does not grant an
+ability automatically. Class and race restrictions still apply.
+
+Default learning milestones (ordinary abilities can be studied across classes):
+   1: Swordplay, Fireball, Backstab (only your class starter is free).
+   4: Sharpening.
+   5: Kick, Mend, Quick Strike.
+   8: Knockout.
+  10: Bash, Lightning, Hamstring; Enchanting for MAGES ONLY.
+  15: Charge, Frostbolt.
+  25: Power Strike, Cutthroat.
+  30: Arcane Lance.
+  50: Shattering Strike, Nerve Strike.
+  60: Meteor.
+  75: Executioner, Assassinate.
+Most early abilities cost 1 point per rank. Lightning, Frostbolt, Arcane Lance,
+Enchanting and level-25/50 techniques cost 2. Level-60/75 abilities cost 3.
+Sharpening and Enchanting have one chosen rank; enchanting grows through use.
+Spells currently target one enemy, including Meteor.
+
+CLASS BALANCE
+                 Warrior        Mage          Rogue
+Starting HP          65           55             60
+Base attack          6-9          2-4            3-6
+Starting mana        12           40             18
+Mana / char level     1            3              1
+Mana recovery / sec .35           1             .5
+Carry limit (lb)     70           40             55
+Carry / char level    3            2            2.5
+Rogues have 15% dodge and +15 percentage points to escape chance.
+Health also grows with character level using the existing editable HP setting.
+
+Class multipliers apply at every chosen rank and spell mastery level:
+  Warrior: martial 100%; arcane 35%, twice the mana, half the practice;
+    subtle/rogue abilities 75% power and practice.
+  Mage: arcane 100%; martial 30% power, half the practice;
+    subtle abilities 40% power, half the practice.
+  Rogue: subtle 100%; martial 75% power and practice;
+    arcane 50% power, 1.5 times mana, 65% practice.
+Penalties also reduce attached skill-effect application chances. Weapon effects
+retain their own chances. A warrior's spell remains weaker than the mage's at
+matching development, even at the default rank/mastery caps. A highly trained
+hybrid can outperform a completely inexperienced specialist.
+Enchanting remains restricted to mages; cross-class learning does not bypass it.
+
+LONG MASTERY AND MANA
+Chosen ranks are separate from slow spell and individual equipment mastery.
+Spells and magical equipment have 100 default mastery levels. Each has a separate
+XP record, including each individual copy of magical gear. Level 2 requires
+100 XP, level 20 requires 10,450 and level 100 requires 252,450. Every level
+improves power. The owner can edit every XP threshold and damage/healing value.
+Scrolls remain single-use and do not develop independent mastery.
+
+Valid use earns base practice even on a miss. An enemy at or above the character's
+level gives twice the base practice; three or more levels above gives three times.
+Released creatures give base practice only. Invalid targets, cooldown retries,
+full-health healing and insufficient mana give no practice. Out-of-combat healing
+and enchanting use base practice. Class practice penalties apply to spells.
+Magical weapons practice through attacks; all worn magical armor pieces and a
+held magical shield practice when a hit reaches their protection.
+
+Mana is paid on valid casts. Fireball starts at 6 MP, Lightning 9, Mend 7 and
+Enchanting 8; class penalties and editable per-mastery-level costs apply.
+Valid paid casts also slowly train mana capacity. Mana mastery has 100 levels
+with the same slow XP curve, adding 2 maximum MP per mastery level by default.
+Character-level growth and mastery growth both contribute to maximum mana.
+No mana recovers during combat by default. Outside combat, class recovery rates
+apply while the game runs. REST at the inn restores health and mana. Character
+level gains refill both; the finishing spell still pays its cost. Reloading
+preserves mana and grants no offline recovery or practice. MANA displays details.
+
+EQUIPMENT SLOTS AND WEIGHT
+Slots: helmet, chest, pants, bracers/arms, right hand and left hand/shield.
+EQUIP <armor> chooses its correct body slot. Old 'armor' slots remain chest armor.
+UNEQUIP HELMET / CHEST / PANTS / ARMS / LEFT / RIGHT returns gear to the bag.
+One-handed weapons can be used with a shield from level 1, including warriors.
+Two-handed weapons use the right-hand slot and reserve the left hand; remove
+the shield or other offhand item first. Two shields cannot be equipped together.
+Dual wielding two one-handed weapons retains its class/level restrictions,
+35% offhand damage contribution and 10 percentage-point hit penalty.
+
+All worn armor and a held shield add to defense; each incoming hit still deals
+at least 1 damage if it connects. Holding ordinary body armor for enchanting
+does not grant protection. Each armor piece can keep its own enchantment and
+magic XP. The equipment panel shows total defense and empty/occupied slots.
+Anthony's shop stocks example helmet, pants, bracers, a shield and a greatsword.
+
+Every item has an editable weight in pounds. Inventory shows total weight and
+capacity; WEIGHT reports it in the console. Worn gear, chest contents, cages and
+all cage occupants count. Equipping or putting items into a carried container
+does not reduce total weight. Gold is not counted. Existing bag slot limits
+also remain in effect. Capacity grows with character level, separately by class.
+Buying, picking up, capturing, harvesting and cooking cannot increase carried
+weight beyond capacity. Rejections preserve gold, ingredients and ground items.
+Loot too heavy to carry remains on the ground. Existing over-limit saves keep
+all possessions and remain playable; drop, sell or store weight before acquiring
+more. Heavy creatures may require dropping other gear or gaining levels to carry.
+
+COMBAT AND FIXES
+Manual combat skills share 2 seconds of recovery in addition to their own
+cooldowns. Automatic attacks continue. Potions share a 10-second recovery;
+full-health use does not consume a potion. Both timings are editable.
+The standard 2-second alternating pulse gives each side one attack every 4 seconds.
+All engaged enemies can act on enemy pulses. Named spell targets now select the
+requested enemy, and scouting includes fixed residents before the first visit.
+Skill validation rejects unlocks beyond the world's configured character cap.
+
+ENEMY HEALING
+Wounded enemies recover 2% of maximum HP (rounded up) every 5 seconds after
+20 seconds out of combat. Healing pauses for every engaged or unconscious enemy,
+never revives defeated enemies and never grants offline healing. A delayed game
+clock tick restores only one installment. Fixed, regional and released creatures
+all use this system. Combat & progression controls the defaults; Creatures can
+use their own delay, interval and percentage. Set 0% to disable a creature type.
+
+REGIONS, WANDERING AND WEATHER
+Owner > Regions & weather contains each region's membership, enemy spawning
+squares, weighted enemy bank, population cap, per-square cap, spawn delay/chance,
+wandering toggle/interval, weather and fog visibility penalty.
+
+Default regional populations:
+  Town: no random regional enemies; the vampire remains a fixed special encounter.
+  Coppergrass Road: up to 2 beetles; replacements every 60 seconds; moves every 30.
+  Relic Caverns: up to 2 goblins in the mouth/tunnel; replacements every 90 seconds;
+    moves every 45. The sentinel remains fixed in the vault.
+  Coppergrass Prairie: up to 18 enemies from hare, wolf, boar, raider, lion, deer,
+    turkey and a rare cave troll; replacements every 60 seconds; moves every 30.
+All spawning regions allow up to 3 creatures in a square. Bank weights control
+relative frequency, not guaranteed counts. New worlds seed the populations once.
+An existing save adopts living room creatures with their identity, wounds and
+unconscious state intact, then fills remaining capacity gradually.
+
+Enemies move only through adjacent exits within their region's spawning squares.
+They cannot enter safe squares or wander while engaged or unconscious. Unconscious
+creatures still occupy population slots. Defeat or capture frees capacity after
+the replacement delay. Looking/reloading does not produce extra spawn attempts.
+Changing the bank affects new creatures; current creatures are preserved. Limits
+cannot be lowered below the current population, nor occupied squares removed.
+
+Choose all squares under region membership for weather, and only eligible unsafe
+squares under enemy spawning. Those squares use the regional bank instead of their
+old room spawn rules. The old authored rules remain available if regional management
+is removed after its creatures are defeated/captured. Other fixed encounters remain.
+Newly added rooms must be selected in the regional membership and spawning lists.
+
+Weather is an owner-selected description: clear, mist, fog, rain, storm or snow.
+The separate 0-100 visibility penalty controls scouting difficulty. The stronger
+of regional fog and room fog applies along the sight path. All defaults are clear.
+Weather is displayed on room entry and in the room panel. It does not damage players.
+
+MULTIPLE COMBATANTS AND FUTURE MULTIPLAYER
+Several enemies can occupy a square. Hostile enemies join the encounter; neutral
+ones join when provoked. Each engaged creature can attack, and defeating or knocking
+out your target does not end the fight while another opponent remains. Use TARGET
+with a description or the target button to switch opponents. Duplicate creatures
+receive distinct descriptions and IDs. The room panel shows level and fighting state.
+
+The encounter module tracks lists of players and enemies, a target per participant,
+and independent attack deadlines. Tests exercise two players against two enemies,
+including retargeting when a participant dies or leaves. The local game still has
+one saved player. Network sessions, a shared room registry, party/reward rules and
+multi-user command resolution remain future multiplayer integration work.
+
+EQUIPMENT REPAIR
+Anthony's shop offers repairs. REPAIR lists damaged carried/equipped equipment and
+prices; REPAIR <item name or ID>, REPAIR RIGHT, REPAIR LEFT or REPAIR ARMOR repairs
+one item. A Repair button appears beside damaged gear when service is available.
+Default price is 5 gold per lost damage/protection point, with no additional fee.
+Repair removes physical damage penalties and preserves identity, magic XP, active
+enchantments and sharpening. It does not reset or extend buff duration. Repair is
+blocked during combat. Undamaged gear and rejected attempts cost nothing.
+Destroyed weapons cannot be repaired. Existing enchanting destruction risk remains.
+
+OWNER EDITOR LOCATIONS
+  Abilities & learning: points per level, rank bonus, rank level spacing, enablement.
+  Characters > Classes: starter, category power/mana/practice multipliers, HP,
+    attacks, mana, recovery, dodge, escape, carrying capacity and level growth.
+  Skills & spells: unlocks, eligibility, category, costs, ranks, cooldowns,
+    mana costs and all mastery rows for XP, power and spell-effect damage.
+  Items & equipment: item weight, armor slot, shield toggle, required hands,
+    normal damage/protection and individual magic mastery tables.
+  Creatures: challenge level, carrying weight, combat and reward properties.
+  Combat & progression: character XP thresholds, attack pulses, recovery and enemy healing.
+  Mana & mastery: reserve growth, recovery and challenge practice bonuses.
+  Regions & weather: enemy banks, population, movement and visibility.
+  Crafting & balance: weight limit enablement, repairs, enchanting, dual wielding.
+  World > Rooms: Equipment repairs available here and room-level rules.
+Save world changes applies the draft and keeps a prior-world backup. Changes to
+already-equipped item slots and deletion of learned abilities are rejected.
+
+OLD SAVE MIGRATION
+Existing announced or practiced eligible abilities are retained at rank 1 and
+past character levels grant their learning points. Existing character, spell,
+equipment and enchanting XP are retained. New characters use the one-starter rule.
+Old chest armor remains equipped; other body slots start empty. Regional enemies
+are adopted without discarding existing wounds, identities or unconscious state.
+The original personal save was tested through a disposable copy only.
+
+VERIFICATION AND LIMITS
+225 Python tests, both JavaScript helper suites and TypeScript/Vite production
+build checks cover the local update. Controlled fights used 100 seeds per class
+for five sample encounters, with legitimate learning choices, fresh spell mastery,
+standard gear and no potions. All classes won the sampled early encounters;
+a level-10 vampire remained dangerous at character level 4. This is a starting
+balance pass, not exhaustive playtesting of every build through level 100.
+Local HTTP checks cover the game, owner editor, built assets and new features.
+Browser visual verification could not complete because the available browser
+could not connect to the preview. Use the separate launcher for visual review.
+Review branch: update/mechanics-v0.9.0. Merging into main is a separate step.

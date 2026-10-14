@@ -40,6 +40,7 @@ function CharacterSummary({ data }: { data: Snapshot }) {
       </p>
       <div className="mt-3 grid w-full max-w-72 gap-1 text-left text-sm">
         <TextMeter label="HP" value={p.hp} max={p.max_hp} text={`${p.hp}/${p.max_hp}`} tone={p.hp <= p.max_hp / 4 ? 'text-destructive' : 'text-primary'} />
+        {!!p.max_mana && <TextMeter label="MP" value={p.mana || 0} max={p.max_mana} text={`${Math.floor(p.mana || 0)}/${p.max_mana}`} tone="text-story" />}
         <TextMeter label="XP" value={xpInto} max={xpSpan} text={p.next_xp ? `${p.xp}/${p.next_xp}` : `${p.xp} max`} tone="text-gold" />
         <div className="flex gap-2">
           <span className="w-6 text-muted-foreground">GP</span>
@@ -71,7 +72,8 @@ function Here({ data, send }: { data: Snapshot; send: Send }) {
       <Line key={`enemy-${e.id}`}>
         <span className="flex-[1_1_12rem]">
           <span className={e.target ? 'text-destructive' : ''}>{e.target ? '▸ ' : '· '}{e.name}</span>
-          <span className="text-muted-foreground"> {e.hp}/{e.max_hp} HP</span>
+          <span className="text-muted-foreground"> · Level {e.level || 1} · {e.hp}/{e.max_hp} HP</span>
+          <span className="text-muted-foreground"> · {e.engaged ? 'fighting' : e.aggressive ? 'hostile' : 'neutral'}</span>
           {(e.effects ?? []).map((effect, index) => (
             <span key={index} className="text-gold"> [{effectName(effect.id)} {effect.remaining}]</span>
           ))}
@@ -129,6 +131,10 @@ function Here({ data, send }: { data: Snapshot; send: Send }) {
     )
   }
 
+  if (room.repair_service) {
+    rows.push(<Line key="repairs"><span className="flex-1 text-muted-foreground">Equipment repairs are available here.</span><ActionButton send={send} command="repair" disabled={!!data.player?.combat}>Repair prices</ActionButton></Line>)
+  }
+
   return (
     <>
       {rows.length > 0 && (
@@ -164,7 +170,7 @@ export function HeaderPanel({ data, send }: { data: Snapshot; send: Send }) {
   const { room } = data
   const area = [room.code, room.region].filter(Boolean).join(' · ') || (room.safe ? 'Within the town walls' : 'Beyond the walls')
   return (
-    <TerminalBox title="Relic Frontier v0.7.0">
+    <TerminalBox title="Relic Frontier v0.9.0">
       <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <CharacterSummary data={data} />
         <div className="min-w-0 border-t border-primary pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-4">
@@ -173,6 +179,7 @@ export function HeaderPanel({ data, send }: { data: Snapshot; send: Send }) {
             <span className="text-sm text-muted-foreground">{area}</span>
           </div>
           <p className="mt-1 leading-relaxed text-story">{room.description}</p>
+          <p className="mt-2 text-sm text-muted-foreground">Weather: {room.weather || 'clear'}{room.fog ? ` · visibility penalty ${room.fog}%` : ''}</p>
           <p className="mt-2 text-sm text-muted-foreground">exits: {room.exits.join(', ') || 'none'}</p>
           <Here data={data} send={send} />
         </div>

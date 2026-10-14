@@ -33,7 +33,7 @@ export function Welcome({ choices, onCreate }: Props) {
 
   return (
     <div className="mx-auto grid max-w-4xl gap-5 py-6">
-      <TerminalBox title="Relic Frontier v0.7.0">
+      <TerminalBox title="Relic Frontier v0.9.0">
         <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="flex flex-col items-center justify-center text-center">
             <p className="font-bold">Welcome, traveler!</p>
@@ -63,10 +63,11 @@ export function Welcome({ choices, onCreate }: Props) {
                   </NativeSelect>
                 </Field>
               </div>
+              {classes.find(c => c.id === cls)?.description && <p className="text-sm text-muted-foreground">{classes.find(c => c.id === cls)?.description}</p>}
               <Field>
                 <FieldLabel htmlFor="name">Character name</FieldLabel>
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={32} placeholder="Name your warrior" autoComplete="off" required className="flex-1" />
+                  <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={32} placeholder="Name your adventurer" autoComplete="off" required className="flex-1" />
                   <Button type="submit">Enter the square</Button>
                 </div>
               </Field>

@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 import copy
 import tempfile
 import unittest
@@ -10,7 +11,7 @@ class VisibilityTests(unittest.TestCase):
  def setUp(self):
   self.temp=tempfile.TemporaryDirectory();self.path=Path(self.temp.name)/'world.json'
   self.path.write_bytes((ROOT/'content/world.json').read_bytes())
-  self.g=Game(self.path,Path(self.temp.name)/'test.sqlite3');self.g.create('Scout'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
+  disable_regions(self.path);self.g=Game(self.path,Path(self.temp.name)/'test.sqlite3');self.g.create('Scout'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
   self.target=self.g.w['rooms']['gate'];self.target['obscured_from_outside']=True
   self.target['obscured_message']='Heavy fog blocks the way ahead.'
  def tearDown(self):self.g.db.close();self.temp.cleanup()

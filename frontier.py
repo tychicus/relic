@@ -91,6 +91,7 @@ class Frontier(Adventure):
             self.state['drop_timers'].setdefault(rid,[]).append({'item':iid,'expires':self.clock()+600})
 
     def get_item(self,iid):
+        self.require_carry(iid)
         rid=self.p['room'];self.state['ground'][rid].remove(iid);self.p['inventory'].append(iid)
         timers=self.state['drop_timers'].get(rid,[])
         for n,row in enumerate(timers):
@@ -163,6 +164,7 @@ class Frontier(Adventure):
             chest_id=self.instance_match(chest_name,self.available_chests());contents=self.state['instances'][chest_id]['contents']
             iid=self.instance_match(item_name,contents)
             if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full. The item stays in the chest.')
+            if chest_id not in self.p['inventory']:self.require_carry(iid)
             contents.remove(iid);self.p['inventory'].append(iid);self.log('Retrieved: '+self.item(iid)['name']+'.');return True
         if verb=='put' and ' in ' in target:
             item_name,destination=target.rsplit(' in ',1)

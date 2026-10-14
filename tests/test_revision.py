@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 import copy
 import json
 import random
@@ -12,9 +13,12 @@ ROOT=Path(__file__).resolve().parents[1]
 class RevisionTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
-        self.path=self.root/'world.json';self.path.write_bytes((ROOT/'content/world.json').read_bytes())
+        self.path=self.root/'world.json'
+        world=json.loads((ROOT/'content/world.json').read_bytes())
+        world['skills']['enchanting'].update(unlock_level=3,allowed_classes=None)
+        self.path.write_text(json.dumps(world),encoding='utf-8')
         self.now=1000.;self.db=self.root/'save.db'
-        self.g=Game(self.path,self.db,random.Random(5),lambda:self.now);self.g.create('Tester')
+        disable_regions(self.path);self.g=Game(self.path,self.db,random.Random(5),lambda:self.now);self.g.create('Tester')
         self.g.p['inventory'].append('lantern');self.g.w['settings']['hit_chance']=1
     def tearDown(self):self.g.db.close();self.temp.cleanup()
     def advance(self,seconds=2):self.now+=seconds;self.g.tick()

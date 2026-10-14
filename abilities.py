@@ -11,6 +11,7 @@ def validate_abilities(w):
         require(effect in ('damage','heal','knockout','enchant','sharpen'),'Choose a supported skill effect.')
         level=skill.get('unlock_level',1)
         require(type(level) is int and 1<=level<=100,'Skill unlock level must be a whole number from 1 to 100.')
+        require(level<=len(w['settings']['level_xp']),f'{skill["name"]} unlocks at level {level}, but character progression ends at level {len(w["settings"]["level_xp"])}. Add XP thresholds or lower the unlock level.')
         for key,group in [('allowed_classes','classes'),('allowed_races','races')]:
             if key not in skill or skill[key] is None:continue
             values=skill[key]
@@ -75,8 +76,19 @@ class Abilities(Frontier):
         self.p['cooldowns'][sid]=self.clock()+skill['cooldown']
         if effect=='damage':self.strike(skill.get('multiplier',1),attack_name=skill['name'])
         else:
-            amount=min(skill.get('heal',20),self.max_hp()-self.p['hp']);self.p['hp']+=amount
+            amount=min(self.skill_power(sid,skill.get('heal',20)),self.max_hp()-self.p['hp']);self.p['hp']+=amount
             self.log(f'{skill["name"]}: you recover {amount} HP.','reward')
+
+    def parse_skill_command(self,text):
+        # Full skill names take precedence; a remaining suffix is the target.
+        text=text.casefold().strip()
+        exact=[sid for sid,s in self.w['skills'].items() if text in (sid.casefold(),s['name'].casefold())]
+        if exact:return self.match_skill(text),''
+        aliases=[alias for sid,s in self.w['skills'].items() for alias in (sid.casefold(),s['name'].casefold()) if text.startswith(alias+' ')]
+        if aliases:
+            alias=max(aliases,key=len)
+            return self.match_skill(alias),text[len(alias)+1:]
+        return self.match_skill(text),''
 
     def skill_command(self,verb,target):
         if verb in ('skills','abilities'):
@@ -84,10 +96,11 @@ class Abilities(Frontier):
             for sid,k in sorted(self.w['skills'].items(),key=lambda x:x[1]['name'].casefold()):
                 if not self.skill_eligible(sid):continue
                 level=k.get('unlock_level',1);status='available' if self.p['level']>=level else 'locked'
-                rows.append(f'{k["name"]} — level {level}, {status}; cooldown {k["cooldown"]:g}s. CAST {sid}\n'+k.get('description',''))
+                rows.append(f'{k["name"]} — level {level}, {status}; cooldown {k["cooldown"]:g}s; mana {self.mana_cost(sid)}. CAST {sid}\n'+k.get('description',''))
             self.log('Skills:\n'+('\n'.join(rows) or 'No skills are available for your race and class.'));return True
         if verb in ('cast','skill'):
-            self.activate_skill(self.match_skill(target));return True
+            sid,who=self.parse_skill_command(target)
+            self.activate_skill(sid,who);return True
         if verb in ('bash','knockout'):
             self.activate_skill(verb,target);return True
         return False

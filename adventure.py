@@ -206,7 +206,7 @@ class Adventure:
         remaining=self.p['cooldowns'].get(skill_id,0)-self.clock()
         if remaining>0:raise ValueError(f'{skill["name"]} is ready in {math.ceil(remaining)} seconds.')
         self.p['cooldowns'][skill_id]=self.clock()+skill['cooldown']
-        chance=skill.get('chance',70)/100*(1-spec.get('capture_resistance',0)/100)
+        chance=self.skill_power(skill_id,skill.get('chance',70))/100*(1-spec.get('capture_resistance',0)/100)
         if self.rng.random()<chance:
             e['unconscious']=True;self.p['combat']=None
             self.log(f'{spec["name"]} collapses unconscious. Combat stops. GET it, then PUT it IN a cage.','reward')

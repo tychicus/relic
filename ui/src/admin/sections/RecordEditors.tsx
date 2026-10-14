@@ -1,7 +1,9 @@
 import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/ui/button'
 import { sortedEntries, useEditor } from '../context'
+import { MagicProgressionEditor } from '../MagicProgressionEditor'
 import {
-  AddButton, BoolField, CheckList, FormField, Group, LinesField, ListInput, Note, NumberField,
+  AddButton, BoolField, CheckList, Disclosure, FormField, Group, LinesField, Note, NumberField, NumberInput,
   RangeField, SelectField, TextField, type Option,
 } from '../fields'
 
@@ -83,6 +85,7 @@ export function ItemEditor({ item }: { item: Obj }) {
         options={itemKinds.map((v): Option => [v, v])}
         onChange={(v) => {
           item.kind = v
+          if (!['weapon', 'armor'].includes(v)) { item.magic = false; delete item.magic_levels }
           for (const k of itemStats) delete item[k]
           const key = ({ weapon: 'damage', armor: 'armor', consumable: 'heal', cage: 'capacity', chest: 'capacity' } as Record<string, string>)[v]
           if (key) item[key] = v === 'chest' ? 30 : v === 'cage' ? 5 : 1
@@ -91,9 +94,10 @@ export function ItemEditor({ item }: { item: Obj }) {
       <NumberField obj={item} k="price" label="Shop price (gold)" />
       <TextField obj={item} k="description" label="Description" multiline />
       {itemStats.filter((k) => k in item).map((k) => (
-        <NumberField key={k} obj={item} k={k} label={k[0].toUpperCase() + k.slice(1)} />
+        <NumberField key={k} obj={item} k={k} label={k[0].toUpperCase() + k.slice(1) + (item.magic && ['damage', 'armor'].includes(k) ? ' when magic progression is off' : '')} />
       ))}
       <BoolField obj={item} k="protected" label="Protected from death item loss" />
+      {['weapon', 'armor'].includes(item.kind) && <MagicProgressionEditor spec={item} equipment />}
       <SelectField
         label="Rarity"
         value={item.rarity || ''}
@@ -105,7 +109,7 @@ export function ItemEditor({ item }: { item: Obj }) {
 }
 
 const settingNames: Record<string, string> = {
-  attack_interval: 'Seconds between attacks',
+  attack_interval: 'Seconds between alternating combat pulses (each side attacks every two pulses)',
   hit_chance: 'Chance to hit',
   flee_chance: 'Chance to flee',
   gold_loss: 'Gold fraction lost on death',
@@ -116,12 +120,41 @@ const settingNames: Record<string, string> = {
 }
 
 export function SettingsEditor({ settings }: { settings: Obj }) {
+  const { world, touch } = useEditor()
+  const xp: number[] = settings.level_xp
+  const unreachable = sortedEntries(world.skills).filter(([, s]) => (s.unlock_level ?? 1) > xp.length)
   return (
     <>
       {Object.entries(settingNames).map(([k, label]) => (
         <NumberField key={k} obj={settings} k={k} label={label} />
       ))}
-      <ListInput obj={settings} k="level_xp" label="Total XP thresholds for each level (start with 0)" />
+      <NumberField obj={world.revision} k="action_recovery" label="Recovery between manual combat skills (seconds; 0 disables)" fallback={2} min={0} max={60} />
+      <NumberField obj={world.revision} k="potion_recovery" label="Recovery between healing potions (seconds; 0 disables)" fallback={10} min={0} max={3600} />
+      <Note>Skills keep their own cooldowns too. Automatic attacks continue during manual skill recovery. New timing settings apply to the next use; current timers finish normally.</Note>
+      <BoolField obj={world.revision} k="enemy_heal_enabled" label="Wounded enemies heal outside combat" />
+      <NumberField obj={world.revision} k="enemy_heal_delay" label="Enemy healing delay after combat (seconds)" fallback={20} min={0} max={86400} />
+      <NumberField obj={world.revision} k="enemy_heal_interval" label="Seconds between enemy healing installments" fallback={5} min={1} max={3600} />
+      <NumberField obj={world.revision} k="enemy_heal_percent" label="Enemy maximum HP recovered per installment (%)" fallback={2} min={0} max={100} />
+      <Note>Healing pauses for all engaged or unconscious creatures, never revives defeated enemies and grants no offline recovery. Creatures can override these global settings in their own configuration.</Note>
+      <Disclosure title={`Character progression · ${xp.length} levels`} defaultOpen>
+        <p className="mb-2 text-sm text-muted-foreground">Total lifetime XP required for each character level. Thresholds must increase. Supports up to 100 levels.</p>
+        {!!unreachable.length && <p role="alert" className="mb-2 text-sm text-destructive">Unreachable skills: {unreachable.map(([, s]) => `${s.name} (level ${s.unlock_level})`).join(', ')}. Add levels or lower their unlock requirements before saving.</p>}
+        <div className="max-h-96 overflow-y-auto rounded border p-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {xp.map((value, index) => <FormField key={index} label={`Level ${index + 1} total XP`}>
+              <NumberInput aria-label={`Character level ${index + 1} total XP`} value={value} min={0} max={10000000} step={1} disabled={index === 0} onValue={(v) => { xp[index] = v ?? 0; touch() }} />
+            </FormField>)}
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button type="button" variant="outline" disabled={xp.length >= 100 || xp[xp.length - 1] >= 10000000} onClick={() => {
+            const last = xp[xp.length - 1]
+            xp.push(Math.min(10000000, last + Math.max(30, last - (xp[xp.length - 2] ?? 0))))
+            touch()
+          }}>Add level</Button>
+          <Button type="button" variant="outline" disabled={xp.length <= 1} onClick={() => { xp.pop(); touch() }}>Remove last level</Button>
+        </div>
+      </Disclosure>
     </>
   )
 }
@@ -165,6 +198,7 @@ function Eligibility({ skill, k, label, group }: { skill: Obj; k: string; label:
 }
 
 export function SkillEditor({ skill, id }: { skill: Obj; id: string }) {
+  const { world } = useEditor()
   const effect = skill.effect || 'damage'
   return (
     <>
@@ -175,21 +209,24 @@ export function SkillEditor({ skill, id }: { skill: Obj; id: string }) {
         options={[['damage', 'Damage attack'], ['heal', 'Healing'], ['knockout', 'Knockout / capture'], ['enchant', 'Enchanting (trainable)'], ['sharpen', 'Sharpening']]}
         onChange={(v) => {
           skill.effect = v
+          if (v !== effect) { skill.magic = false; delete skill.magic_levels }
           if (v === 'heal') skill.heal = skill.heal || 20
           if (v === 'knockout') skill.chance = skill.chance ?? 70
         }}
       />
       <NumberField obj={skill} k="unlock_level" label="Unlock level" />
+      {(skill.unlock_level ?? 1) > world.settings.level_xp.length && <Note>This skill cannot unlock: character progression currently ends at level {world.settings.level_xp.length}. Extend the XP table in Combat &amp; progression or lower this requirement.</Note>}
       <NumberField obj={skill} k="cooldown" label="Cooldown (seconds)" />
-      {effect === 'heal' && <NumberField obj={skill} k="heal" label="HP restored" />}
-      {effect === 'knockout' && <NumberField obj={skill} k="chance" label="Base success chance (%)" />}
-      {!['heal', 'knockout', 'enchant', 'sharpen'].includes(effect) && <NumberField obj={skill} k="multiplier" label="Damage multiplier" />}
+      {!skill.magic && effect === 'heal' && <NumberField obj={skill} k="heal" label="HP restored" />}
+      {!skill.magic && effect === 'knockout' && <NumberField obj={skill} k="chance" label="Base success chance (%)" />}
+      {!skill.magic && effect === 'damage' && <NumberField obj={skill} k="multiplier" label="Damage multiplier" />}
+      {['damage', 'heal', 'knockout'].includes(effect) && <MagicProgressionEditor spec={skill} />}
       <Eligibility skill={skill} k="allowed_classes" label="Classes allowed to unlock this skill" group="classes" />
       <Eligibility skill={skill} k="allowed_races" label="Races allowed to unlock this skill" group="races" />
       <Note>
-        <strong className="text-foreground">Player command:</strong> CAST {skill.name} (or CAST {id}). Damage skills need a fight
-        unless May initiate combat is enabled. Enchanting and Sharpening use the right-hand weapon outside combat; their balance
-        controls are in Crafting &amp; balance. Healing also works outside combat.
+        <strong className="text-foreground">Player command:</strong> CAST {skill.name} [creature] (or CAST {id} [creature]). Damage skills need a fight
+        unless May initiate combat is enabled. Enchanting targets held weapons or worn/held armor; Sharpening uses the right-hand
+        weapon. Their balance controls are in Crafting &amp; balance. Healing also works outside combat.
       </Note>
     </>
   )

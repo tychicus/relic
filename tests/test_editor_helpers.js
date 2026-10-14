@@ -12,6 +12,10 @@ assert.equal(makeEntry(world,'weapon','New Blade').entry.damage,1);
 assert.equal(makeEntry(world,'armor','New Armor').entry.armor,1);
 assert.equal(makeEntry(world,'consumable','Healing').entry.heal,20);
 assert.equal(makeEntry(world,'enemy','Goblin').entry.dodge,0);
+const region=makeEntry(world,'region','Misty Forest');
+assert.equal(region.group,'regions');assert.equal(region.entry.weather,'clear');
+assert.equal(region.entry.max_population,0);assert.equal(region.entry.max_per_room,3);
+assert.deepEqual(region.entry.spawn_rooms,[]);assert.deepEqual(region.entry.pool,[]);
 const a=makeEntry(world,'room','Misty Forest');world.rooms[a.id]=a.entry;
 const b=makeEntry(world,'room','Misty Forest');assert.notEqual(a.id,b.id);assert.equal(world.rooms[a.id],a.entry);
 for(const name of ['123 Tower','Étoile','神殿','!!!','constructor','__proto__','A'.repeat(120)]) {

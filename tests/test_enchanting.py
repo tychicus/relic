@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 import copy
 import json
 import random
@@ -15,10 +16,13 @@ class EnchantingTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.path = Path(self.temp.name)/'world.json'
-        self.path.write_bytes((ROOT/'content/world.json').read_bytes())
+        world = json.loads((ROOT/'content/world.json').read_bytes())
+        # Crafting tests choose their own eligibility, independent of owner edits.
+        world['skills']['enchanting'].update(unlock_level=3, allowed_classes=None)
+        self.path.write_text(json.dumps(world), encoding='utf-8')
         self.db = Path(self.temp.name)/'save.sqlite3'
         self.now = 1000
-        self.g = Game(self.path, self.db, random.Random(2), lambda:self.now)
+        disable_regions(self.path);self.g = Game(self.path, self.db, random.Random(2), lambda:self.now)
         self.g.create('Tester')
         self.g.p.update(level=7, gold=10000)
         self.g.w['revision'].update(enchant_base=100, enchant_destroy=0)

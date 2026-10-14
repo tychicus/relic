@@ -15,7 +15,99 @@
       550,
       1100,
       2200,
-      4500
+      4500,
+      9000,
+      15000,
+      22500,
+      31500,
+      42000,
+      54000,
+      67500,
+      82500,
+      99000,
+      117000,
+      136500,
+      157500,
+      180000,
+      204000,
+      229500,
+      256500,
+      285000,
+      315000,
+      346500,
+      379500,
+      414000,
+      450000,
+      487500,
+      526500,
+      567000,
+      609000,
+      652500,
+      697500,
+      744000,
+      792000,
+      841500,
+      892500,
+      945000,
+      999000,
+      1054500,
+      1111500,
+      1170000,
+      1230000,
+      1291500,
+      1354500,
+      1419000,
+      1485000,
+      1552500,
+      1621500,
+      1692000,
+      1764000,
+      1837500,
+      1912500,
+      1989000,
+      2067000,
+      2146500,
+      2227500,
+      2310000,
+      2394000,
+      2479500,
+      2566500,
+      2655000,
+      2745000,
+      2836500,
+      2929500,
+      3024000,
+      3120000,
+      3217500,
+      3316500,
+      3417000,
+      3519000,
+      3622500,
+      3727500,
+      3834000,
+      3942000,
+      4051500,
+      4162500,
+      4275000,
+      4389000,
+      4504500,
+      4621500,
+      4740000,
+      4860000,
+      4981500,
+      5104500,
+      5229000,
+      5355000,
+      5482500,
+      5611500,
+      5742000,
+      5874000,
+      6007500,
+      6142500,
+      6279000,
+      6417000,
+      6556500,
+      6697500
     ],
     "hp_per_level": 12,
     "damage_per_level": 2
@@ -35,22 +127,137 @@
       "name": "Warrior",
       "hp": 65,
       "damage": [
-        4,
-        7
+        6,
+        9
       ],
       "skills": [
         "bash",
         "knockout"
-      ]
+      ],
+      "mana": 12,
+      "mana_per_level": 1,
+      "description": "Starts with Swordplay. Strong weapon techniques and durable health; can study magic at 35% power and twice the mana cost.",
+      "starting_ability": "swordplay",
+      "mana_recovery_scale": 0.35,
+      "affinities": [
+        {
+          "category": "martial",
+          "power": 1,
+          "mana": 1,
+          "practice": 1
+        },
+        {
+          "category": "arcane",
+          "power": 0.35,
+          "mana": 2,
+          "practice": 0.5
+        },
+        {
+          "category": "subtle",
+          "power": 0.75,
+          "mana": 1,
+          "practice": 0.75
+        },
+        {
+          "category": "craft",
+          "power": 1,
+          "mana": 1,
+          "practice": 1
+        }
+      ],
+      "carry_capacity": 70,
+      "carry_per_level": 3
     },
     "mage": {
       "name": "Mage",
-      "hp": 40,
+      "hp": 55,
       "damage": [
-        4,
-        8
+        2,
+        4
       ],
-      "skills": []
+      "skills": [],
+      "mana": 40,
+      "mana_per_level": 3,
+      "description": "Starts with Fireball. Best spell power, mana and recovery; warrior techniques have only 30% power. Only mages can learn enchanting.",
+      "starting_ability": "fireball",
+      "mana_recovery_scale": 1,
+      "affinities": [
+        {
+          "category": "martial",
+          "power": 0.3,
+          "mana": 1,
+          "practice": 0.5
+        },
+        {
+          "category": "arcane",
+          "power": 1,
+          "mana": 1,
+          "practice": 1
+        },
+        {
+          "category": "subtle",
+          "power": 0.4,
+          "mana": 1,
+          "practice": 0.5
+        },
+        {
+          "category": "craft",
+          "power": 1,
+          "mana": 1,
+          "practice": 1
+        }
+      ],
+      "carry_capacity": 40,
+      "carry_per_level": 2
+    },
+    "rogue": {
+      "name": "Rogue",
+      "hp": 60,
+      "damage": [
+        3,
+        6
+      ],
+      "skills": [
+        "backstab",
+        "quickstrike",
+        "hamstring",
+        "knockout"
+      ],
+      "mana": 18,
+      "mana_per_level": 1,
+      "dodge": 15,
+      "flee_bonus": 0.15,
+      "description": "Starts with Backstab. Agile specialist with dodge and escape bonuses; can study magic at 50% power and 1.5 times the mana cost.",
+      "starting_ability": "backstab",
+      "mana_recovery_scale": 0.5,
+      "affinities": [
+        {
+          "category": "martial",
+          "power": 0.75,
+          "mana": 1,
+          "practice": 0.75
+        },
+        {
+          "category": "arcane",
+          "power": 0.5,
+          "mana": 1.5,
+          "practice": 0.65
+        },
+        {
+          "category": "subtle",
+          "power": 1,
+          "mana": 1,
+          "practice": 1
+        },
+        {
+          "category": "craft",
+          "power": 1,
+          "mana": 1,
+          "practice": 1
+        }
+      ],
+      "carry_capacity": 55,
+      "carry_per_level": 2.5
     }
   },
   "skills": {
@@ -60,11 +267,12 @@
       "multiplier": 1.8,
       "description": "A heavy strike. Can be used between automatic attacks.",
       "effect": "damage",
-      "unlock_level": 1,
-      "allowed_classes": [
-        "warrior"
-      ],
-      "allowed_races": null
+      "unlock_level": 10,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "martial",
+      "learn_cost": 1,
+      "max_rank": 5
     },
     "knockout": {
       "name": "Knockout",
@@ -73,19 +281,20 @@
       "multiplier": 1,
       "chance": 70,
       "effect": "knockout",
-      "unlock_level": 1,
+      "unlock_level": 8,
       "allowed_classes": null,
-      "allowed_races": null
+      "allowed_races": null,
+      "category": "subtle",
+      "learn_cost": 1,
+      "max_rank": 5
     },
     "fireball": {
       "name": "Fireball",
       "effect": "damage",
-      "unlock_level": 2,
-      "cooldown": 12,
+      "unlock_level": 1,
+      "cooldown": 8,
       "multiplier": 1.6,
-      "allowed_classes": [
-        "mage"
-      ],
+      "allowed_classes": null,
       "allowed_races": null,
       "description": "A fire attack; 25% chance to scorch for three pulses. No mana cost.",
       "initiates": true,
@@ -95,17 +304,623 @@
           "chance": 25,
           "duration": 3
         }
-      ]
+      ],
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 16,
+          "effect_damage": 1,
+          "mana_cost": 6
+        },
+        {
+          "xp": 100,
+          "power": 18,
+          "effect_damage": 1,
+          "mana_cost": 6
+        },
+        {
+          "xp": 250,
+          "power": 20,
+          "effect_damage": 1,
+          "mana_cost": 6
+        },
+        {
+          "xp": 450,
+          "power": 22,
+          "effect_damage": 1,
+          "mana_cost": 6
+        },
+        {
+          "xp": 700,
+          "power": 24,
+          "effect_damage": 1,
+          "mana_cost": 6
+        },
+        {
+          "xp": 1000,
+          "power": 26,
+          "effect_damage": 2,
+          "mana_cost": 6
+        },
+        {
+          "xp": 1350,
+          "power": 28,
+          "effect_damage": 2,
+          "mana_cost": 6
+        },
+        {
+          "xp": 1750,
+          "power": 30,
+          "effect_damage": 2,
+          "mana_cost": 6
+        },
+        {
+          "xp": 2200,
+          "power": 32,
+          "effect_damage": 2,
+          "mana_cost": 6
+        },
+        {
+          "xp": 2700,
+          "power": 34,
+          "effect_damage": 2,
+          "mana_cost": 6
+        },
+        {
+          "xp": 3250,
+          "power": 36,
+          "effect_damage": 3,
+          "mana_cost": 7
+        },
+        {
+          "xp": 3850,
+          "power": 38,
+          "effect_damage": 3,
+          "mana_cost": 7
+        },
+        {
+          "xp": 4500,
+          "power": 40,
+          "effect_damage": 3,
+          "mana_cost": 7
+        },
+        {
+          "xp": 5200,
+          "power": 42,
+          "effect_damage": 3,
+          "mana_cost": 7
+        },
+        {
+          "xp": 5950,
+          "power": 44,
+          "effect_damage": 3,
+          "mana_cost": 7
+        },
+        {
+          "xp": 6750,
+          "power": 46,
+          "effect_damage": 4,
+          "mana_cost": 7
+        },
+        {
+          "xp": 7600,
+          "power": 48,
+          "effect_damage": 4,
+          "mana_cost": 7
+        },
+        {
+          "xp": 8500,
+          "power": 50,
+          "effect_damage": 4,
+          "mana_cost": 7
+        },
+        {
+          "xp": 9450,
+          "power": 52,
+          "effect_damage": 4,
+          "mana_cost": 7
+        },
+        {
+          "xp": 10450,
+          "power": 54,
+          "effect_damage": 4,
+          "mana_cost": 7
+        },
+        {
+          "xp": 11500,
+          "power": 56,
+          "effect_damage": 5,
+          "mana_cost": 8
+        },
+        {
+          "xp": 12600,
+          "power": 58,
+          "effect_damage": 5,
+          "mana_cost": 8
+        },
+        {
+          "xp": 13750,
+          "power": 60,
+          "effect_damage": 5,
+          "mana_cost": 8
+        },
+        {
+          "xp": 14950,
+          "power": 62,
+          "effect_damage": 5,
+          "mana_cost": 8
+        },
+        {
+          "xp": 16200,
+          "power": 64,
+          "effect_damage": 5,
+          "mana_cost": 8
+        },
+        {
+          "xp": 17500,
+          "power": 66,
+          "effect_damage": 6,
+          "mana_cost": 8
+        },
+        {
+          "xp": 18850,
+          "power": 68,
+          "effect_damage": 6,
+          "mana_cost": 8
+        },
+        {
+          "xp": 20250,
+          "power": 70,
+          "effect_damage": 6,
+          "mana_cost": 8
+        },
+        {
+          "xp": 21700,
+          "power": 72,
+          "effect_damage": 6,
+          "mana_cost": 8
+        },
+        {
+          "xp": 23200,
+          "power": 74,
+          "effect_damage": 6,
+          "mana_cost": 8
+        },
+        {
+          "xp": 24750,
+          "power": 76,
+          "effect_damage": 7,
+          "mana_cost": 9
+        },
+        {
+          "xp": 26350,
+          "power": 78,
+          "effect_damage": 7,
+          "mana_cost": 9
+        },
+        {
+          "xp": 28000,
+          "power": 80,
+          "effect_damage": 7,
+          "mana_cost": 9
+        },
+        {
+          "xp": 29700,
+          "power": 82,
+          "effect_damage": 7,
+          "mana_cost": 9
+        },
+        {
+          "xp": 31450,
+          "power": 84,
+          "effect_damage": 7,
+          "mana_cost": 9
+        },
+        {
+          "xp": 33250,
+          "power": 86,
+          "effect_damage": 8,
+          "mana_cost": 9
+        },
+        {
+          "xp": 35100,
+          "power": 88,
+          "effect_damage": 8,
+          "mana_cost": 9
+        },
+        {
+          "xp": 37000,
+          "power": 90,
+          "effect_damage": 8,
+          "mana_cost": 9
+        },
+        {
+          "xp": 38950,
+          "power": 92,
+          "effect_damage": 8,
+          "mana_cost": 9
+        },
+        {
+          "xp": 40950,
+          "power": 94,
+          "effect_damage": 8,
+          "mana_cost": 9
+        },
+        {
+          "xp": 43000,
+          "power": 96,
+          "effect_damage": 9,
+          "mana_cost": 10
+        },
+        {
+          "xp": 45100,
+          "power": 98,
+          "effect_damage": 9,
+          "mana_cost": 10
+        },
+        {
+          "xp": 47250,
+          "power": 100,
+          "effect_damage": 9,
+          "mana_cost": 10
+        },
+        {
+          "xp": 49450,
+          "power": 102,
+          "effect_damage": 9,
+          "mana_cost": 10
+        },
+        {
+          "xp": 51700,
+          "power": 104,
+          "effect_damage": 9,
+          "mana_cost": 10
+        },
+        {
+          "xp": 54000,
+          "power": 106,
+          "effect_damage": 10,
+          "mana_cost": 10
+        },
+        {
+          "xp": 56350,
+          "power": 108,
+          "effect_damage": 10,
+          "mana_cost": 10
+        },
+        {
+          "xp": 58750,
+          "power": 110,
+          "effect_damage": 10,
+          "mana_cost": 10
+        },
+        {
+          "xp": 61200,
+          "power": 112,
+          "effect_damage": 10,
+          "mana_cost": 10
+        },
+        {
+          "xp": 63700,
+          "power": 114,
+          "effect_damage": 10,
+          "mana_cost": 10
+        },
+        {
+          "xp": 66250,
+          "power": 116,
+          "effect_damage": 11,
+          "mana_cost": 11
+        },
+        {
+          "xp": 68850,
+          "power": 118,
+          "effect_damage": 11,
+          "mana_cost": 11
+        },
+        {
+          "xp": 71500,
+          "power": 120,
+          "effect_damage": 11,
+          "mana_cost": 11
+        },
+        {
+          "xp": 74200,
+          "power": 122,
+          "effect_damage": 11,
+          "mana_cost": 11
+        },
+        {
+          "xp": 76950,
+          "power": 124,
+          "effect_damage": 11,
+          "mana_cost": 11
+        },
+        {
+          "xp": 79750,
+          "power": 126,
+          "effect_damage": 12,
+          "mana_cost": 11
+        },
+        {
+          "xp": 82600,
+          "power": 128,
+          "effect_damage": 12,
+          "mana_cost": 11
+        },
+        {
+          "xp": 85500,
+          "power": 130,
+          "effect_damage": 12,
+          "mana_cost": 11
+        },
+        {
+          "xp": 88450,
+          "power": 132,
+          "effect_damage": 12,
+          "mana_cost": 11
+        },
+        {
+          "xp": 91450,
+          "power": 134,
+          "effect_damage": 12,
+          "mana_cost": 11
+        },
+        {
+          "xp": 94500,
+          "power": 136,
+          "effect_damage": 13,
+          "mana_cost": 12
+        },
+        {
+          "xp": 97600,
+          "power": 138,
+          "effect_damage": 13,
+          "mana_cost": 12
+        },
+        {
+          "xp": 100750,
+          "power": 140,
+          "effect_damage": 13,
+          "mana_cost": 12
+        },
+        {
+          "xp": 103950,
+          "power": 142,
+          "effect_damage": 13,
+          "mana_cost": 12
+        },
+        {
+          "xp": 107200,
+          "power": 144,
+          "effect_damage": 13,
+          "mana_cost": 12
+        },
+        {
+          "xp": 110500,
+          "power": 146,
+          "effect_damage": 14,
+          "mana_cost": 12
+        },
+        {
+          "xp": 113850,
+          "power": 148,
+          "effect_damage": 14,
+          "mana_cost": 12
+        },
+        {
+          "xp": 117250,
+          "power": 150,
+          "effect_damage": 14,
+          "mana_cost": 12
+        },
+        {
+          "xp": 120700,
+          "power": 152,
+          "effect_damage": 14,
+          "mana_cost": 12
+        },
+        {
+          "xp": 124200,
+          "power": 154,
+          "effect_damage": 14,
+          "mana_cost": 12
+        },
+        {
+          "xp": 127750,
+          "power": 156,
+          "effect_damage": 15,
+          "mana_cost": 13
+        },
+        {
+          "xp": 131350,
+          "power": 158,
+          "effect_damage": 15,
+          "mana_cost": 13
+        },
+        {
+          "xp": 135000,
+          "power": 160,
+          "effect_damage": 15,
+          "mana_cost": 13
+        },
+        {
+          "xp": 138700,
+          "power": 162,
+          "effect_damage": 15,
+          "mana_cost": 13
+        },
+        {
+          "xp": 142450,
+          "power": 164,
+          "effect_damage": 15,
+          "mana_cost": 13
+        },
+        {
+          "xp": 146250,
+          "power": 166,
+          "effect_damage": 16,
+          "mana_cost": 13
+        },
+        {
+          "xp": 150100,
+          "power": 168,
+          "effect_damage": 16,
+          "mana_cost": 13
+        },
+        {
+          "xp": 154000,
+          "power": 170,
+          "effect_damage": 16,
+          "mana_cost": 13
+        },
+        {
+          "xp": 157950,
+          "power": 172,
+          "effect_damage": 16,
+          "mana_cost": 13
+        },
+        {
+          "xp": 161950,
+          "power": 174,
+          "effect_damage": 16,
+          "mana_cost": 13
+        },
+        {
+          "xp": 166000,
+          "power": 176,
+          "effect_damage": 17,
+          "mana_cost": 14
+        },
+        {
+          "xp": 170100,
+          "power": 178,
+          "effect_damage": 17,
+          "mana_cost": 14
+        },
+        {
+          "xp": 174250,
+          "power": 180,
+          "effect_damage": 17,
+          "mana_cost": 14
+        },
+        {
+          "xp": 178450,
+          "power": 182,
+          "effect_damage": 17,
+          "mana_cost": 14
+        },
+        {
+          "xp": 182700,
+          "power": 184,
+          "effect_damage": 17,
+          "mana_cost": 14
+        },
+        {
+          "xp": 187000,
+          "power": 186,
+          "effect_damage": 18,
+          "mana_cost": 14
+        },
+        {
+          "xp": 191350,
+          "power": 188,
+          "effect_damage": 18,
+          "mana_cost": 14
+        },
+        {
+          "xp": 195750,
+          "power": 190,
+          "effect_damage": 18,
+          "mana_cost": 14
+        },
+        {
+          "xp": 200200,
+          "power": 192,
+          "effect_damage": 18,
+          "mana_cost": 14
+        },
+        {
+          "xp": 204700,
+          "power": 194,
+          "effect_damage": 18,
+          "mana_cost": 14
+        },
+        {
+          "xp": 209250,
+          "power": 196,
+          "effect_damage": 19,
+          "mana_cost": 15
+        },
+        {
+          "xp": 213850,
+          "power": 198,
+          "effect_damage": 19,
+          "mana_cost": 15
+        },
+        {
+          "xp": 218500,
+          "power": 200,
+          "effect_damage": 19,
+          "mana_cost": 15
+        },
+        {
+          "xp": 223200,
+          "power": 202,
+          "effect_damage": 19,
+          "mana_cost": 15
+        },
+        {
+          "xp": 227950,
+          "power": 204,
+          "effect_damage": 19,
+          "mana_cost": 15
+        },
+        {
+          "xp": 232750,
+          "power": 206,
+          "effect_damage": 20,
+          "mana_cost": 15
+        },
+        {
+          "xp": 237600,
+          "power": 208,
+          "effect_damage": 20,
+          "mana_cost": 15
+        },
+        {
+          "xp": 242500,
+          "power": 210,
+          "effect_damage": 20,
+          "mana_cost": 15
+        },
+        {
+          "xp": 247450,
+          "power": 212,
+          "effect_damage": 20,
+          "mana_cost": 15
+        },
+        {
+          "xp": 252450,
+          "power": 214,
+          "effect_damage": 20,
+          "mana_cost": 15
+        }
+      ],
+      "mana_cost": 6,
+      "category": "arcane",
+      "learn_cost": 1,
+      "max_rank": 5
     },
     "lightning": {
       "name": "Lightning",
       "effect": "damage",
-      "unlock_level": 4,
-      "cooldown": 16,
+      "unlock_level": 10,
+      "cooldown": 12,
       "multiplier": 2,
-      "allowed_classes": [
-        "mage"
-      ],
+      "allowed_classes": null,
       "allowed_races": null,
       "description": "A forceful lightning attack; 15% chance to slow the target.",
       "initiates": true,
@@ -115,40 +930,2833 @@
           "chance": 15,
           "duration": 4
         }
-      ]
+      ],
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 26,
+          "mana_cost": 9
+        },
+        {
+          "xp": 100,
+          "power": 29,
+          "mana_cost": 9
+        },
+        {
+          "xp": 250,
+          "power": 32,
+          "mana_cost": 9
+        },
+        {
+          "xp": 450,
+          "power": 35,
+          "mana_cost": 9
+        },
+        {
+          "xp": 700,
+          "power": 38,
+          "mana_cost": 9
+        },
+        {
+          "xp": 1000,
+          "power": 41,
+          "mana_cost": 9
+        },
+        {
+          "xp": 1350,
+          "power": 44,
+          "mana_cost": 9
+        },
+        {
+          "xp": 1750,
+          "power": 47,
+          "mana_cost": 9
+        },
+        {
+          "xp": 2200,
+          "power": 50,
+          "mana_cost": 9
+        },
+        {
+          "xp": 2700,
+          "power": 53,
+          "mana_cost": 9
+        },
+        {
+          "xp": 3250,
+          "power": 56,
+          "mana_cost": 10
+        },
+        {
+          "xp": 3850,
+          "power": 59,
+          "mana_cost": 10
+        },
+        {
+          "xp": 4500,
+          "power": 62,
+          "mana_cost": 10
+        },
+        {
+          "xp": 5200,
+          "power": 65,
+          "mana_cost": 10
+        },
+        {
+          "xp": 5950,
+          "power": 68,
+          "mana_cost": 10
+        },
+        {
+          "xp": 6750,
+          "power": 71,
+          "mana_cost": 10
+        },
+        {
+          "xp": 7600,
+          "power": 74,
+          "mana_cost": 10
+        },
+        {
+          "xp": 8500,
+          "power": 77,
+          "mana_cost": 10
+        },
+        {
+          "xp": 9450,
+          "power": 80,
+          "mana_cost": 10
+        },
+        {
+          "xp": 10450,
+          "power": 83,
+          "mana_cost": 10
+        },
+        {
+          "xp": 11500,
+          "power": 86,
+          "mana_cost": 11
+        },
+        {
+          "xp": 12600,
+          "power": 89,
+          "mana_cost": 11
+        },
+        {
+          "xp": 13750,
+          "power": 92,
+          "mana_cost": 11
+        },
+        {
+          "xp": 14950,
+          "power": 95,
+          "mana_cost": 11
+        },
+        {
+          "xp": 16200,
+          "power": 98,
+          "mana_cost": 11
+        },
+        {
+          "xp": 17500,
+          "power": 101,
+          "mana_cost": 11
+        },
+        {
+          "xp": 18850,
+          "power": 104,
+          "mana_cost": 11
+        },
+        {
+          "xp": 20250,
+          "power": 107,
+          "mana_cost": 11
+        },
+        {
+          "xp": 21700,
+          "power": 110,
+          "mana_cost": 11
+        },
+        {
+          "xp": 23200,
+          "power": 113,
+          "mana_cost": 11
+        },
+        {
+          "xp": 24750,
+          "power": 116,
+          "mana_cost": 12
+        },
+        {
+          "xp": 26350,
+          "power": 119,
+          "mana_cost": 12
+        },
+        {
+          "xp": 28000,
+          "power": 122,
+          "mana_cost": 12
+        },
+        {
+          "xp": 29700,
+          "power": 125,
+          "mana_cost": 12
+        },
+        {
+          "xp": 31450,
+          "power": 128,
+          "mana_cost": 12
+        },
+        {
+          "xp": 33250,
+          "power": 131,
+          "mana_cost": 12
+        },
+        {
+          "xp": 35100,
+          "power": 134,
+          "mana_cost": 12
+        },
+        {
+          "xp": 37000,
+          "power": 137,
+          "mana_cost": 12
+        },
+        {
+          "xp": 38950,
+          "power": 140,
+          "mana_cost": 12
+        },
+        {
+          "xp": 40950,
+          "power": 143,
+          "mana_cost": 12
+        },
+        {
+          "xp": 43000,
+          "power": 146,
+          "mana_cost": 13
+        },
+        {
+          "xp": 45100,
+          "power": 149,
+          "mana_cost": 13
+        },
+        {
+          "xp": 47250,
+          "power": 152,
+          "mana_cost": 13
+        },
+        {
+          "xp": 49450,
+          "power": 155,
+          "mana_cost": 13
+        },
+        {
+          "xp": 51700,
+          "power": 158,
+          "mana_cost": 13
+        },
+        {
+          "xp": 54000,
+          "power": 161,
+          "mana_cost": 13
+        },
+        {
+          "xp": 56350,
+          "power": 164,
+          "mana_cost": 13
+        },
+        {
+          "xp": 58750,
+          "power": 167,
+          "mana_cost": 13
+        },
+        {
+          "xp": 61200,
+          "power": 170,
+          "mana_cost": 13
+        },
+        {
+          "xp": 63700,
+          "power": 173,
+          "mana_cost": 13
+        },
+        {
+          "xp": 66250,
+          "power": 176,
+          "mana_cost": 14
+        },
+        {
+          "xp": 68850,
+          "power": 179,
+          "mana_cost": 14
+        },
+        {
+          "xp": 71500,
+          "power": 182,
+          "mana_cost": 14
+        },
+        {
+          "xp": 74200,
+          "power": 185,
+          "mana_cost": 14
+        },
+        {
+          "xp": 76950,
+          "power": 188,
+          "mana_cost": 14
+        },
+        {
+          "xp": 79750,
+          "power": 191,
+          "mana_cost": 14
+        },
+        {
+          "xp": 82600,
+          "power": 194,
+          "mana_cost": 14
+        },
+        {
+          "xp": 85500,
+          "power": 197,
+          "mana_cost": 14
+        },
+        {
+          "xp": 88450,
+          "power": 200,
+          "mana_cost": 14
+        },
+        {
+          "xp": 91450,
+          "power": 203,
+          "mana_cost": 14
+        },
+        {
+          "xp": 94500,
+          "power": 206,
+          "mana_cost": 15
+        },
+        {
+          "xp": 97600,
+          "power": 209,
+          "mana_cost": 15
+        },
+        {
+          "xp": 100750,
+          "power": 212,
+          "mana_cost": 15
+        },
+        {
+          "xp": 103950,
+          "power": 215,
+          "mana_cost": 15
+        },
+        {
+          "xp": 107200,
+          "power": 218,
+          "mana_cost": 15
+        },
+        {
+          "xp": 110500,
+          "power": 221,
+          "mana_cost": 15
+        },
+        {
+          "xp": 113850,
+          "power": 224,
+          "mana_cost": 15
+        },
+        {
+          "xp": 117250,
+          "power": 227,
+          "mana_cost": 15
+        },
+        {
+          "xp": 120700,
+          "power": 230,
+          "mana_cost": 15
+        },
+        {
+          "xp": 124200,
+          "power": 233,
+          "mana_cost": 15
+        },
+        {
+          "xp": 127750,
+          "power": 236,
+          "mana_cost": 16
+        },
+        {
+          "xp": 131350,
+          "power": 239,
+          "mana_cost": 16
+        },
+        {
+          "xp": 135000,
+          "power": 242,
+          "mana_cost": 16
+        },
+        {
+          "xp": 138700,
+          "power": 245,
+          "mana_cost": 16
+        },
+        {
+          "xp": 142450,
+          "power": 248,
+          "mana_cost": 16
+        },
+        {
+          "xp": 146250,
+          "power": 251,
+          "mana_cost": 16
+        },
+        {
+          "xp": 150100,
+          "power": 254,
+          "mana_cost": 16
+        },
+        {
+          "xp": 154000,
+          "power": 257,
+          "mana_cost": 16
+        },
+        {
+          "xp": 157950,
+          "power": 260,
+          "mana_cost": 16
+        },
+        {
+          "xp": 161950,
+          "power": 263,
+          "mana_cost": 16
+        },
+        {
+          "xp": 166000,
+          "power": 266,
+          "mana_cost": 17
+        },
+        {
+          "xp": 170100,
+          "power": 269,
+          "mana_cost": 17
+        },
+        {
+          "xp": 174250,
+          "power": 272,
+          "mana_cost": 17
+        },
+        {
+          "xp": 178450,
+          "power": 275,
+          "mana_cost": 17
+        },
+        {
+          "xp": 182700,
+          "power": 278,
+          "mana_cost": 17
+        },
+        {
+          "xp": 187000,
+          "power": 281,
+          "mana_cost": 17
+        },
+        {
+          "xp": 191350,
+          "power": 284,
+          "mana_cost": 17
+        },
+        {
+          "xp": 195750,
+          "power": 287,
+          "mana_cost": 17
+        },
+        {
+          "xp": 200200,
+          "power": 290,
+          "mana_cost": 17
+        },
+        {
+          "xp": 204700,
+          "power": 293,
+          "mana_cost": 17
+        },
+        {
+          "xp": 209250,
+          "power": 296,
+          "mana_cost": 18
+        },
+        {
+          "xp": 213850,
+          "power": 299,
+          "mana_cost": 18
+        },
+        {
+          "xp": 218500,
+          "power": 302,
+          "mana_cost": 18
+        },
+        {
+          "xp": 223200,
+          "power": 305,
+          "mana_cost": 18
+        },
+        {
+          "xp": 227950,
+          "power": 308,
+          "mana_cost": 18
+        },
+        {
+          "xp": 232750,
+          "power": 311,
+          "mana_cost": 18
+        },
+        {
+          "xp": 237600,
+          "power": 314,
+          "mana_cost": 18
+        },
+        {
+          "xp": 242500,
+          "power": 317,
+          "mana_cost": 18
+        },
+        {
+          "xp": 247450,
+          "power": 320,
+          "mana_cost": 18
+        },
+        {
+          "xp": 252450,
+          "power": 323,
+          "mana_cost": 18
+        }
+      ],
+      "mana_cost": 9,
+      "category": "arcane",
+      "learn_cost": 2,
+      "max_rank": 5
     },
     "charge": {
       "name": "Charge",
       "effect": "damage",
-      "unlock_level": 2,
+      "unlock_level": 15,
       "cooldown": 14,
       "multiplier": 1.5,
-      "allowed_classes": [
-        "warrior"
-      ],
+      "allowed_classes": null,
       "allowed_races": null,
       "description": "Initiate a fight or strike your current opponent. No movement between rooms.",
-      "initiates": true
+      "initiates": true,
+      "category": "martial",
+      "learn_cost": 1,
+      "max_rank": 5
     },
     "sharpening": {
       "name": "Sharpening",
       "effect": "sharpen",
-      "unlock_level": 2,
+      "unlock_level": 4,
       "cooldown": 30,
       "multiplier": 1,
       "allowed_classes": null,
       "allowed_races": null,
-      "description": "Out of combat, sharpen your right-hand weapon temporarily."
+      "description": "Out of combat, sharpen your right-hand weapon temporarily.",
+      "category": "craft",
+      "learn_cost": 1,
+      "max_rank": 1
     },
     "enchanting": {
       "name": "Enchanting",
       "effect": "enchant",
-      "unlock_level": 3,
+      "unlock_level": 10,
       "cooldown": 15,
+      "multiplier": 1,
+      "allowed_classes": [
+        "mage"
+      ],
+      "allowed_races": null,
+      "description": "ENCHANT <item>: temporarily enchant a held weapon or worn/held armor. Every valid attempt slowly trains your enchanting level; higher skill improves success, bonus and duration. Costs gold; weapon failures can damage or destroy the weapon. See Crafting & balance in the owner editor.",
+      "status_effects": [
+        {
+          "effect": "scorched",
+          "chance": 100,
+          "duration": 0
+        }
+      ],
+      "mana_cost": 8,
+      "category": "craft",
+      "learn_cost": 2,
+      "max_rank": 1
+    },
+    "mend": {
+      "name": "Mend",
+      "description": "Spend mana to restore your own health. Valid healing slowly improves this spell.",
+      "effect": "heal",
+      "heal": 18,
+      "cooldown": 12,
+      "multiplier": 1,
+      "unlock_level": 5,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "mana_cost": 7,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 18,
+          "mana_cost": 7
+        },
+        {
+          "xp": 100,
+          "power": 20,
+          "mana_cost": 7
+        },
+        {
+          "xp": 250,
+          "power": 22,
+          "mana_cost": 7
+        },
+        {
+          "xp": 450,
+          "power": 24,
+          "mana_cost": 7
+        },
+        {
+          "xp": 700,
+          "power": 26,
+          "mana_cost": 7
+        },
+        {
+          "xp": 1000,
+          "power": 28,
+          "mana_cost": 7
+        },
+        {
+          "xp": 1350,
+          "power": 30,
+          "mana_cost": 7
+        },
+        {
+          "xp": 1750,
+          "power": 32,
+          "mana_cost": 7
+        },
+        {
+          "xp": 2200,
+          "power": 34,
+          "mana_cost": 7
+        },
+        {
+          "xp": 2700,
+          "power": 36,
+          "mana_cost": 7
+        },
+        {
+          "xp": 3250,
+          "power": 38,
+          "mana_cost": 8
+        },
+        {
+          "xp": 3850,
+          "power": 40,
+          "mana_cost": 8
+        },
+        {
+          "xp": 4500,
+          "power": 42,
+          "mana_cost": 8
+        },
+        {
+          "xp": 5200,
+          "power": 44,
+          "mana_cost": 8
+        },
+        {
+          "xp": 5950,
+          "power": 46,
+          "mana_cost": 8
+        },
+        {
+          "xp": 6750,
+          "power": 48,
+          "mana_cost": 8
+        },
+        {
+          "xp": 7600,
+          "power": 50,
+          "mana_cost": 8
+        },
+        {
+          "xp": 8500,
+          "power": 52,
+          "mana_cost": 8
+        },
+        {
+          "xp": 9450,
+          "power": 54,
+          "mana_cost": 8
+        },
+        {
+          "xp": 10450,
+          "power": 56,
+          "mana_cost": 8
+        },
+        {
+          "xp": 11500,
+          "power": 58,
+          "mana_cost": 9
+        },
+        {
+          "xp": 12600,
+          "power": 60,
+          "mana_cost": 9
+        },
+        {
+          "xp": 13750,
+          "power": 62,
+          "mana_cost": 9
+        },
+        {
+          "xp": 14950,
+          "power": 64,
+          "mana_cost": 9
+        },
+        {
+          "xp": 16200,
+          "power": 66,
+          "mana_cost": 9
+        },
+        {
+          "xp": 17500,
+          "power": 68,
+          "mana_cost": 9
+        },
+        {
+          "xp": 18850,
+          "power": 70,
+          "mana_cost": 9
+        },
+        {
+          "xp": 20250,
+          "power": 72,
+          "mana_cost": 9
+        },
+        {
+          "xp": 21700,
+          "power": 74,
+          "mana_cost": 9
+        },
+        {
+          "xp": 23200,
+          "power": 76,
+          "mana_cost": 9
+        },
+        {
+          "xp": 24750,
+          "power": 78,
+          "mana_cost": 10
+        },
+        {
+          "xp": 26350,
+          "power": 80,
+          "mana_cost": 10
+        },
+        {
+          "xp": 28000,
+          "power": 82,
+          "mana_cost": 10
+        },
+        {
+          "xp": 29700,
+          "power": 84,
+          "mana_cost": 10
+        },
+        {
+          "xp": 31450,
+          "power": 86,
+          "mana_cost": 10
+        },
+        {
+          "xp": 33250,
+          "power": 88,
+          "mana_cost": 10
+        },
+        {
+          "xp": 35100,
+          "power": 90,
+          "mana_cost": 10
+        },
+        {
+          "xp": 37000,
+          "power": 92,
+          "mana_cost": 10
+        },
+        {
+          "xp": 38950,
+          "power": 94,
+          "mana_cost": 10
+        },
+        {
+          "xp": 40950,
+          "power": 96,
+          "mana_cost": 10
+        },
+        {
+          "xp": 43000,
+          "power": 98,
+          "mana_cost": 11
+        },
+        {
+          "xp": 45100,
+          "power": 100,
+          "mana_cost": 11
+        },
+        {
+          "xp": 47250,
+          "power": 102,
+          "mana_cost": 11
+        },
+        {
+          "xp": 49450,
+          "power": 104,
+          "mana_cost": 11
+        },
+        {
+          "xp": 51700,
+          "power": 106,
+          "mana_cost": 11
+        },
+        {
+          "xp": 54000,
+          "power": 108,
+          "mana_cost": 11
+        },
+        {
+          "xp": 56350,
+          "power": 110,
+          "mana_cost": 11
+        },
+        {
+          "xp": 58750,
+          "power": 112,
+          "mana_cost": 11
+        },
+        {
+          "xp": 61200,
+          "power": 114,
+          "mana_cost": 11
+        },
+        {
+          "xp": 63700,
+          "power": 116,
+          "mana_cost": 11
+        },
+        {
+          "xp": 66250,
+          "power": 118,
+          "mana_cost": 12
+        },
+        {
+          "xp": 68850,
+          "power": 120,
+          "mana_cost": 12
+        },
+        {
+          "xp": 71500,
+          "power": 122,
+          "mana_cost": 12
+        },
+        {
+          "xp": 74200,
+          "power": 124,
+          "mana_cost": 12
+        },
+        {
+          "xp": 76950,
+          "power": 126,
+          "mana_cost": 12
+        },
+        {
+          "xp": 79750,
+          "power": 128,
+          "mana_cost": 12
+        },
+        {
+          "xp": 82600,
+          "power": 130,
+          "mana_cost": 12
+        },
+        {
+          "xp": 85500,
+          "power": 132,
+          "mana_cost": 12
+        },
+        {
+          "xp": 88450,
+          "power": 134,
+          "mana_cost": 12
+        },
+        {
+          "xp": 91450,
+          "power": 136,
+          "mana_cost": 12
+        },
+        {
+          "xp": 94500,
+          "power": 138,
+          "mana_cost": 13
+        },
+        {
+          "xp": 97600,
+          "power": 140,
+          "mana_cost": 13
+        },
+        {
+          "xp": 100750,
+          "power": 142,
+          "mana_cost": 13
+        },
+        {
+          "xp": 103950,
+          "power": 144,
+          "mana_cost": 13
+        },
+        {
+          "xp": 107200,
+          "power": 146,
+          "mana_cost": 13
+        },
+        {
+          "xp": 110500,
+          "power": 148,
+          "mana_cost": 13
+        },
+        {
+          "xp": 113850,
+          "power": 150,
+          "mana_cost": 13
+        },
+        {
+          "xp": 117250,
+          "power": 152,
+          "mana_cost": 13
+        },
+        {
+          "xp": 120700,
+          "power": 154,
+          "mana_cost": 13
+        },
+        {
+          "xp": 124200,
+          "power": 156,
+          "mana_cost": 13
+        },
+        {
+          "xp": 127750,
+          "power": 158,
+          "mana_cost": 14
+        },
+        {
+          "xp": 131350,
+          "power": 160,
+          "mana_cost": 14
+        },
+        {
+          "xp": 135000,
+          "power": 162,
+          "mana_cost": 14
+        },
+        {
+          "xp": 138700,
+          "power": 164,
+          "mana_cost": 14
+        },
+        {
+          "xp": 142450,
+          "power": 166,
+          "mana_cost": 14
+        },
+        {
+          "xp": 146250,
+          "power": 168,
+          "mana_cost": 14
+        },
+        {
+          "xp": 150100,
+          "power": 170,
+          "mana_cost": 14
+        },
+        {
+          "xp": 154000,
+          "power": 172,
+          "mana_cost": 14
+        },
+        {
+          "xp": 157950,
+          "power": 174,
+          "mana_cost": 14
+        },
+        {
+          "xp": 161950,
+          "power": 176,
+          "mana_cost": 14
+        },
+        {
+          "xp": 166000,
+          "power": 178,
+          "mana_cost": 15
+        },
+        {
+          "xp": 170100,
+          "power": 180,
+          "mana_cost": 15
+        },
+        {
+          "xp": 174250,
+          "power": 182,
+          "mana_cost": 15
+        },
+        {
+          "xp": 178450,
+          "power": 184,
+          "mana_cost": 15
+        },
+        {
+          "xp": 182700,
+          "power": 186,
+          "mana_cost": 15
+        },
+        {
+          "xp": 187000,
+          "power": 188,
+          "mana_cost": 15
+        },
+        {
+          "xp": 191350,
+          "power": 190,
+          "mana_cost": 15
+        },
+        {
+          "xp": 195750,
+          "power": 192,
+          "mana_cost": 15
+        },
+        {
+          "xp": 200200,
+          "power": 194,
+          "mana_cost": 15
+        },
+        {
+          "xp": 204700,
+          "power": 196,
+          "mana_cost": 15
+        },
+        {
+          "xp": 209250,
+          "power": 198,
+          "mana_cost": 16
+        },
+        {
+          "xp": 213850,
+          "power": 200,
+          "mana_cost": 16
+        },
+        {
+          "xp": 218500,
+          "power": 202,
+          "mana_cost": 16
+        },
+        {
+          "xp": 223200,
+          "power": 204,
+          "mana_cost": 16
+        },
+        {
+          "xp": 227950,
+          "power": 206,
+          "mana_cost": 16
+        },
+        {
+          "xp": 232750,
+          "power": 208,
+          "mana_cost": 16
+        },
+        {
+          "xp": 237600,
+          "power": 210,
+          "mana_cost": 16
+        },
+        {
+          "xp": 242500,
+          "power": 212,
+          "mana_cost": 16
+        },
+        {
+          "xp": 247450,
+          "power": 214,
+          "mana_cost": 16
+        },
+        {
+          "xp": 252450,
+          "power": 216,
+          "mana_cost": 16
+        }
+      ],
+      "category": "arcane",
+      "learn_cost": 1,
+      "max_rank": 5
+    },
+    "backstab": {
+      "name": "Backstab",
+      "description": "A precise close-range strike. Can start combat.",
+      "effect": "damage",
+      "unlock_level": 1,
+      "cooldown": 10,
+      "multiplier": 1.8,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "initiates": true,
+      "mana_cost": 0,
+      "category": "subtle",
+      "learn_cost": 1,
+      "max_rank": 5
+    },
+    "quickstrike": {
+      "name": "Quick Strike",
+      "description": "A fast follow-up strike during combat.",
+      "effect": "damage",
+      "unlock_level": 5,
+      "cooldown": 10,
+      "multiplier": 1.15,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "initiates": false,
+      "mana_cost": 0,
+      "category": "subtle",
+      "learn_cost": 1,
+      "max_rank": 5
+    },
+    "hamstring": {
+      "name": "Hamstring",
+      "description": "A successful strike slows the selected enemy for two pulses.",
+      "effect": "damage",
+      "unlock_level": 10,
+      "cooldown": 16,
+      "multiplier": 0.5,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "initiates": false,
+      "mana_cost": 0,
+      "status_effects": [
+        {
+          "effect": "slowed",
+          "chance": 100,
+          "duration": 2
+        }
+      ],
+      "category": "subtle",
+      "learn_cost": 1,
+      "max_rank": 5
+    },
+    "swordplay": {
+      "name": "Swordplay",
+      "description": "Your basic weapon fighting ability. Additional learned ranks improve automatic attacks. Use ATTACK or KILL.",
+      "effect": "damage",
+      "unlock_level": 1,
+      "cooldown": 1,
       "multiplier": 1,
       "allowed_classes": null,
       "allowed_races": null,
-      "description": "ENCHANT <item>: temporarily enchant a held weapon or worn/held armor. Every valid attempt slowly trains your enchanting level; higher skill improves success, bonus and duration. Costs gold; weapon failures can damage or destroy the weapon. See Crafting & balance in the owner editor."
+      "category": "martial",
+      "learn_cost": 1,
+      "max_rank": 5,
+      "passive": true
+    },
+    "kick": {
+      "name": "Kick",
+      "description": "A forceful kick that can briefly stun the chosen opponent.",
+      "effect": "damage",
+      "unlock_level": 5,
+      "cooldown": 8,
+      "multiplier": 1.25,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "martial",
+      "learn_cost": 1,
+      "max_rank": 5,
+      "mana_cost": 0,
+      "initiates": true,
+      "status_effects": [
+        {
+          "effect": "stunned",
+          "chance": 20,
+          "duration": 2
+        }
+      ]
+    },
+    "power_strike": {
+      "name": "Power Strike",
+      "description": "An advanced weapon technique. Strength depends on your class and learned rank.",
+      "effect": "damage",
+      "unlock_level": 25,
+      "cooldown": 18,
+      "multiplier": 2.2,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "martial",
+      "learn_cost": 2,
+      "max_rank": 5,
+      "mana_cost": 0,
+      "initiates": true
+    },
+    "shattering_strike": {
+      "name": "Shattering Strike",
+      "description": "An advanced weapon technique. Strength depends on your class and learned rank.",
+      "effect": "damage",
+      "unlock_level": 50,
+      "cooldown": 24,
+      "multiplier": 2.7,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "martial",
+      "learn_cost": 2,
+      "max_rank": 5,
+      "mana_cost": 0,
+      "initiates": true
+    },
+    "executioner": {
+      "name": "Executioner Strike",
+      "description": "An advanced weapon technique. Strength depends on your class and learned rank.",
+      "effect": "damage",
+      "unlock_level": 75,
+      "cooldown": 30,
+      "multiplier": 3.2,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "martial",
+      "learn_cost": 3,
+      "max_rank": 5,
+      "mana_cost": 0,
+      "initiates": true
+    },
+    "cutthroat": {
+      "name": "Cutthroat",
+      "description": "An advanced weapon technique. Strength depends on your class and learned rank.",
+      "effect": "damage",
+      "unlock_level": 25,
+      "cooldown": 16,
+      "multiplier": 2,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "subtle",
+      "learn_cost": 2,
+      "max_rank": 5,
+      "mana_cost": 0,
+      "initiates": true
+    },
+    "nerve_strike": {
+      "name": "Nerve Strike",
+      "description": "An advanced weapon technique. Strength depends on your class and learned rank.",
+      "effect": "damage",
+      "unlock_level": 50,
+      "cooldown": 22,
+      "multiplier": 2.4,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "subtle",
+      "learn_cost": 2,
+      "max_rank": 5,
+      "mana_cost": 0,
+      "initiates": true,
+      "status_effects": [
+        {
+          "effect": "stunned",
+          "chance": 25,
+          "duration": 2
+        }
+      ]
+    },
+    "assassinate": {
+      "name": "Assassinate",
+      "description": "An advanced weapon technique. Strength depends on your class and learned rank.",
+      "effect": "damage",
+      "unlock_level": 75,
+      "cooldown": 30,
+      "multiplier": 3,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "subtle",
+      "learn_cost": 3,
+      "max_rank": 5,
+      "mana_cost": 0,
+      "initiates": true
+    },
+    "frostbolt": {
+      "name": "Frostbolt",
+      "description": "A focused spell against your chosen enemy. Power, mana efficiency and practice depend on class.",
+      "effect": "damage",
+      "unlock_level": 15,
+      "cooldown": 14,
+      "multiplier": 1,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "arcane",
+      "learn_cost": 2,
+      "max_rank": 5,
+      "mana_cost": 10,
+      "initiates": true,
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 24,
+          "mana_cost": 10
+        },
+        {
+          "xp": 100,
+          "power": 27,
+          "mana_cost": 10
+        },
+        {
+          "xp": 250,
+          "power": 30,
+          "mana_cost": 10
+        },
+        {
+          "xp": 450,
+          "power": 33,
+          "mana_cost": 10
+        },
+        {
+          "xp": 700,
+          "power": 36,
+          "mana_cost": 10
+        },
+        {
+          "xp": 1000,
+          "power": 39,
+          "mana_cost": 10
+        },
+        {
+          "xp": 1350,
+          "power": 42,
+          "mana_cost": 10
+        },
+        {
+          "xp": 1750,
+          "power": 45,
+          "mana_cost": 10
+        },
+        {
+          "xp": 2200,
+          "power": 48,
+          "mana_cost": 10
+        },
+        {
+          "xp": 2700,
+          "power": 51,
+          "mana_cost": 10
+        },
+        {
+          "xp": 3250,
+          "power": 54,
+          "mana_cost": 11
+        },
+        {
+          "xp": 3850,
+          "power": 57,
+          "mana_cost": 11
+        },
+        {
+          "xp": 4500,
+          "power": 60,
+          "mana_cost": 11
+        },
+        {
+          "xp": 5200,
+          "power": 63,
+          "mana_cost": 11
+        },
+        {
+          "xp": 5950,
+          "power": 66,
+          "mana_cost": 11
+        },
+        {
+          "xp": 6750,
+          "power": 69,
+          "mana_cost": 11
+        },
+        {
+          "xp": 7600,
+          "power": 72,
+          "mana_cost": 11
+        },
+        {
+          "xp": 8500,
+          "power": 75,
+          "mana_cost": 11
+        },
+        {
+          "xp": 9450,
+          "power": 78,
+          "mana_cost": 11
+        },
+        {
+          "xp": 10450,
+          "power": 81,
+          "mana_cost": 11
+        },
+        {
+          "xp": 11500,
+          "power": 84,
+          "mana_cost": 12
+        },
+        {
+          "xp": 12600,
+          "power": 87,
+          "mana_cost": 12
+        },
+        {
+          "xp": 13750,
+          "power": 90,
+          "mana_cost": 12
+        },
+        {
+          "xp": 14950,
+          "power": 93,
+          "mana_cost": 12
+        },
+        {
+          "xp": 16200,
+          "power": 96,
+          "mana_cost": 12
+        },
+        {
+          "xp": 17500,
+          "power": 99,
+          "mana_cost": 12
+        },
+        {
+          "xp": 18850,
+          "power": 102,
+          "mana_cost": 12
+        },
+        {
+          "xp": 20250,
+          "power": 105,
+          "mana_cost": 12
+        },
+        {
+          "xp": 21700,
+          "power": 108,
+          "mana_cost": 12
+        },
+        {
+          "xp": 23200,
+          "power": 111,
+          "mana_cost": 12
+        },
+        {
+          "xp": 24750,
+          "power": 114,
+          "mana_cost": 13
+        },
+        {
+          "xp": 26350,
+          "power": 117,
+          "mana_cost": 13
+        },
+        {
+          "xp": 28000,
+          "power": 120,
+          "mana_cost": 13
+        },
+        {
+          "xp": 29700,
+          "power": 123,
+          "mana_cost": 13
+        },
+        {
+          "xp": 31450,
+          "power": 126,
+          "mana_cost": 13
+        },
+        {
+          "xp": 33250,
+          "power": 129,
+          "mana_cost": 13
+        },
+        {
+          "xp": 35100,
+          "power": 132,
+          "mana_cost": 13
+        },
+        {
+          "xp": 37000,
+          "power": 135,
+          "mana_cost": 13
+        },
+        {
+          "xp": 38950,
+          "power": 138,
+          "mana_cost": 13
+        },
+        {
+          "xp": 40950,
+          "power": 141,
+          "mana_cost": 13
+        },
+        {
+          "xp": 43000,
+          "power": 144,
+          "mana_cost": 14
+        },
+        {
+          "xp": 45100,
+          "power": 147,
+          "mana_cost": 14
+        },
+        {
+          "xp": 47250,
+          "power": 150,
+          "mana_cost": 14
+        },
+        {
+          "xp": 49450,
+          "power": 153,
+          "mana_cost": 14
+        },
+        {
+          "xp": 51700,
+          "power": 156,
+          "mana_cost": 14
+        },
+        {
+          "xp": 54000,
+          "power": 159,
+          "mana_cost": 14
+        },
+        {
+          "xp": 56350,
+          "power": 162,
+          "mana_cost": 14
+        },
+        {
+          "xp": 58750,
+          "power": 165,
+          "mana_cost": 14
+        },
+        {
+          "xp": 61200,
+          "power": 168,
+          "mana_cost": 14
+        },
+        {
+          "xp": 63700,
+          "power": 171,
+          "mana_cost": 14
+        },
+        {
+          "xp": 66250,
+          "power": 174,
+          "mana_cost": 15
+        },
+        {
+          "xp": 68850,
+          "power": 177,
+          "mana_cost": 15
+        },
+        {
+          "xp": 71500,
+          "power": 180,
+          "mana_cost": 15
+        },
+        {
+          "xp": 74200,
+          "power": 183,
+          "mana_cost": 15
+        },
+        {
+          "xp": 76950,
+          "power": 186,
+          "mana_cost": 15
+        },
+        {
+          "xp": 79750,
+          "power": 189,
+          "mana_cost": 15
+        },
+        {
+          "xp": 82600,
+          "power": 192,
+          "mana_cost": 15
+        },
+        {
+          "xp": 85500,
+          "power": 195,
+          "mana_cost": 15
+        },
+        {
+          "xp": 88450,
+          "power": 198,
+          "mana_cost": 15
+        },
+        {
+          "xp": 91450,
+          "power": 201,
+          "mana_cost": 15
+        },
+        {
+          "xp": 94500,
+          "power": 204,
+          "mana_cost": 16
+        },
+        {
+          "xp": 97600,
+          "power": 207,
+          "mana_cost": 16
+        },
+        {
+          "xp": 100750,
+          "power": 210,
+          "mana_cost": 16
+        },
+        {
+          "xp": 103950,
+          "power": 213,
+          "mana_cost": 16
+        },
+        {
+          "xp": 107200,
+          "power": 216,
+          "mana_cost": 16
+        },
+        {
+          "xp": 110500,
+          "power": 219,
+          "mana_cost": 16
+        },
+        {
+          "xp": 113850,
+          "power": 222,
+          "mana_cost": 16
+        },
+        {
+          "xp": 117250,
+          "power": 225,
+          "mana_cost": 16
+        },
+        {
+          "xp": 120700,
+          "power": 228,
+          "mana_cost": 16
+        },
+        {
+          "xp": 124200,
+          "power": 231,
+          "mana_cost": 16
+        },
+        {
+          "xp": 127750,
+          "power": 234,
+          "mana_cost": 17
+        },
+        {
+          "xp": 131350,
+          "power": 237,
+          "mana_cost": 17
+        },
+        {
+          "xp": 135000,
+          "power": 240,
+          "mana_cost": 17
+        },
+        {
+          "xp": 138700,
+          "power": 243,
+          "mana_cost": 17
+        },
+        {
+          "xp": 142450,
+          "power": 246,
+          "mana_cost": 17
+        },
+        {
+          "xp": 146250,
+          "power": 249,
+          "mana_cost": 17
+        },
+        {
+          "xp": 150100,
+          "power": 252,
+          "mana_cost": 17
+        },
+        {
+          "xp": 154000,
+          "power": 255,
+          "mana_cost": 17
+        },
+        {
+          "xp": 157950,
+          "power": 258,
+          "mana_cost": 17
+        },
+        {
+          "xp": 161950,
+          "power": 261,
+          "mana_cost": 17
+        },
+        {
+          "xp": 166000,
+          "power": 264,
+          "mana_cost": 18
+        },
+        {
+          "xp": 170100,
+          "power": 267,
+          "mana_cost": 18
+        },
+        {
+          "xp": 174250,
+          "power": 270,
+          "mana_cost": 18
+        },
+        {
+          "xp": 178450,
+          "power": 273,
+          "mana_cost": 18
+        },
+        {
+          "xp": 182700,
+          "power": 276,
+          "mana_cost": 18
+        },
+        {
+          "xp": 187000,
+          "power": 279,
+          "mana_cost": 18
+        },
+        {
+          "xp": 191350,
+          "power": 282,
+          "mana_cost": 18
+        },
+        {
+          "xp": 195750,
+          "power": 285,
+          "mana_cost": 18
+        },
+        {
+          "xp": 200200,
+          "power": 288,
+          "mana_cost": 18
+        },
+        {
+          "xp": 204700,
+          "power": 291,
+          "mana_cost": 18
+        },
+        {
+          "xp": 209250,
+          "power": 294,
+          "mana_cost": 19
+        },
+        {
+          "xp": 213850,
+          "power": 297,
+          "mana_cost": 19
+        },
+        {
+          "xp": 218500,
+          "power": 300,
+          "mana_cost": 19
+        },
+        {
+          "xp": 223200,
+          "power": 303,
+          "mana_cost": 19
+        },
+        {
+          "xp": 227950,
+          "power": 306,
+          "mana_cost": 19
+        },
+        {
+          "xp": 232750,
+          "power": 309,
+          "mana_cost": 19
+        },
+        {
+          "xp": 237600,
+          "power": 312,
+          "mana_cost": 19
+        },
+        {
+          "xp": 242500,
+          "power": 315,
+          "mana_cost": 19
+        },
+        {
+          "xp": 247450,
+          "power": 318,
+          "mana_cost": 19
+        },
+        {
+          "xp": 252450,
+          "power": 321,
+          "mana_cost": 19
+        }
+      ],
+      "status_effects": [
+        {
+          "effect": "slowed",
+          "chance": 40,
+          "duration": 4
+        }
+      ]
+    },
+    "arcane_lance": {
+      "name": "Arcane Lance",
+      "description": "A focused spell against your chosen enemy. Power, mana efficiency and practice depend on class.",
+      "effect": "damage",
+      "unlock_level": 30,
+      "cooldown": 20,
+      "multiplier": 1,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "arcane",
+      "learn_cost": 2,
+      "max_rank": 5,
+      "mana_cost": 16,
+      "initiates": true,
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 40,
+          "mana_cost": 16
+        },
+        {
+          "xp": 100,
+          "power": 44,
+          "mana_cost": 16
+        },
+        {
+          "xp": 250,
+          "power": 48,
+          "mana_cost": 16
+        },
+        {
+          "xp": 450,
+          "power": 52,
+          "mana_cost": 16
+        },
+        {
+          "xp": 700,
+          "power": 56,
+          "mana_cost": 16
+        },
+        {
+          "xp": 1000,
+          "power": 60,
+          "mana_cost": 16
+        },
+        {
+          "xp": 1350,
+          "power": 64,
+          "mana_cost": 16
+        },
+        {
+          "xp": 1750,
+          "power": 68,
+          "mana_cost": 16
+        },
+        {
+          "xp": 2200,
+          "power": 72,
+          "mana_cost": 16
+        },
+        {
+          "xp": 2700,
+          "power": 76,
+          "mana_cost": 16
+        },
+        {
+          "xp": 3250,
+          "power": 80,
+          "mana_cost": 17
+        },
+        {
+          "xp": 3850,
+          "power": 84,
+          "mana_cost": 17
+        },
+        {
+          "xp": 4500,
+          "power": 88,
+          "mana_cost": 17
+        },
+        {
+          "xp": 5200,
+          "power": 92,
+          "mana_cost": 17
+        },
+        {
+          "xp": 5950,
+          "power": 96,
+          "mana_cost": 17
+        },
+        {
+          "xp": 6750,
+          "power": 100,
+          "mana_cost": 17
+        },
+        {
+          "xp": 7600,
+          "power": 104,
+          "mana_cost": 17
+        },
+        {
+          "xp": 8500,
+          "power": 108,
+          "mana_cost": 17
+        },
+        {
+          "xp": 9450,
+          "power": 112,
+          "mana_cost": 17
+        },
+        {
+          "xp": 10450,
+          "power": 116,
+          "mana_cost": 17
+        },
+        {
+          "xp": 11500,
+          "power": 120,
+          "mana_cost": 18
+        },
+        {
+          "xp": 12600,
+          "power": 124,
+          "mana_cost": 18
+        },
+        {
+          "xp": 13750,
+          "power": 128,
+          "mana_cost": 18
+        },
+        {
+          "xp": 14950,
+          "power": 132,
+          "mana_cost": 18
+        },
+        {
+          "xp": 16200,
+          "power": 136,
+          "mana_cost": 18
+        },
+        {
+          "xp": 17500,
+          "power": 140,
+          "mana_cost": 18
+        },
+        {
+          "xp": 18850,
+          "power": 144,
+          "mana_cost": 18
+        },
+        {
+          "xp": 20250,
+          "power": 148,
+          "mana_cost": 18
+        },
+        {
+          "xp": 21700,
+          "power": 152,
+          "mana_cost": 18
+        },
+        {
+          "xp": 23200,
+          "power": 156,
+          "mana_cost": 18
+        },
+        {
+          "xp": 24750,
+          "power": 160,
+          "mana_cost": 19
+        },
+        {
+          "xp": 26350,
+          "power": 164,
+          "mana_cost": 19
+        },
+        {
+          "xp": 28000,
+          "power": 168,
+          "mana_cost": 19
+        },
+        {
+          "xp": 29700,
+          "power": 172,
+          "mana_cost": 19
+        },
+        {
+          "xp": 31450,
+          "power": 176,
+          "mana_cost": 19
+        },
+        {
+          "xp": 33250,
+          "power": 180,
+          "mana_cost": 19
+        },
+        {
+          "xp": 35100,
+          "power": 184,
+          "mana_cost": 19
+        },
+        {
+          "xp": 37000,
+          "power": 188,
+          "mana_cost": 19
+        },
+        {
+          "xp": 38950,
+          "power": 192,
+          "mana_cost": 19
+        },
+        {
+          "xp": 40950,
+          "power": 196,
+          "mana_cost": 19
+        },
+        {
+          "xp": 43000,
+          "power": 200,
+          "mana_cost": 20
+        },
+        {
+          "xp": 45100,
+          "power": 204,
+          "mana_cost": 20
+        },
+        {
+          "xp": 47250,
+          "power": 208,
+          "mana_cost": 20
+        },
+        {
+          "xp": 49450,
+          "power": 212,
+          "mana_cost": 20
+        },
+        {
+          "xp": 51700,
+          "power": 216,
+          "mana_cost": 20
+        },
+        {
+          "xp": 54000,
+          "power": 220,
+          "mana_cost": 20
+        },
+        {
+          "xp": 56350,
+          "power": 224,
+          "mana_cost": 20
+        },
+        {
+          "xp": 58750,
+          "power": 228,
+          "mana_cost": 20
+        },
+        {
+          "xp": 61200,
+          "power": 232,
+          "mana_cost": 20
+        },
+        {
+          "xp": 63700,
+          "power": 236,
+          "mana_cost": 20
+        },
+        {
+          "xp": 66250,
+          "power": 240,
+          "mana_cost": 21
+        },
+        {
+          "xp": 68850,
+          "power": 244,
+          "mana_cost": 21
+        },
+        {
+          "xp": 71500,
+          "power": 248,
+          "mana_cost": 21
+        },
+        {
+          "xp": 74200,
+          "power": 252,
+          "mana_cost": 21
+        },
+        {
+          "xp": 76950,
+          "power": 256,
+          "mana_cost": 21
+        },
+        {
+          "xp": 79750,
+          "power": 260,
+          "mana_cost": 21
+        },
+        {
+          "xp": 82600,
+          "power": 264,
+          "mana_cost": 21
+        },
+        {
+          "xp": 85500,
+          "power": 268,
+          "mana_cost": 21
+        },
+        {
+          "xp": 88450,
+          "power": 272,
+          "mana_cost": 21
+        },
+        {
+          "xp": 91450,
+          "power": 276,
+          "mana_cost": 21
+        },
+        {
+          "xp": 94500,
+          "power": 280,
+          "mana_cost": 22
+        },
+        {
+          "xp": 97600,
+          "power": 284,
+          "mana_cost": 22
+        },
+        {
+          "xp": 100750,
+          "power": 288,
+          "mana_cost": 22
+        },
+        {
+          "xp": 103950,
+          "power": 292,
+          "mana_cost": 22
+        },
+        {
+          "xp": 107200,
+          "power": 296,
+          "mana_cost": 22
+        },
+        {
+          "xp": 110500,
+          "power": 300,
+          "mana_cost": 22
+        },
+        {
+          "xp": 113850,
+          "power": 304,
+          "mana_cost": 22
+        },
+        {
+          "xp": 117250,
+          "power": 308,
+          "mana_cost": 22
+        },
+        {
+          "xp": 120700,
+          "power": 312,
+          "mana_cost": 22
+        },
+        {
+          "xp": 124200,
+          "power": 316,
+          "mana_cost": 22
+        },
+        {
+          "xp": 127750,
+          "power": 320,
+          "mana_cost": 23
+        },
+        {
+          "xp": 131350,
+          "power": 324,
+          "mana_cost": 23
+        },
+        {
+          "xp": 135000,
+          "power": 328,
+          "mana_cost": 23
+        },
+        {
+          "xp": 138700,
+          "power": 332,
+          "mana_cost": 23
+        },
+        {
+          "xp": 142450,
+          "power": 336,
+          "mana_cost": 23
+        },
+        {
+          "xp": 146250,
+          "power": 340,
+          "mana_cost": 23
+        },
+        {
+          "xp": 150100,
+          "power": 344,
+          "mana_cost": 23
+        },
+        {
+          "xp": 154000,
+          "power": 348,
+          "mana_cost": 23
+        },
+        {
+          "xp": 157950,
+          "power": 352,
+          "mana_cost": 23
+        },
+        {
+          "xp": 161950,
+          "power": 356,
+          "mana_cost": 23
+        },
+        {
+          "xp": 166000,
+          "power": 360,
+          "mana_cost": 24
+        },
+        {
+          "xp": 170100,
+          "power": 364,
+          "mana_cost": 24
+        },
+        {
+          "xp": 174250,
+          "power": 368,
+          "mana_cost": 24
+        },
+        {
+          "xp": 178450,
+          "power": 372,
+          "mana_cost": 24
+        },
+        {
+          "xp": 182700,
+          "power": 376,
+          "mana_cost": 24
+        },
+        {
+          "xp": 187000,
+          "power": 380,
+          "mana_cost": 24
+        },
+        {
+          "xp": 191350,
+          "power": 384,
+          "mana_cost": 24
+        },
+        {
+          "xp": 195750,
+          "power": 388,
+          "mana_cost": 24
+        },
+        {
+          "xp": 200200,
+          "power": 392,
+          "mana_cost": 24
+        },
+        {
+          "xp": 204700,
+          "power": 396,
+          "mana_cost": 24
+        },
+        {
+          "xp": 209250,
+          "power": 400,
+          "mana_cost": 25
+        },
+        {
+          "xp": 213850,
+          "power": 404,
+          "mana_cost": 25
+        },
+        {
+          "xp": 218500,
+          "power": 408,
+          "mana_cost": 25
+        },
+        {
+          "xp": 223200,
+          "power": 412,
+          "mana_cost": 25
+        },
+        {
+          "xp": 227950,
+          "power": 416,
+          "mana_cost": 25
+        },
+        {
+          "xp": 232750,
+          "power": 420,
+          "mana_cost": 25
+        },
+        {
+          "xp": 237600,
+          "power": 424,
+          "mana_cost": 25
+        },
+        {
+          "xp": 242500,
+          "power": 428,
+          "mana_cost": 25
+        },
+        {
+          "xp": 247450,
+          "power": 432,
+          "mana_cost": 25
+        },
+        {
+          "xp": 252450,
+          "power": 436,
+          "mana_cost": 25
+        }
+      ]
+    },
+    "meteor": {
+      "name": "Meteor",
+      "description": "A focused spell against your chosen enemy. Power, mana efficiency and practice depend on class.",
+      "effect": "damage",
+      "unlock_level": 60,
+      "cooldown": 30,
+      "multiplier": 1,
+      "allowed_classes": null,
+      "allowed_races": null,
+      "category": "arcane",
+      "learn_cost": 3,
+      "max_rank": 5,
+      "mana_cost": 30,
+      "initiates": true,
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 65,
+          "mana_cost": 30
+        },
+        {
+          "xp": 100,
+          "power": 70,
+          "mana_cost": 30
+        },
+        {
+          "xp": 250,
+          "power": 75,
+          "mana_cost": 30
+        },
+        {
+          "xp": 450,
+          "power": 80,
+          "mana_cost": 30
+        },
+        {
+          "xp": 700,
+          "power": 85,
+          "mana_cost": 30
+        },
+        {
+          "xp": 1000,
+          "power": 90,
+          "mana_cost": 30
+        },
+        {
+          "xp": 1350,
+          "power": 95,
+          "mana_cost": 30
+        },
+        {
+          "xp": 1750,
+          "power": 100,
+          "mana_cost": 30
+        },
+        {
+          "xp": 2200,
+          "power": 105,
+          "mana_cost": 30
+        },
+        {
+          "xp": 2700,
+          "power": 110,
+          "mana_cost": 30
+        },
+        {
+          "xp": 3250,
+          "power": 115,
+          "mana_cost": 31
+        },
+        {
+          "xp": 3850,
+          "power": 120,
+          "mana_cost": 31
+        },
+        {
+          "xp": 4500,
+          "power": 125,
+          "mana_cost": 31
+        },
+        {
+          "xp": 5200,
+          "power": 130,
+          "mana_cost": 31
+        },
+        {
+          "xp": 5950,
+          "power": 135,
+          "mana_cost": 31
+        },
+        {
+          "xp": 6750,
+          "power": 140,
+          "mana_cost": 31
+        },
+        {
+          "xp": 7600,
+          "power": 145,
+          "mana_cost": 31
+        },
+        {
+          "xp": 8500,
+          "power": 150,
+          "mana_cost": 31
+        },
+        {
+          "xp": 9450,
+          "power": 155,
+          "mana_cost": 31
+        },
+        {
+          "xp": 10450,
+          "power": 160,
+          "mana_cost": 31
+        },
+        {
+          "xp": 11500,
+          "power": 165,
+          "mana_cost": 32
+        },
+        {
+          "xp": 12600,
+          "power": 170,
+          "mana_cost": 32
+        },
+        {
+          "xp": 13750,
+          "power": 175,
+          "mana_cost": 32
+        },
+        {
+          "xp": 14950,
+          "power": 180,
+          "mana_cost": 32
+        },
+        {
+          "xp": 16200,
+          "power": 185,
+          "mana_cost": 32
+        },
+        {
+          "xp": 17500,
+          "power": 190,
+          "mana_cost": 32
+        },
+        {
+          "xp": 18850,
+          "power": 195,
+          "mana_cost": 32
+        },
+        {
+          "xp": 20250,
+          "power": 200,
+          "mana_cost": 32
+        },
+        {
+          "xp": 21700,
+          "power": 205,
+          "mana_cost": 32
+        },
+        {
+          "xp": 23200,
+          "power": 210,
+          "mana_cost": 32
+        },
+        {
+          "xp": 24750,
+          "power": 215,
+          "mana_cost": 33
+        },
+        {
+          "xp": 26350,
+          "power": 220,
+          "mana_cost": 33
+        },
+        {
+          "xp": 28000,
+          "power": 225,
+          "mana_cost": 33
+        },
+        {
+          "xp": 29700,
+          "power": 230,
+          "mana_cost": 33
+        },
+        {
+          "xp": 31450,
+          "power": 235,
+          "mana_cost": 33
+        },
+        {
+          "xp": 33250,
+          "power": 240,
+          "mana_cost": 33
+        },
+        {
+          "xp": 35100,
+          "power": 245,
+          "mana_cost": 33
+        },
+        {
+          "xp": 37000,
+          "power": 250,
+          "mana_cost": 33
+        },
+        {
+          "xp": 38950,
+          "power": 255,
+          "mana_cost": 33
+        },
+        {
+          "xp": 40950,
+          "power": 260,
+          "mana_cost": 33
+        },
+        {
+          "xp": 43000,
+          "power": 265,
+          "mana_cost": 34
+        },
+        {
+          "xp": 45100,
+          "power": 270,
+          "mana_cost": 34
+        },
+        {
+          "xp": 47250,
+          "power": 275,
+          "mana_cost": 34
+        },
+        {
+          "xp": 49450,
+          "power": 280,
+          "mana_cost": 34
+        },
+        {
+          "xp": 51700,
+          "power": 285,
+          "mana_cost": 34
+        },
+        {
+          "xp": 54000,
+          "power": 290,
+          "mana_cost": 34
+        },
+        {
+          "xp": 56350,
+          "power": 295,
+          "mana_cost": 34
+        },
+        {
+          "xp": 58750,
+          "power": 300,
+          "mana_cost": 34
+        },
+        {
+          "xp": 61200,
+          "power": 305,
+          "mana_cost": 34
+        },
+        {
+          "xp": 63700,
+          "power": 310,
+          "mana_cost": 34
+        },
+        {
+          "xp": 66250,
+          "power": 315,
+          "mana_cost": 35
+        },
+        {
+          "xp": 68850,
+          "power": 320,
+          "mana_cost": 35
+        },
+        {
+          "xp": 71500,
+          "power": 325,
+          "mana_cost": 35
+        },
+        {
+          "xp": 74200,
+          "power": 330,
+          "mana_cost": 35
+        },
+        {
+          "xp": 76950,
+          "power": 335,
+          "mana_cost": 35
+        },
+        {
+          "xp": 79750,
+          "power": 340,
+          "mana_cost": 35
+        },
+        {
+          "xp": 82600,
+          "power": 345,
+          "mana_cost": 35
+        },
+        {
+          "xp": 85500,
+          "power": 350,
+          "mana_cost": 35
+        },
+        {
+          "xp": 88450,
+          "power": 355,
+          "mana_cost": 35
+        },
+        {
+          "xp": 91450,
+          "power": 360,
+          "mana_cost": 35
+        },
+        {
+          "xp": 94500,
+          "power": 365,
+          "mana_cost": 36
+        },
+        {
+          "xp": 97600,
+          "power": 370,
+          "mana_cost": 36
+        },
+        {
+          "xp": 100750,
+          "power": 375,
+          "mana_cost": 36
+        },
+        {
+          "xp": 103950,
+          "power": 380,
+          "mana_cost": 36
+        },
+        {
+          "xp": 107200,
+          "power": 385,
+          "mana_cost": 36
+        },
+        {
+          "xp": 110500,
+          "power": 390,
+          "mana_cost": 36
+        },
+        {
+          "xp": 113850,
+          "power": 395,
+          "mana_cost": 36
+        },
+        {
+          "xp": 117250,
+          "power": 400,
+          "mana_cost": 36
+        },
+        {
+          "xp": 120700,
+          "power": 405,
+          "mana_cost": 36
+        },
+        {
+          "xp": 124200,
+          "power": 410,
+          "mana_cost": 36
+        },
+        {
+          "xp": 127750,
+          "power": 415,
+          "mana_cost": 37
+        },
+        {
+          "xp": 131350,
+          "power": 420,
+          "mana_cost": 37
+        },
+        {
+          "xp": 135000,
+          "power": 425,
+          "mana_cost": 37
+        },
+        {
+          "xp": 138700,
+          "power": 430,
+          "mana_cost": 37
+        },
+        {
+          "xp": 142450,
+          "power": 435,
+          "mana_cost": 37
+        },
+        {
+          "xp": 146250,
+          "power": 440,
+          "mana_cost": 37
+        },
+        {
+          "xp": 150100,
+          "power": 445,
+          "mana_cost": 37
+        },
+        {
+          "xp": 154000,
+          "power": 450,
+          "mana_cost": 37
+        },
+        {
+          "xp": 157950,
+          "power": 455,
+          "mana_cost": 37
+        },
+        {
+          "xp": 161950,
+          "power": 460,
+          "mana_cost": 37
+        },
+        {
+          "xp": 166000,
+          "power": 465,
+          "mana_cost": 38
+        },
+        {
+          "xp": 170100,
+          "power": 470,
+          "mana_cost": 38
+        },
+        {
+          "xp": 174250,
+          "power": 475,
+          "mana_cost": 38
+        },
+        {
+          "xp": 178450,
+          "power": 480,
+          "mana_cost": 38
+        },
+        {
+          "xp": 182700,
+          "power": 485,
+          "mana_cost": 38
+        },
+        {
+          "xp": 187000,
+          "power": 490,
+          "mana_cost": 38
+        },
+        {
+          "xp": 191350,
+          "power": 495,
+          "mana_cost": 38
+        },
+        {
+          "xp": 195750,
+          "power": 500,
+          "mana_cost": 38
+        },
+        {
+          "xp": 200200,
+          "power": 505,
+          "mana_cost": 38
+        },
+        {
+          "xp": 204700,
+          "power": 510,
+          "mana_cost": 38
+        },
+        {
+          "xp": 209250,
+          "power": 515,
+          "mana_cost": 39
+        },
+        {
+          "xp": 213850,
+          "power": 520,
+          "mana_cost": 39
+        },
+        {
+          "xp": 218500,
+          "power": 525,
+          "mana_cost": 39
+        },
+        {
+          "xp": 223200,
+          "power": 530,
+          "mana_cost": 39
+        },
+        {
+          "xp": 227950,
+          "power": 535,
+          "mana_cost": 39
+        },
+        {
+          "xp": 232750,
+          "power": 540,
+          "mana_cost": 39
+        },
+        {
+          "xp": 237600,
+          "power": 545,
+          "mana_cost": 39
+        },
+        {
+          "xp": 242500,
+          "power": 550,
+          "mana_cost": 39
+        },
+        {
+          "xp": 247450,
+          "power": 555,
+          "mana_cost": 39
+        },
+        {
+          "xp": 252450,
+          "power": 560,
+          "mana_cost": 39
+        }
+      ]
     }
   },
   "items": {
@@ -157,42 +3765,50 @@
       "kind": "weapon",
       "damage": 2,
       "price": 8,
-      "description": "An old blade with a serviceable edge."
+      "description": "An old blade with a serviceable edge.",
+      "weight": 4
     },
     "leather_vest": {
       "name": "Leather vest",
       "kind": "armor",
       "armor": 1,
       "price": 10,
-      "description": "Patched leather keeps the worst of a blow away."
+      "description": "Patched leather keeps the worst of a blow away.",
+      "weight": 8,
+      "armor_slot": "armor"
     },
     "potion": {
       "name": "Healing potion",
       "kind": "consumable",
       "heal": 35,
       "price": 8,
-      "description": "Restores 35 HP. USE POTION, even during combat."
+      "description": "Restores 35 HP. USE POTION, even during combat.",
+      "weight": 0.5
     },
     "lantern": {
       "name": "Lumen lantern",
       "kind": "light",
       "price": 12,
       "protected": true,
-      "description": "An enclosed crystal provides light while carried. No fuel required."
+      "description": "An enclosed crystal provides light while carried. No fuel required.",
+      "weight": 2
     },
     "iron_sword": {
       "name": "Iron sword",
       "kind": "weapon",
       "damage": 5,
       "price": 35,
-      "description": "A balanced frontier blade."
+      "description": "A balanced frontier blade.",
+      "weight": 4
     },
     "chain_vest": {
       "name": "Chain vest",
       "kind": "armor",
       "armor": 3,
       "price": 40,
-      "description": "Close iron links protect the torso."
+      "description": "Close iron links protect the torso.",
+      "weight": 15,
+      "armor_slot": "armor"
     },
     "relic_blade": {
       "name": "Elvish Blade",
@@ -200,13 +3816,15 @@
       "damage": 15,
       "price": 95,
       "rarity": "uncommon",
-      "description": "A curved, sleek blade that looks timeless.  It shows not a single sign of wear.  It constantly glows blue and hums lightly."
+      "description": "A curved, sleek blade that looks timeless.  It shows not a single sign of wear.  It constantly glows blue and hums lightly.",
+      "weight": 4
     },
     "scrap": {
       "name": "Ancient scrap",
       "kind": "loot",
       "price": 6,
-      "description": "A small fragment of machinery. The shop buys these."
+      "description": "A small fragment of machinery. The shop buys these.",
+      "weight": 1
     },
     "elven_sword": {
       "name": "Elven Sword",
@@ -214,14 +3832,421 @@
       "kind": "weapon",
       "price": 100,
       "damage": 20,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 10
+        },
+        {
+          "xp": 100,
+          "power": 11
+        },
+        {
+          "xp": 250,
+          "power": 12
+        },
+        {
+          "xp": 450,
+          "power": 13
+        },
+        {
+          "xp": 700,
+          "power": 14
+        },
+        {
+          "xp": 1000,
+          "power": 15
+        },
+        {
+          "xp": 1350,
+          "power": 16
+        },
+        {
+          "xp": 1750,
+          "power": 17
+        },
+        {
+          "xp": 2200,
+          "power": 18
+        },
+        {
+          "xp": 2700,
+          "power": 19
+        },
+        {
+          "xp": 3250,
+          "power": 20
+        },
+        {
+          "xp": 3850,
+          "power": 21
+        },
+        {
+          "xp": 4500,
+          "power": 22
+        },
+        {
+          "xp": 5200,
+          "power": 23
+        },
+        {
+          "xp": 5950,
+          "power": 24
+        },
+        {
+          "xp": 6750,
+          "power": 25
+        },
+        {
+          "xp": 7600,
+          "power": 26
+        },
+        {
+          "xp": 8500,
+          "power": 27
+        },
+        {
+          "xp": 9450,
+          "power": 28
+        },
+        {
+          "xp": 10450,
+          "power": 29
+        },
+        {
+          "xp": 11500,
+          "power": 30
+        },
+        {
+          "xp": 12600,
+          "power": 31
+        },
+        {
+          "xp": 13750,
+          "power": 32
+        },
+        {
+          "xp": 14950,
+          "power": 33
+        },
+        {
+          "xp": 16200,
+          "power": 34
+        },
+        {
+          "xp": 17500,
+          "power": 35
+        },
+        {
+          "xp": 18850,
+          "power": 36
+        },
+        {
+          "xp": 20250,
+          "power": 37
+        },
+        {
+          "xp": 21700,
+          "power": 38
+        },
+        {
+          "xp": 23200,
+          "power": 39
+        },
+        {
+          "xp": 24750,
+          "power": 40
+        },
+        {
+          "xp": 26350,
+          "power": 41
+        },
+        {
+          "xp": 28000,
+          "power": 42
+        },
+        {
+          "xp": 29700,
+          "power": 43
+        },
+        {
+          "xp": 31450,
+          "power": 44
+        },
+        {
+          "xp": 33250,
+          "power": 45
+        },
+        {
+          "xp": 35100,
+          "power": 46
+        },
+        {
+          "xp": 37000,
+          "power": 47
+        },
+        {
+          "xp": 38950,
+          "power": 48
+        },
+        {
+          "xp": 40950,
+          "power": 49
+        },
+        {
+          "xp": 43000,
+          "power": 50
+        },
+        {
+          "xp": 45100,
+          "power": 51
+        },
+        {
+          "xp": 47250,
+          "power": 52
+        },
+        {
+          "xp": 49450,
+          "power": 53
+        },
+        {
+          "xp": 51700,
+          "power": 54
+        },
+        {
+          "xp": 54000,
+          "power": 55
+        },
+        {
+          "xp": 56350,
+          "power": 56
+        },
+        {
+          "xp": 58750,
+          "power": 57
+        },
+        {
+          "xp": 61200,
+          "power": 58
+        },
+        {
+          "xp": 63700,
+          "power": 59
+        },
+        {
+          "xp": 66250,
+          "power": 60
+        },
+        {
+          "xp": 68850,
+          "power": 61
+        },
+        {
+          "xp": 71500,
+          "power": 62
+        },
+        {
+          "xp": 74200,
+          "power": 63
+        },
+        {
+          "xp": 76950,
+          "power": 64
+        },
+        {
+          "xp": 79750,
+          "power": 65
+        },
+        {
+          "xp": 82600,
+          "power": 66
+        },
+        {
+          "xp": 85500,
+          "power": 67
+        },
+        {
+          "xp": 88450,
+          "power": 68
+        },
+        {
+          "xp": 91450,
+          "power": 69
+        },
+        {
+          "xp": 94500,
+          "power": 70
+        },
+        {
+          "xp": 97600,
+          "power": 71
+        },
+        {
+          "xp": 100750,
+          "power": 72
+        },
+        {
+          "xp": 103950,
+          "power": 73
+        },
+        {
+          "xp": 107200,
+          "power": 74
+        },
+        {
+          "xp": 110500,
+          "power": 75
+        },
+        {
+          "xp": 113850,
+          "power": 76
+        },
+        {
+          "xp": 117250,
+          "power": 77
+        },
+        {
+          "xp": 120700,
+          "power": 78
+        },
+        {
+          "xp": 124200,
+          "power": 79
+        },
+        {
+          "xp": 127750,
+          "power": 80
+        },
+        {
+          "xp": 131350,
+          "power": 81
+        },
+        {
+          "xp": 135000,
+          "power": 82
+        },
+        {
+          "xp": 138700,
+          "power": 83
+        },
+        {
+          "xp": 142450,
+          "power": 84
+        },
+        {
+          "xp": 146250,
+          "power": 85
+        },
+        {
+          "xp": 150100,
+          "power": 86
+        },
+        {
+          "xp": 154000,
+          "power": 87
+        },
+        {
+          "xp": 157950,
+          "power": 88
+        },
+        {
+          "xp": 161950,
+          "power": 89
+        },
+        {
+          "xp": 166000,
+          "power": 90
+        },
+        {
+          "xp": 170100,
+          "power": 91
+        },
+        {
+          "xp": 174250,
+          "power": 92
+        },
+        {
+          "xp": 178450,
+          "power": 93
+        },
+        {
+          "xp": 182700,
+          "power": 94
+        },
+        {
+          "xp": 187000,
+          "power": 95
+        },
+        {
+          "xp": 191350,
+          "power": 96
+        },
+        {
+          "xp": 195750,
+          "power": 97
+        },
+        {
+          "xp": 200200,
+          "power": 98
+        },
+        {
+          "xp": 204700,
+          "power": 99
+        },
+        {
+          "xp": 209250,
+          "power": 100
+        },
+        {
+          "xp": 213850,
+          "power": 101
+        },
+        {
+          "xp": 218500,
+          "power": 102
+        },
+        {
+          "xp": 223200,
+          "power": 103
+        },
+        {
+          "xp": 227950,
+          "power": 104
+        },
+        {
+          "xp": 232750,
+          "power": 105
+        },
+        {
+          "xp": 237600,
+          "power": 106
+        },
+        {
+          "xp": 242500,
+          "power": 107
+        },
+        {
+          "xp": 247450,
+          "power": 108
+        },
+        {
+          "xp": 252450,
+          "power": 109
+        }
+      ],
+      "weight": 3
     },
     "rubber_boots": {
       "name": "Rubber Boots",
       "description": "Simple.  Dependable.  Nice Rubber Boots.  They smell slightly like new tires.",
       "kind": "armor",
       "price": 5,
-      "armor": 1
+      "armor": 1,
+      "weight": 8,
+      "armor_slot": "armor"
     },
     "iron_cage": {
       "name": "Iron cage",
@@ -229,14 +4254,16 @@
       "kind": "cage",
       "capacity": 5,
       "price": 45,
-      "protected": true
+      "protected": true,
+      "weight": 6
     },
     "rusty_crypt_key": {
       "name": "Old rusty key",
       "description": "A brittle iron key found behind the vampire. It fits the old crypt box and crumbles after one use.",
       "kind": "key",
       "price": 0,
-      "protected": true
+      "protected": true,
+      "weight": 0.1
     },
     "dawnfang": {
       "name": "Dawnfang",
@@ -244,7 +4271,8 @@
       "kind": "weapon",
       "damage": 22,
       "price": 140,
-      "rarity": "uncommon"
+      "rarity": "uncommon",
+      "weight": 4
     },
     "storage_chest": {
       "name": "Storage chest",
@@ -252,7 +4280,8 @@
       "description": "A sturdy portable chest. Store items with PUT <item> IN CHEST <number>; retrieve them with GET <item> FROM CHEST <number>.",
       "capacity": 30,
       "price": 60,
-      "protected": true
+      "protected": true,
+      "weight": 10
     },
     "recall_scroll": {
       "name": "Recall scroll",
@@ -260,7 +4289,8 @@
       "price": 150,
       "description": "USE RECALL SCROLL to return to Center Square outside combat. A blocked recall preserves the scroll by default.",
       "heal": 0,
-      "recall": true
+      "recall": true,
+      "weight": 0.5
     },
     "buckler": {
       "name": "Wooden buckler",
@@ -268,7 +4298,8 @@
       "price": 30,
       "description": "A small left-hand shield. Adds 1 armor; cannot share a two-handed weapon.",
       "armor": 1,
-      "shield": true
+      "shield": true,
+      "weight": 8
     },
     "apple": {
       "name": "Prairie apple",
@@ -276,25 +4307,29 @@
       "price": 3,
       "description": "A crisp fruit. EAT PRAIRIE APPLE restores a little health outside combat.",
       "heal": 5,
-      "food": true
+      "food": true,
+      "weight": 0.5
     },
     "raw_venison": {
       "name": "Raw venison",
       "kind": "loot",
       "price": 3,
-      "description": "Harvested deer meat. Cook at a fire."
+      "description": "Harvested deer meat. Cook at a fire.",
+      "weight": 1
     },
     "raw_turkey": {
       "name": "Raw turkey",
       "kind": "loot",
       "price": 2,
-      "description": "Harvested turkey meat. Cook at a fire."
+      "description": "Harvested turkey meat. Cook at a fire.",
+      "weight": 1
     },
     "beetle_meat": {
       "name": "Beetle meat",
       "kind": "loot",
       "price": 1,
-      "description": "Edible beetle flesh. Cook at a fire."
+      "description": "Edible beetle flesh. Cook at a fire.",
+      "weight": 1
     },
     "roast_venison": {
       "name": "Roast venison",
@@ -302,7 +4337,8 @@
       "price": 9,
       "description": "Fire-roasted venison restores 16 HP.",
       "heal": 16,
-      "food": true
+      "food": true,
+      "weight": 0.5
     },
     "roast_turkey": {
       "name": "Roast turkey",
@@ -310,7 +4346,8 @@
       "price": 7,
       "description": "Roasted turkey restores 12 HP.",
       "heal": 12,
-      "food": true
+      "food": true,
+      "weight": 0.5
     },
     "toasted_beetle": {
       "name": "Toasted beetle",
@@ -318,7 +4355,44 @@
       "price": 5,
       "description": "A crunchy frontier snack restores 8 HP.",
       "heal": 8,
-      "food": true
+      "food": true,
+      "weight": 0.5
+    },
+    "leather_cap": {
+      "name": "Leather Cap",
+      "kind": "armor",
+      "armor_slot": "helmet",
+      "armor": 1,
+      "weight": 1,
+      "price": 20,
+      "description": "Sturdy leather cap made for frontier travel."
+    },
+    "leather_pants": {
+      "name": "Leather Pants",
+      "kind": "armor",
+      "armor_slot": "pants",
+      "armor": 1,
+      "weight": 3,
+      "price": 25,
+      "description": "Sturdy leather pants made for frontier travel."
+    },
+    "leather_bracers": {
+      "name": "Leather Bracers",
+      "kind": "armor",
+      "armor_slot": "arms",
+      "armor": 1,
+      "weight": 1,
+      "price": 20,
+      "description": "Sturdy leather bracers made for frontier travel."
+    },
+    "greatsword": {
+      "name": "Iron Greatsword",
+      "kind": "weapon",
+      "damage": 11,
+      "hands": 2,
+      "weight": 9,
+      "price": 150,
+      "description": "A heavy iron blade that requires both hands."
     }
   },
   "enemies": {
@@ -368,7 +4442,9 @@
           "item": "beetle_meat",
           "count": 1
         }
-      ]
+      ],
+      "level": 1,
+      "weight": 2
     },
     "goblin": {
       "name": "Relic goblin",
@@ -419,7 +4495,9 @@
       ],
       "captive_value": 20,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 2,
+      "weight": 35
     },
     "sentinel": {
       "name": "Broken sentinel",
@@ -464,7 +4542,9 @@
       "captive_actions": [],
       "captive_value": 0,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 5,
+      "weight": 60
     },
     "vampire": {
       "name": "Dark Vampire",
@@ -535,7 +4615,9 @@
           "attack": true
         }
       ],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 10,
+      "weight": 60
     },
     "prairie_wolf": {
       "name": "Prairie wolf",
@@ -577,7 +4659,9 @@
       ],
       "captive_value": 25,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 3,
+      "weight": 40
     },
     "horned_hare": {
       "name": "Horned hare",
@@ -619,7 +4703,9 @@
       ],
       "captive_value": 12,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 2,
+      "weight": 60
     },
     "grassland_boar": {
       "name": "Grassland boar",
@@ -661,7 +4747,9 @@
       ],
       "captive_value": 35,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 4,
+      "weight": 90
     },
     "prairie_raider": {
       "name": "Prairie raider",
@@ -703,7 +4791,9 @@
       ],
       "captive_value": 45,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 5,
+      "weight": 60
     },
     "ridge_lion": {
       "name": "Ridge lion",
@@ -745,7 +4835,9 @@
       ],
       "captive_value": 60,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 6,
+      "weight": 120
     },
     "cave_troll": {
       "name": "Cave troll",
@@ -791,7 +4883,9 @@
       ],
       "captive_value": 150,
       "conversations": [],
-      "conversation_default": ""
+      "conversation_default": "",
+      "level": 12,
+      "weight": 350
     },
     "deer": {
       "name": "Coppergrass deer",
@@ -824,7 +4918,9 @@
           "item": "raw_venison",
           "count": 1
         }
-      ]
+      ],
+      "level": 1,
+      "weight": 60
     },
     "turkey": {
       "name": "Prairie turkey",
@@ -857,7 +4953,9 @@
           "item": "raw_turkey",
           "count": 1
         }
-      ]
+      ],
+      "level": 1,
+      "weight": 60
     }
   },
   "rooms": {
@@ -900,7 +4998,11 @@
         "storage_chest",
         "recall_scroll",
         "buckler",
-        "apple"
+        "apple",
+        "leather_cap",
+        "leather_pants",
+        "leather_bracers",
+        "greatsword"
       ],
       "objects": {
         "mara": "Anthony buys spare equipment and ancient scrap. BUY or SELL an item by name.",
@@ -912,7 +5014,8 @@
         1,
         0,
         0
-      ]
+      ],
+      "repair_service": true
     },
     "inn": {
       "name": "The Quiet Coil",
@@ -1545,7 +5648,8 @@
   "revision": {
     "dual_level": 3,
     "dual_classes": [
-      "warrior"
+      "warrior",
+      "rogue"
     ],
     "offhand_scale": 0.35,
     "dual_hit_penalty": 0.1,
@@ -1568,7 +5672,17 @@
     "enchant_growth": 2,
     "sharpen_bonus": 2,
     "sharpen_seconds": 120,
-    "enchant_proficiency_cap": 100
+    "enchant_proficiency_cap": 100,
+    "action_recovery": 2,
+    "potion_recovery": 10,
+    "repair_enabled": true,
+    "repair_anywhere": false,
+    "repair_base_cost": 0,
+    "repair_cost_per_point": 5,
+    "enemy_heal_enabled": true,
+    "enemy_heal_delay": 20,
+    "enemy_heal_interval": 5,
+    "enemy_heal_percent": 2
   },
   "status_effects": {
     "scorched": {
@@ -1709,6 +5823,163 @@
         }
       ],
       "default_response": "Hello, traveler."
+    }
+  },
+  "regions": {
+    "town": {
+      "name": "Town",
+      "rooms": [
+        "square",
+        "shop",
+        "inn",
+        "gate",
+        "dungeon",
+        "south_street",
+        "jakes_critters",
+        "hidden_dungeon_bedroom"
+      ],
+      "spawn_rooms": [],
+      "pool": [],
+      "max_population": 0,
+      "max_per_room": 3,
+      "spawn_seconds": 60,
+      "spawn_chance": 100,
+      "roam": true,
+      "roam_seconds": 30,
+      "weather": "clear",
+      "fog": 0
+    },
+    "coppergrass_road": {
+      "name": "Coppergrass Road",
+      "rooms": [
+        "road",
+        "meadow"
+      ],
+      "spawn_rooms": [
+        "road",
+        "meadow"
+      ],
+      "pool": [
+        {
+          "enemy": "beetle",
+          "weight": 1
+        }
+      ],
+      "max_population": 2,
+      "max_per_room": 3,
+      "spawn_seconds": 60,
+      "spawn_chance": 100,
+      "roam": true,
+      "roam_seconds": 30,
+      "weather": "clear",
+      "fog": 0
+    },
+    "relic_caverns": {
+      "name": "Relic Caverns",
+      "rooms": [
+        "mouth",
+        "tunnel",
+        "vault"
+      ],
+      "spawn_rooms": [
+        "mouth",
+        "tunnel"
+      ],
+      "pool": [
+        {
+          "enemy": "goblin",
+          "weight": 1
+        }
+      ],
+      "max_population": 2,
+      "max_per_room": 3,
+      "spawn_seconds": 90,
+      "spawn_chance": 100,
+      "roam": true,
+      "roam_seconds": 45,
+      "weather": "clear",
+      "fog": 0
+    },
+    "coppergrass_prairie": {
+      "name": "Coppergrass Prairie",
+      "rooms": [
+        "prairie_0_0",
+        "prairie_1_0",
+        "prairie_2_0",
+        "prairie_3_0",
+        "prairie_0_1",
+        "prairie_1_1",
+        "prairie_2_1",
+        "prairie_3_1",
+        "prairie_0_2",
+        "prairie_1_2",
+        "prairie_2_2",
+        "prairie_3_2",
+        "prairie_0_3",
+        "prairie_1_3",
+        "prairie_2_3",
+        "prairie_3_3"
+      ],
+      "spawn_rooms": [
+        "prairie_0_0",
+        "prairie_0_1",
+        "prairie_0_2",
+        "prairie_0_3",
+        "prairie_1_0",
+        "prairie_1_1",
+        "prairie_1_2",
+        "prairie_1_3",
+        "prairie_2_0",
+        "prairie_2_1",
+        "prairie_2_2",
+        "prairie_2_3",
+        "prairie_3_0",
+        "prairie_3_1",
+        "prairie_3_2",
+        "prairie_3_3"
+      ],
+      "pool": [
+        {
+          "enemy": "horned_hare",
+          "weight": 6
+        },
+        {
+          "enemy": "prairie_wolf",
+          "weight": 4
+        },
+        {
+          "enemy": "grassland_boar",
+          "weight": 4
+        },
+        {
+          "enemy": "prairie_raider",
+          "weight": 3
+        },
+        {
+          "enemy": "deer",
+          "weight": 2
+        },
+        {
+          "enemy": "turkey",
+          "weight": 2
+        },
+        {
+          "enemy": "ridge_lion",
+          "weight": 2
+        },
+        {
+          "enemy": "cave_troll",
+          "weight": 0.2
+        }
+      ],
+      "max_population": 18,
+      "max_per_room": 3,
+      "spawn_seconds": 60,
+      "spawn_chance": 100,
+      "roam": true,
+      "roam_seconds": 30,
+      "weather": "clear",
+      "fog": 0
     }
   }
 }

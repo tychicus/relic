@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 """Mechanics and migration checks use isolated saves, never the bundled character."""
 import copy
 import hashlib
@@ -17,7 +18,7 @@ class AdventureTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name)
         self.path=self.root/'world.json';shutil.copyfile(ROOT/'content/world.json',self.path)
         self.db=self.root/'test.sqlite3';self.now=1000
-        self.g=Game(self.path,self.db,random.Random(42),lambda:self.now);self.g.create('Test'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
+        disable_regions(self.path);self.g=Game(self.path,self.db,random.Random(42),lambda:self.now);self.g.create('Test'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
     def tearDown(self):self.g.db.close();self.temp.cleanup()
     def reload(self):
         self.g.save();self.g.db.close();self.g=Game(self.path,self.db,random.Random(42),lambda:self.now)
@@ -168,7 +169,8 @@ class AdventureTests(unittest.TestCase):
         db=sqlite3.connect(target);old=json.loads(db.execute("SELECT body FROM state WHERE id='world'").fetchone()[0]);db.close()
         game=Game(self.path,target,clock=lambda:self.now)
         try:
-            self.assertEqual(game.p,old['player']);self.assertEqual(game.state['ground'],old['ground'])
+            self.assertEqual({k:game.p[k] for k in old['player']},old['player']);self.assertEqual(game.state['ground'],old['ground'])
+            self.assertEqual(game.p['mana_xp'],0);self.assertEqual(game.p['mana'],game.max_mana())
             self.assertIn('instances',game.state);game.snapshot();game.command('buy')
         finally:game.db.close()
         self.assertEqual(hashlib.sha256(original.read_bytes()).hexdigest(),digest)

@@ -11,6 +11,7 @@ from adventure import validate_adventure
 from frontier import validate_frontier
 from abilities import Abilities, validate_abilities
 from revision_rules import validate_revision
+from magic_progression import validate_magic
 
 DIRECTIONS = {'n': 'north', 's': 'south', 'e': 'east', 'w': 'west', 'u': 'up', 'd': 'down'}
 
@@ -85,9 +86,16 @@ def validate(w):
     require(number(a.get('gold'), 0, 100000, True), 'Starting gold must be a nonnegative integer.')
     require(isinstance(a.get('inventory'), list) and all(i in w['items'] for i in a['inventory']), 'Invalid starting inventory.')
     require(len(a['inventory']) <= s['bag_capacity'], 'Starting inventory exceeds bag capacity.')
-    require(isinstance(a.get('equipment'), dict) and set(a['equipment']) == {'weapon', 'armor'}, 'Starting equipment requires weapon and armor slots.')
-    require(all(i in w['items'] and w['items'][i]['kind'] == slot for slot, i in a['equipment'].items()), 'Starting equipment has an invalid slot.')
-    return validate_abilities(validate_adventure(validate_frontier(validate_revision(w))))
+    from equipment import BODY_SLOTS, SLOT_NAMES
+    require(isinstance(a.get('equipment'), dict) and not set(a['equipment'])-set(SLOT_NAMES), 'Starting equipment has an unknown slot.')
+    for slot,iid in a['equipment'].items():
+        item=w['items'].get(iid,{})
+        require(item.get('kind') in ('weapon','armor'), 'Starting equipment must be weapons or armor.')
+        if slot in BODY_SLOTS:require(item['kind']=='armor' and not item.get('shield') and item.get('armor_slot','armor')==slot,'Starting armor does not match its slot.')
+    right=w['items'].get(a['equipment'].get('weapon'),{});left=w['items'].get(a['equipment'].get('left_hand'),{})
+    require(not left or right.get('hands',1)!=2 and left.get('hands',1)!=2,'Starting two-handed weapon requires both hands.')
+    require(not (right.get('shield') and left.get('shield')),'Starting equipment can contain only one shield.')
+    return validate_magic(validate_abilities(validate_adventure(validate_frontier(validate_revision(w)))))
 
 
 class LegacyGame(Abilities):
@@ -129,7 +137,7 @@ class LegacyGame(Abilities):
             if race not in self.w['races'] or character_class not in self.w['classes']:
                 raise ValueError('Choose an existing race and class.')
             a = self.w['starting']
-            self.p = self.state['player'] = {'id': 'local-player', 'name': name, 'race': race, 'class': character_class, 'level': 1, 'xp': 0, 'hp': self.w['classes'][character_class]['hp'] + self.w['races'][race]['hp_bonus'], 'gold': a['gold'], 'room': a['room'], 'inventory': a['inventory'][:], 'equipment': dict(a['equipment']), 'cooldowns': {}, 'combat': None}
+            self.p = self.state['player'] = {'id': 'local-player', 'name': name, 'race': race, 'class': character_class, 'level': 1, 'xp': 0, 'hp': self.w['classes'][character_class]['hp'] + self.w['races'][race]['hp_bonus'], 'gold': a['gold'], 'room': a['room'], 'inventory': a['inventory'][:], 'equipment': dict(a['equipment']), 'cooldowns': {}, 'combat': None, 'learned_skills': {}, 'ability_points_spent': 0}
             self.init_adventure()
             self.log(f'Welcome, {name}. Your story begins in Center Square.', 'story')
             self.state['announced_skills']=[]
@@ -228,12 +236,12 @@ class LegacyGame(Abilities):
         if choice:
             item = self.w['items'][choice]
             choice = self.grant(choice)
-            if len(self.p['inventory']) < self.w['settings']['bag_capacity']:
+            if len(self.p['inventory']) < self.w['settings']['bag_capacity'] and self.can_carry(choice):
                 self.p['inventory'].append(choice)
                 self.log(f'Loot: {item["name"]}' + (' — uncommon!' if item.get('rarity') else '.'), 'reward')
             else:
                 self.state['ground'].setdefault(self.p['room'], []).append(choice)
-                self.log(f'Your bag is full. {item["name"]} remains on the ground. Use GET when you have room.', 'reward')
+                self.log(f'You cannot carry more. {item["name"]} remains on the ground. Use GET when you have room and weight capacity.', 'reward')
         level = sum(self.p['xp'] >= x for x in self.w['settings']['level_xp'])
         if level > self.p['level']:
             self.p['level'] = level; self.p['hp'] = self.max_hp()
@@ -337,7 +345,7 @@ class LegacyGame(Abilities):
                     if left > 0:
                         raise ValueError(f'Try fleeing again in {math.ceil(left)} seconds.')
                     self.p['cooldowns']['flee'] = self.clock() + self.w['settings']['attack_interval']
-                    if self.rng.random() < self.w['settings']['flee_chance'] and room['exits']:
+                    if self.rng.random() < min(1,self.w['settings']['flee_chance']+self.w['classes'][self.p['class']].get('flee_bonus',0)) and room['exits']:
                         self.p['room'] = self.rng.choice(list(room['exits'].values())); self.p['combat'] = None
                         self.log('You break away and escape.', 'story'); self.roll_encounter(self.p['room']); self.look('')
                     else:
@@ -355,6 +363,7 @@ class LegacyGame(Abilities):
                         if item.get('enchantment_description'):
                             lines[-1] += '\n' + item['enchantment_description']
                     self.log(verb.title() + ':\n' + ('\n'.join(lines) or 'empty'))
+                    self.log(f'Carrying {self.carried_weight():g}/{self.carry_capacity():g} lb, including worn equipment and container contents.')
                 elif verb in ('buy', 'sell', 'equip', 'unequip', 'drop', 'get'):
                     if self.p['combat']:
                         raise ValueError('Finish the fight before trading or rearranging items.')
@@ -373,6 +382,7 @@ class LegacyGame(Abilities):
                     i = self.match(target, candidates); item = self.item(i)
                     if verb in ('buy', 'get') and len(inv) >= self.w['settings']['bag_capacity']:
                         raise ValueError('Your bag is full.')
+                    if verb in ('buy','get'):self.require_carry(i)
                     if verb == 'get' and not self.visible():
                         raise ValueError('It is too dark to find items on the ground.')
                     if verb == 'buy':
@@ -408,15 +418,19 @@ class LegacyGame(Abilities):
                         raise ValueError('That item cannot be used this way.')
                     if self.p['hp'] >= self.max_hp():
                         raise ValueError('You already have full health. Save your potion.')
+                    remaining=self.p.get('potion_ready',0)-self.clock()
+                    if remaining>0:
+                        raise ValueError(f'You can drink another healing potion in {math.ceil(remaining)} seconds.')
                     restored = min(item['heal'], self.max_hp() - self.p['hp'])
                     self.p['hp'] += restored; self.p['inventory'].remove(i)
+                    self.p['potion_ready']=self.clock()+self.rules()['potion_recovery']
                     self.log(f'You recover {restored} HP.', 'reward')
                 elif verb == 'rest':
                     if self.p['combat'] or not room.get('rest'):
                         raise ValueError('Rest at The Quiet Coil, west of Center Square.')
-                    self.p['hp'] = self.max_hp(); self.log('You rest by the fire. Health fully restored.', 'reward')
+                    self.p['hp'] = self.max_hp();self.p['mana']=self.max_mana(); self.log('You rest by the fire. Health and mana fully restored.', 'reward')
                 elif verb in ('help', '?'):
-                    self.log('MOVE: N S E W UP DOWN. LOOK [direction/object/item]. INVENTORY (I), EQUIPMENT, EQUIP <item>, UNEQUIP <weapon/armor>. BUY [item], SELL <item>, GET <item>, DROP <item>, QUAFF POTION. ATTACK [enemy], SKILLS, CAST <skill name>, BASH, KNOCKOUT [enemy], FLEE. UNLOCK <box>. GET <unconscious creature>, PUT <creature> IN CAGE <number>, LOOK CAGE <number>, RELEASE CAGE <number>. PUT <item> IN CHEST <number>, GET <item> FROM CHEST <number>, LOOK CHEST <number>. SAY <phrase> TO <creature/cage>. REST at the inn. Progress saves automatically; combat continues while this server is running, even if you close the browser.')
+                    self.log('LEARN [ability] to choose or improve abilities with earned points. MANA for reserves, WEIGHT for carrying capacity, REPAIR [item] at a repair service. MOVE: N S E W UP DOWN. LOOK [direction/object/item]. INVENTORY (I), EQUIPMENT, EQUIP <item>, UNEQUIP <weapon/armor>. BUY [item], SELL <item>, GET <item>, DROP <item>, QUAFF POTION. ATTACK [enemy], SKILLS, CAST <skill name>, BASH, KNOCKOUT [enemy], FLEE. UNLOCK <box>. GET <unconscious creature>, PUT <creature> IN CAGE <number>, LOOK CAGE <number>, RELEASE CAGE <number>. PUT <item> IN CHEST <number>, GET <item> FROM CHEST <number>, LOOK CHEST <number>. SAY <phrase> TO <creature/cage>. REST at the inn. Progress saves automatically; combat continues while this server is running, even if you close the browser.')
                 elif verb == 'save':
                     self.log('Progress saved. Saving is also automatic.')
                 else:

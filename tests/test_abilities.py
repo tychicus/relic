@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 import copy
 import json
 import random
@@ -10,7 +11,7 @@ ROOT=Path(__file__).resolve().parents[1]
 class AbilityTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory();self.root=Path(self.tmp.name);self.path=self.root/'world.json'
-        shutil.copyfile(ROOT/'content/world.json',self.path);self.now=1000;self.db=self.root/'test.sqlite3';self.g=Game(self.path,self.db,random.Random(4),lambda:self.now)
+        shutil.copyfile(ROOT/'content/world.json',self.path);self.now=1000;self.db=self.root/'test.sqlite3';disable_regions(self.path);self.g=Game(self.path,self.db,random.Random(4),lambda:self.now)
     def tearDown(self):self.g.db.close();self.tmp.cleanup()
     def create(self,race='human',cls='warrior'):self.g.create('Tester',race,cls)
     def add_options(self):

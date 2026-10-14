@@ -1,3 +1,48 @@
+# Relic Frontier v0.9.0 — 2026-10-14
+
+- Character levels now reach 100. New characters start with one learned ability;
+  level gains award points to choose abilities and improve ranks at gated levels.
+- Added the rogue, cross-class ability study with persistent class penalties,
+  higher-level techniques, and mage-only enchanting. Existing known abilities
+  and progression survive save migration.
+- Added spell mana costs, class reserves, recovery and slow use-based mana growth.
+  Spell and individual equipment mastery now have 100 default levels, with
+  challenge-based practice bonuses and per-level editable damage/costs.
+- Added helmet, chest, pants and arm slots, shield defense and hand restrictions.
+  Items and container contents have weight; class carrying capacity grows by level.
+  Overweight acquisitions are rejected without loss; excess loot stays on the ground.
+- Fixed unreachable skill gates, named spell targeting and scouting fixed enemies.
+  Added shared skill/potion recovery and shop equipment repairs preserving magic XP.
+- Added editable regional enemy banks, population caps, adjacent wandering, weather
+  and fog. Multiple enemies fight together, with shared encounter structures tested
+  for multiple players; networked multiplayer remains future work.
+- Enemies heal gradually outside combat, with adjustable global and creature-level
+  delay, interval and rate. Fighting, unconscious and defeated creatures never heal.
+- Added owner controls and player displays for the new systems. Existing authored
+  rooms and personal saves were preserved; tests use disposable data.
+- Validation: 225 Python tests, both JavaScript helper suites, TypeScript and Vite
+  build; 1,500 controlled early/mid-level fights; copied-save migration and local
+  HTTP checks. Browser visual verification could not complete because the available
+  browser could not connect to the preview. A separate preview launcher is provided.
+- Prepared on the update branch for review before merging into main.
+
+# Relic Frontier v0.8.0 — 2026-10-14
+
+- Fireball and Lightning now start weak and gain separate spell experience.
+  Each individual magical weapon or armor item also keeps its own experience.
+- Added slow 20-level defaults: 1 XP per valid use, 100 XP to level 2 and
+  10,450 total XP to level 20. The owner can edit each level's XP and power.
+- Spell damage is independent of weapons and character-level multipliers.
+  Healing, knockout chance and spell effect damage can also use level tables.
+- Added per-level tables to the spell and equipment editor, plus level and
+  progress displays in SKILLS, item inspection and the game panels.
+- Old magical equipment gains an individual identity on loading. Experience
+  survives storage, dropping, saving and temporary enchantment expiration.
+  Recall scrolls remain single-use. Existing owner eligibility is preserved.
+- Validation: 147 Python tests, both JavaScript helper suites and the
+  TypeScript/Vite production build passed. Browser visual verification could
+  not complete because the browser could not connect to the local preview.
+
 # Relic Frontier v0.7.0 — 2026-10-13
 
 - Added KILL as a complete ATTACK alias, including named and ambiguous targets.

@@ -1,0 +1,70 @@
+RELIC FRONTIER v0.8.0 — SPELL AND MAGIC ITEM LEVELS
+
+PLAY
+Open Start_Game.cmd in this folder. Stop any old game with Ctrl+C first.
+Refresh the game and owner editor with Ctrl+F5.
+
+SLOW, INDEPENDENT PROGRESSION
+Fireball and Lightning start at spell level 1 and keep separate experience.
+Each individual Elven Sword also starts at magic level 1 and keeps its own XP.
+The owner can enable progression on other weapons, armor and custom spells.
+Character level and eligibility still decide when a spell becomes available;
+spell level decides its power after it is unlocked.
+
+By default, each valid use gives 1 XP. Level 2 takes 100 uses, level 3 takes
+250 total uses, and level 20 takes 10,450 total uses. Each later step needs
+50 more uses than the previous step. The default maximum is level 20.
+
+Spells learn from valid casts, including misses and dodges. Invalid targets,
+locked spells, cooldown retries, stunned attempts and healing at full health
+earn no XP. Magic weapons learn from attacks that use them, including misses.
+Casting a spell does not train a held weapon. Magic armor and shields learn
+when equipped for protection and struck. Body armor merely held in a hand
+does not grant protection or defensive XP. Recall scrolls stay single-use.
+
+DEFAULT POWER
+Level    Total XP    Fireball damage    Lightning damage    Elven Sword
+1        0           6                  8                   10
+2        100         8                  11                  11
+3        250         10                 14                  12
+20       10,450      44                 65                  29
+
+Spell damage is direct damage on a hit, without weapon or character-level
+multipliers. Fireball retains its 25% scorch chance; scorch damage starts at
+1 per pulse and rises to 4. Hit, dodge and status resistance checks remain.
+Weapon power is the weapon contribution to a normal attack, which retains
+the existing class and character-level contributions.
+
+EDIT EVERY LEVEL
+Open the Owner editor at http://127.0.0.1:8765/admin.
+1. Open Skills & spells and select Fireball, Lightning or another skill.
+2. Under Core settings & existing content, open Spell levels.
+3. Edit Damage and Total XP to reach for any level.
+4. For damage-over-time spells, edit Effect damage / pulse. A blank entry
+   uses the attached status effect's ordinary damage setting.
+5. Adjust XP earned per valid use, or add/remove the final level as needed.
+6. Click Save world changes.
+
+Healing and knockout spell tables control healing HP or success chance.
+Turn Spell progression on for new custom spells. Physical skills may keep
+their existing damage multiplier. Enchanting has its own progression.
+
+For equipment, open Items & equipment, select a weapon or armor, and open
+Magic item levels. Enable progression and edit Damage or Armor at each level.
+Copies share the same balance table but keep separate experience. The ordinary
+item stat applies when progression is off; the level table applies when on.
+
+Level 1 starts at 0 XP. Later thresholds must increase. Editing tables retains
+stored XP, so changing thresholds can change an existing spell or item level.
+
+INSPECTION AND SAVES
+SKILLS and the Skills panel show spell level, progress and current power.
+LOOK and inventory/equipment panels show item level and progress. Purchased,
+found, equipped, dropped and stored magic items retain individual identities.
+Existing magical gear starts at level 1 on its first updated load.
+
+Temporary enchantments remain separate: Damage 11 (+1) means 11 base damage
+plus a temporary +1 enchantment. Expiration does not erase item training.
+Enchanting keeps its existing adjustable progression, costs and failure risks.
+Personal saves and owner settings stay local. Keep an updated save with the
+updated code, and stop the game before making a backup.

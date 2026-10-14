@@ -7,12 +7,13 @@ import copy
 import math
 import re
 from revision_rules import DEFAULT_RULES
+from enchanting import Enchanting
 
 DIRECTIONS={'n':'north','s':'south','e':'east','w':'west','u':'up','d':'down'}
 TRAITS=['scarred','watchful','lean','broad-shouldered','dust-covered','restless','pale','dark-eyed','weathered','bristling','long-limbed','stout']
 MARKS=['notched-eared','gray-marked','white-marked','red-eyed','mud-spattered','amber-eyed','sharp-eyed','mottled','ragged','dark-backed','light-footed','heavy-browed']
 
-class Revision:
+class Revision(Enchanting):
     def rules(self):
         return {**DEFAULT_RULES,**self.w.get('revision',{})}
 
@@ -22,6 +23,7 @@ class Revision:
         self.state.setdefault('creature_sequence',0)
         self.state.setdefault('corpses',[])
         self.state['schema_version']=5
+        self.migrate_enchantments()
 
     def tag_creature(self,e,home):
         if 'uid' not in e:
@@ -189,7 +191,7 @@ class Revision:
         with self.lock:
             if not self.p:return
             before=copy.deepcopy(self.state)
-            self.cleanup_drops();self.roam()
+            self.cleanup_drops();self.roam();self.expire_enchantments()
             self.state['corpses']=[c for c in self.state['corpses'] if c['expires']>self.clock() and not c.get('harvested')]
             self.retarget()
             if not self.p['combat']:
@@ -262,25 +264,20 @@ class Revision:
 
     def item(self,iid):
         inst=self.state.get('instances',{}).get(iid)
-        if inst and inst['kind']=='weapon':
-            item=copy.deepcopy(self.w['items'][inst['item']]);bonus=inst.get('bonus',0)
-            sharpen=inst.get('sharpen_bonus',0) if inst.get('sharpen_until',0)>self.clock() else 0
-            item['damage']=max(0,item.get('damage',0)+bonus+sharpen)
-            item['name']+=f' [{inst["number"]}]'+(f' +{bonus}' if bonus>0 else ' (damaged)' if bonus<0 else '')+(' (sharpened)' if sharpen else '')
-            item.update(instance=True,enchant_rank=inst.get('rank',0))
-            return item
+        if inst and inst['kind'] in ('weapon','armor'):
+            return self.modified_item(inst)
         return super().item(iid)
 
     def strike(self,multiplier=1,attack_name=None):
         e=self.enemy()
         if not e:return
         name=self.creature_name(e);eq=self.p['equipment'];right=eq.get('weapon');left=eq.get('left_hand')
-        off=self.item(left) if left else {};dual=bool(right) and off.get('kind')=='weapon';rules=self.rules()
+        main=self.item(right) if right else {};off=self.item(left) if left else {};dual=main.get('kind')=='weapon' and off.get('kind')=='weapon';rules=self.rules()
         hit=self.w['settings']['hit_chance']-(rules['dual_hit_penalty'] if dual else 0)
         if self.rng.random()>max(0,hit):self.log(f'Your attack misses {name}.','combat');return
         dodge=self.w['enemies'][e['type']].get('dodge',0)
         if dodge and self.rng.random()<dodge/100:self.log(f'{name} dodges your {attack_name or ("Bash" if multiplier!=1 else "attack")}! No damage dealt.','combat');return
-        weapon=self.item(right) if right else off if off.get('kind')=='weapon' else {}
+        weapon=main if main.get('kind')=='weapon' else off if off.get('kind')=='weapon' else {}
         damage=max(1,round((self.rng.randint(*self.w['classes'][self.p['class']]['damage'])+weapon.get('damage',0)+(off.get('damage',0)*rules['offhand_scale'] if dual else 0)+(self.p['level']-1)*self.w['settings']['damage_per_level'])*multiplier))
         e['hp']=max(0,e['hp']-damage);self.log((attack_name+'! ' if attack_name else 'Bash! ' if multiplier!=1 else '')+f'You hit {name} for {damage}.','combat')
         if e['hp']==0:self.victory(e)
@@ -294,7 +291,7 @@ class Revision:
         spec=self.w['enemies'][e['type']];name=self.creature_name(e)
         if spec.get('battle_cries') and spec.get('battle_cry_chance',0)>0 and self.rng.random()<spec['battle_cry_chance']/100:self.log(self.rng.choice(spec['battle_cries']),'combat')
         if self.rng.random()>self.w['settings']['hit_chance']:self.log(name+' misses you.','combat');return
-        armor=sum(self.item(i).get('armor',0) for i in self.p['equipment'].values() if self.item(i)['kind']=='armor')
+        armor=sum(self.item(i).get('armor',0) for slot,i in self.p['equipment'].items() if slot=='armor' or self.item(i).get('shield'))
         damage=max(1,self.rng.randint(*spec['damage'])-armor);self.p['hp']=max(0,self.p['hp']-damage)
         self.log(f'{name} hits you for {damage}.','danger')
         if self.p['hp']==0:self.death()
@@ -314,7 +311,7 @@ class Revision:
         inventory=set(self.p['inventory']);self.p['effects']=[];self.p.pop('target',None)
         super().death()
         for lost in inventory-set(self.p['inventory']):
-            if self.state['instances'].get(lost,{}).get('kind')=='weapon':self.state['instances'].pop(lost)
+            if self.state['instances'].get(lost,{}).get('kind') in ('weapon','armor'):self.state['instances'].pop(lost)
 
     def knockout(self,target,skill_id='knockout'):
         if target:self.p['target']=self.find_creature(target)['uid']
@@ -327,7 +324,7 @@ class Revision:
     def activate_skill(self,sid,target=''):
         if any(self.w['status_effects'][s['id']]['kind']=='stun' for s in self.p.get('effects',[])):raise ValueError('You are stunned. Wait for the effect to expire before using a skill.')
         skill=self.require_skill(sid);kind=skill.get('effect','damage')
-        if kind in ('enchant','sharpen'):self.work_weapon(sid,kind);return
+        if kind in ('enchant','sharpen'):self.work_weapon(sid,kind,target);return
         remaining=self.p['cooldowns'].get(sid,0)-self.clock()
         if remaining>0:raise ValueError(f'{skill["name"]} is ready in {math.ceil(remaining)} seconds.')
         if skill.get('initiates') and kind=='damage' and not self.p['combat']:
@@ -337,7 +334,8 @@ class Revision:
         try:super().activate_skill(sid,target)
         finally:self._active_skill=None
 
-    def work_weapon(self,sid,kind):
+    def work_weapon(self,sid,kind,target=''):
+        if kind=='enchant':self.enchant_item(sid,target);return
         if self.p['combat']:raise ValueError('Finish combat before working on a weapon.')
         iid=self.p['equipment'].get('weapon')
         if not iid or self.item(iid)['kind']!='weapon':raise ValueError('Equip a weapon in your right hand first.')
@@ -345,33 +343,21 @@ class Revision:
         remaining=self.p['cooldowns'].get(sid,0)-self.clock()
         if remaining>0:raise ValueError(f'{skill["name"]} is ready in {math.ceil(remaining)} seconds.')
         inst=self.state['instances'].get(iid,{})
-        if kind=='enchant':
-            if inst.get('rank',0)>=rules['enchant_cap']:raise ValueError('This weapon has reached its enchantment limit.')
-            if self.p['gold']<rules['enchant_cost']:raise ValueError(f'Enchanting costs {rules["enchant_cost"]} gold per attempt.')
         if not inst:
             iid=self.new_instance(dict(kind='weapon',item=iid,rank=0,bonus=0));self.p['equipment']['weapon']=iid;inst=self.state['instances'][iid]
         self.p['cooldowns'][sid]=self.clock()+skill['cooldown']
         if kind=='sharpen':
             inst.update(sharpen_bonus=rules['sharpen_bonus'],sharpen_until=self.clock()+rules['sharpen_seconds'])
             self.log(f'Your weapon gains {rules["sharpen_bonus"]} damage for {rules["sharpen_seconds"]:g} seconds.','reward');return
-        self.p['gold']-=rules['enchant_cost'];proficiency=self.p.setdefault('proficiencies',{}).get(sid,0)
-        chance=max(0,min(100,rules['enchant_base']+proficiency*rules['enchant_gain']-inst.get('rank',0)*rules['enchant_difficulty']))
-        self.p['proficiencies'][sid]=min(rules['enchant_proficiency_cap'],proficiency+rules['enchant_growth'])
-        if self.rng.random()<chance/100:
-            inst['rank']=inst.get('rank',0)+1;inst['bonus']=inst.get('bonus',0)+rules['enchant_bonus'];self.log('Enchantment succeeds. Your individual weapon grows stronger.','reward')
-        elif self.rng.random()<rules['enchant_destroy']/100:
-            self.p['equipment'].pop('weapon');self.state['instances'].pop(iid);self.log('The enchantment fails catastrophically. Your weapon is destroyed!','danger')
-        else:inst['bonus']=max(-self.w['items'][inst['item']].get('damage',0),inst.get('bonus',0)-rules['enchant_damage']);self.log('The enchantment fails and damages your weapon.','danger')
-        self.log(f'{skill["name"]} proficiency: {self.p["proficiencies"][sid]:g}/{rules["enchant_proficiency_cap"]:g}. Attempt success chance was {chance:g}%.')
 
     def equip_hand(self,target):
         if self.p['combat']:raise ValueError('Finish the fight before rearranging equipment.')
-        hand='weapon'
+        hand='weapon';explicit_hand=False
         for suffix,slot in [(' in left hand','left_hand'),(' left','left_hand'),(' in right hand','weapon'),(' right','weapon')]:
-            if target.endswith(suffix):target=target[:-len(suffix)];hand=slot;break
+            if target.endswith(suffix):target=target[:-len(suffix)];hand=slot;explicit_hand=True;break
         iid=self.match(target,self.p['inventory']);spec=self.item(iid);eq=self.p['equipment'];proposed=dict(eq)
-        if spec['kind']=='armor':hand='left_hand' if spec.get('shield') else 'armor'
-        elif spec['kind']!='weapon':raise ValueError('Only weapons, armor and shields can be equipped.')
+        if spec['kind']=='armor' and not explicit_hand:hand='left_hand' if spec.get('shield') else 'armor'
+        elif spec['kind'] not in ('weapon','armor'):raise ValueError('Only weapons, armor and shields can be equipped.')
         proposed[hand]=iid
         self.validate_hands(proposed,self.w)
         self.p['inventory'].remove(iid)
@@ -384,12 +370,12 @@ class Revision:
             if template not in w['items']:raise ValueError('Cannot remove an equipped item type.')
             return w['items'][template]
         right=spec(eq['weapon']) if eq.get('weapon') else {};left=spec(eq['left_hand']) if eq.get('left_hand') else {}
-        if right and right['kind']!='weapon':raise ValueError('Right hand requires a weapon.')
+        if right and right['kind'] not in ('weapon','armor'):raise ValueError('Right hand requires a weapon or armor.')
         if eq.get('armor') and (spec(eq['armor'])['kind']!='armor' or spec(eq['armor']).get('shield')):raise ValueError('Body armor cannot be a shield.')
-        if left and not (left['kind']=='weapon' or left.get('shield')):raise ValueError('Left hand requires a weapon or shield.')
+        if left and left['kind'] not in ('weapon','armor'):raise ValueError('Left hand requires a weapon or armor.')
         if left and (right.get('hands',1)==2 or left.get('hands',1)==2):raise ValueError('Two-handed weapons require an empty left hand and must go in the right hand.')
         rules={**DEFAULT_RULES,**w.get('revision',{})}
-        if right and left.get('kind')=='weapon' and (self.p['level']<rules['dual_level'] or self.p['class'] not in rules['dual_classes']):raise ValueError('Dual wielding requires two one-handed weapons, an eligible class and the configured unlock level.')
+        if right.get('kind')=='weapon' and left.get('kind')=='weapon' and (self.p['level']<rules['dual_level'] or self.p['class'] not in rules['dual_classes']):raise ValueError('Dual wielding requires two one-handed weapons, an eligible class and the configured unlock level.')
 
     def look(self,target):
         parts=target.split();direction=DIRECTIONS.get(parts[0],parts[0]) if parts else ''
@@ -487,6 +473,9 @@ class Revision:
             if self.p['combat'] and e['uid'] not in self.p['combat']['engaged']:self.p['combat']['engaged'].append(e['uid'])
             self.log('Target: '+self.creature_name(e)+'.','combat');return True
         if verb=='equip':self.equip_hand(target);return True
+        if verb=='hold':
+            if not target.endswith((' left',' right',' in left hand',' in right hand')):target+=' left'
+            self.equip_hand(target);return True
         if verb=='unequip':
             if self.p['combat']:raise ValueError('Finish the fight before rearranging equipment.')
             slot={'right':'weapon','right hand':'weapon','left':'left_hand','left hand':'left_hand'}.get(target,target)
@@ -496,7 +485,7 @@ class Revision:
             if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full.')
             self.p['inventory'].append(eq.pop(slot));self.log('Equipment returned to your bag.');return True
         if verb in ('enchant','enchanting','sharpen','sharpening','charge','fireball','lightning'):
-            sid={'enchant':'enchanting','sharpen':'sharpening'}.get(verb,verb);self.activate_skill(sid);return True
+            sid={'enchant':'enchanting','sharpen':'sharpening'}.get(verb,verb);self.activate_skill(sid,target);return True
         if verb=='harvest':self.harvest(target);return True
         if verb=='cook':self.cook(target);return True
         if verb in ('use','quaff','eat','recall'):
@@ -527,7 +516,7 @@ class Revision:
                 if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full; the unconscious creature remains here.')
                 self.p['inventory'].append(self.new_instance(dict(kind='captive',enemy=e['type'])));e['hp']=0;e['unconscious']=False;e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60);self.log('You pick up the unconscious creature. No kill rewards are awarded.');return True
         if verb in ('help','?'):
-            self.log('New commands: TARGET <creature description>; EQUIP <weapon> LEFT or RIGHT; UNEQUIP LEFT / RIGHT; LOOK NORTH 2; FIREBALL; LIGHTNING; CHARGE; SHARPEN; ENCHANT; RECALL; EAT <food>; HARVEST <creature>; COOK <recipe>. SAY <phrase> TO <NPC>. Enchanting risks weapon damage or destruction; inspect Skills and owner balance settings before use.')
+            self.log('Commands: ATTACK or KILL <creature>; TARGET <creature description>; EQUIP <item> LEFT or RIGHT; HOLD <armor>; UNEQUIP LEFT / RIGHT; LOOK NORTH 2; FIREBALL; LIGHTNING; CHARGE; SHARPEN; ENCHANT <held weapon or worn/held armor>; RECALL; EAT <food>; HARVEST <creature>; COOK <recipe>. SAY <phrase> TO <NPC>. Enchantments are temporary. Practice slowly improves enchanting level, success, bonus and duration. Weapon failures can damage or destroy the weapon; see SKILLS and owner balance settings.')
         return super().extra_command(verb,target)
 
     def snapshot(self):
@@ -546,14 +535,14 @@ class Revision:
         result['corpses']=[dict(id=c['uid'],name=c['name']) for c in self.state['corpses'] if c['room']==self.p['room'] and c['expires']>self.clock() and not c.get('harvested')] if light else []
         result['status_effects']=self.w.get('status_effects',{})
         result['player']['hands']={'right':self.p['equipment'].get('weapon'),'left':self.p['equipment'].get('left_hand')}
-        result['player']['proficiency_limit']=self.rules()['enchant_proficiency_cap']
+        result['player']['enchanting']={sid:self.enchant_progress(sid) for sid,s in self.w['skills'].items() if s.get('effect')=='enchant'}
         return result
 
     def check_live_references(self,w):
         super().check_live_references(w)
         if self.p:self.validate_hands(self.p['equipment'],w)
         for inst in self.state.get('instances',{}).values():
-            if inst['kind']=='weapon' and w['items'].get(inst['item'],{}).get('kind')!='weapon':raise ValueError('Cannot remove or change an individually modified weapon type.')
+            if inst['kind'] in ('weapon','armor') and w['items'].get(inst['item'],{}).get('kind')!=inst['kind']:raise ValueError('Cannot remove or change an individually modified equipment type.')
         actors=([self.p] if self.p else [])
         for rid in self.w['rooms']:actors+=self.creatures(rid,True,False)
         for actor in actors:

@@ -83,14 +83,14 @@ class RevisionTests(unittest.TestCase):
         self.g.activate_skill('sharpening');iid=self.g.p['equipment']['weapon']
         self.assertTrue(iid.startswith('@'));self.assertEqual(self.g.item(iid)['damage'],4);self.assertEqual(self.g.item('rusted_sword')['damage'],2)
         self.g.w['revision']['enchant_base']=100;self.g.activate_skill('enchanting')
-        self.assertEqual(self.g.item(iid)['damage'],5);self.assertEqual(self.g.p['proficiencies']['enchanting'],2)
+        self.assertEqual(self.g.item(iid)['damage'],5);self.assertEqual(self.g.p['proficiencies']['enchanting'],1)
         self.g.save();self.g.db.close();self.g=Game(self.path,self.db,clock=lambda:self.now)
         self.assertEqual(self.g.item(iid)['damage'],5);self.now+=121;self.assertEqual(self.g.item(iid)['damage'],3)
     def test_enchant_failure_destruction_eligibility_and_cost(self):
         with self.assertRaises(ValueError):self.g.activate_skill('enchanting')
         self.g.p.update(level=3,gold=100);self.g.w['revision'].update(enchant_base=0,enchant_destroy=100)
         self.g.activate_skill('enchanting');self.assertNotIn('weapon',self.g.p['equipment']);self.assertEqual(self.g.p['gold'],80)
-        self.assertEqual(self.g.p['proficiencies']['enchanting'],2)
+        self.assertEqual(self.g.p['proficiencies']['enchanting'],1)
     def test_hands_shields_dual_and_two_handed_validation(self):
         self.g.p['inventory']+=['buckler','iron_sword']
         self.g.command('equip buckler');self.assertEqual(self.g.p['equipment']['left_hand'],'buckler')

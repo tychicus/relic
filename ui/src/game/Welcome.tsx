@@ -33,7 +33,7 @@ export function Welcome({ choices, onCreate }: Props) {
 
   return (
     <div className="mx-auto grid max-w-4xl gap-5 py-6">
-      <TerminalBox title="Relic Frontier v0.6.0">
+      <TerminalBox title="Relic Frontier v0.7.0">
         <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="flex flex-col items-center justify-center text-center">
             <p className="font-bold">Welcome, traveler!</p>

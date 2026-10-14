@@ -148,7 +148,7 @@
       "multiplier": 1,
       "allowed_classes": null,
       "allowed_races": null,
-      "description": "Train proficiency by enchanting your right-hand weapon. Costs gold; failure can damage or destroy it. See Crafting & balance in the owner editor."
+      "description": "ENCHANT <item>: temporarily enchant a held weapon or worn/held armor. Every valid attempt slowly trains your enchanting level; higher skill improves success, bonus and duration. Costs gold; weapon failures can damage or destroy the weapon. See Crafting & balance in the owner editor."
     }
   },
   "items": {

@@ -305,7 +305,7 @@ class LegacyGame(Abilities):
                 return self.snapshot()
             self.log('> ' + raw, 'command')
             parts = raw.lower().split(' ', 1); verb = DIRECTIONS.get(parts[0], parts[0]); target = parts[1] if len(parts) > 1 else ''
-            verb = {'l': 'look', 'i': 'inventory', 'eq': 'equipment', 'a': 'attack'}.get(verb, verb)
+            verb = {'l': 'look', 'i': 'inventory', 'eq': 'equipment', 'a': 'attack', 'kill': 'attack'}.get(verb, verb)
             try:
                 room = self.w['rooms'][self.p['room']]
                 if self.skill_command(verb, target) or self.extra_command(verb, target):
@@ -350,6 +350,10 @@ class LegacyGame(Abilities):
                         left, right = ('[', ']') if item['kind'] in ('weapon', 'armor') else ('(', ')')
                         count = ids.count(i)
                         lines.append(f'{left}{item["name"]}{right}' + (f' (x{count})' if count > 1 else ''))
+                        if item['kind'] in ('weapon','armor'):
+                            lines[-1] += ' — ' + self.gear_stats(item)
+                        if item.get('enchantment_description'):
+                            lines[-1] += '\n' + item['enchantment_description']
                     self.log(verb.title() + ':\n' + ('\n'.join(lines) or 'empty'))
                 elif verb in ('buy', 'sell', 'equip', 'unequip', 'drop', 'get'):
                     if self.p['combat']:
@@ -448,7 +452,7 @@ class LegacyGame(Abilities):
         used = p['inventory'] + list(p['equipment'].values()) + [i for pile in self.state['ground'].values() for i in pile]
         if any(i not in w['items'] and i not in self.state['instances'] for i in used):
             raise ValueError('Cannot remove items currently held or on the ground.')
-        if any(w['items'].get(self.state['instances'].get(i,{}).get('item',i),{}).get('kind') != ('weapon' if slot=='weapon' else 'armor') for slot, i in p['equipment'].items() if slot!='left_hand'):
+        if any(w['items'].get(self.state['instances'].get(i,{}).get('item',i),{}).get('kind') not in (('armor',) if slot=='armor' else ('weapon','armor')) for slot, i in p['equipment'].items()):
             raise ValueError('Cannot change the kind of an equipped item.')
         if any(r not in w['rooms'] for r, pile in self.state['ground'].items() if pile):
             raise ValueError('Cannot remove a room containing dropped items.')

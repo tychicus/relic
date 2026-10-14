@@ -1,0 +1,94 @@
+RELIC FRONTIER v0.7.0 - October 13, 2026
+
+START THE UPDATED GAME
+1. Stop an older running game with Ctrl+C in its launcher window.
+2. Open Start_Game.cmd inside the extracted game folder.
+3. Confirm the browser says v0.7.0. Refresh with Ctrl+F5 if needed.
+
+This shared repository includes the authored world, source and built interface.
+Personal character saves and backup ZIPs are not uploaded. Before updating an
+existing installation, stop the game and back up the complete folder, including
+your own saves. Keep each version's world and save together.
+
+COMBAT
+KILL is an alias for ATTACK. For example: kill beetle
+KILL without a name, distinct creature names, darkness and targeting work
+exactly as they do with ATTACK.
+
+ENCHANTING
+Examples:
+  enchant Iron Sword
+  enchant Chain Vest
+  enchant left
+  enchant right
+  enchant armor
+  cast enchanting Iron Sword
+
+Weapons must be equipped in a hand. Armor must be worn or held. Inventory,
+shop and ground items cannot be enchanted. If matching items occupy both
+hands, choose ENCHANT LEFT or ENCHANT RIGHT.
+
+EQUIP <armor> wears it (shields go in the left hand). HOLD <armor> holds it in
+the left hand; HOLD <armor> RIGHT selects the right hand. Held body armor
+does not provide protection until worn; held shields provide protection.
+The inventory also offers a Hold left button for armor.
+
+Successful enchanting temporarily adds damage to a weapon or protection to
+armor. It affects that individual copy, not every item of the same type.
+Re-enchanting replaces/refreshes the enchantment; it never stacks endlessly.
+Timers continue in inventory, storage, on the ground, and while the game is
+closed. Expiration removes the magic bonus and the active enchantment cue.
+Sharpening is separate and keeps its own bonus and expiration time.
+
+Equipment, inventory and LOOK show the bonus beside the regular statistic:
+  Armor 10 (+3)
+  Damage 5 (+3)
+The parenthesized amount is the enchantment bonus. Actual combat uses the
+total. Enchanted items are marked and have a glow description; wording varies
+with strength. LOOK also reports the remaining duration.
+
+ENCHANTING LEVELS (separate from character level)
+Every valid attempt awards 1 enchanting XP, whether it succeeds or fails.
+Invalid targets, insufficient gold, locked skills, combat and cooldowns award
+nothing and spend nothing. SKILLS and the Skills panel show level/progress.
+
+Default progression and rewards:
+- Level 1: 50% success, +1 damage/armor, 5 minutes.
+- 100 attempts to reach level 2; then 150 XP to level 3, 200 to level 4, etc.
+- Each enchanting level adds 2 percentage points of success and 1 minute.
+- Every 3 additional enchanting levels adds another point of damage/armor.
+- Maximum enchanting level 20: 88% success, +7, 24 minutes.
+- Level 20 requires 10,450 total XP: mastery is deliberately slow.
+
+Existing restrictions/costs remain: character level 3 unlock, 15-second
+cooldown, and 20 gold per valid attempt. Failed weapon enchantments can still
+damage or destroy the weapon under your existing risk settings (10% chance
+of destruction after failure; otherwise 1 damage lost). Failed armor attempts
+leave the armor unchanged. Failed attempts still award practice XP.
+
+The owner editor's Crafting & balance category controls the XP curve, level
+cap, chance, strength, duration, cost and weapon risks. Skills controls
+eligibility, character unlock level and cooldown. No JSON editing is needed.
+
+SAVE COMPATIBILITY
+Old enchanting proficiency is retained as the same numeric amount of XP.
+Previously permanent positive weapon enchantments become temporary on first
+load, keeping their bonus for the duration appropriate to the saved skill.
+Reloading does not restart that timer. Existing physical weapon damage is
+retained. Old rank/growth configuration fields remain in world data for
+preservation but are superseded by the new enchanting-level controls.
+New saves (including individual enchanted armor) require v0.7.0 or later;
+use your original backup to return to v0.6.0.
+
+Your save is in saves/game.sqlite3 and authored content is in content/world.json.
+Stop with Ctrl+C before moving or backing up the game. Closing the browser
+does not stop the game or its automatic combat.
+
+VERIFICATION
+133 Python checks, both JavaScript helper suites, and the production interface
+build passed for the local release. The same runtime code and built interface
+were integrated with the latest shared repository. The Python suite and both
+JavaScript helper suites were rerun after integration. The optional personal-save
+test skips when no local save is present. Saved-character loading, original-save
+preservation and authored-world comparisons were checked on disposable copies. Browser visual inspection could not connect
+to the disposable local preview in this environment; no visual pass is claimed.

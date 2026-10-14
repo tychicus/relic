@@ -164,7 +164,7 @@ export function HeaderPanel({ data, send }: { data: Snapshot; send: Send }) {
   const { room } = data
   const area = [room.code, room.region].filter(Boolean).join(' · ') || (room.safe ? 'Within the town walls' : 'Beyond the walls')
   return (
-    <TerminalBox title="Relic Frontier v0.6.0">
+    <TerminalBox title="Relic Frontier v0.7.0">
       <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <CharacterSummary data={data} />
         <div className="min-w-0 border-t border-primary pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-4">

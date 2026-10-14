@@ -6,8 +6,10 @@ import type { Item, Snapshot } from './types'
 export type Send = (command: string) => void
 
 function detail(i: Item) {
-  if (i.kind === 'weapon') return `+${i.damage} damage`
-  if (i.kind === 'armor') return `${i.armor} armor`
+  if (i.kind === 'weapon' || i.kind === 'armor') {
+    const base = i.kind === 'weapon' ? `Damage ${i.base_damage ?? i.damage}` : `Armor ${i.base_armor ?? i.armor}`
+    return base + (i.enchanted ? ` (+${i.enchantment_bonus})` : '') + (i.sharpen_bonus ? ` · Sharpened +${i.sharpen_bonus}` : '')
+  }
   if (i.recall) return 'Returns to town outside combat'
   if (i.kind === 'consumable') return `Restores ${i.heal} HP`
   if (i.kind === 'light') return 'Lights dark rooms'
@@ -64,8 +66,8 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
     actions = (
       <>
         <ActionButton send={send} command={`${action.toLowerCase()} ${id}`}>{action}</ActionButton>
-        {i.kind === 'weapon' && (i.hands ?? 1) === 1 && (
-          <ActionButton send={send} command={`equip ${id} left`}>Equip left</ActionButton>
+        {(i.kind === 'armor' || (i.kind === 'weapon' && (i.hands ?? 1) === 1)) && (
+          <ActionButton send={send} command={`equip ${id} left`}>{i.kind === 'armor' ? 'Hold left' : 'Equip left'}</ActionButton>
         )}
         <ActionButton send={send} command={`drop ${id}`}>Drop</ActionButton>
         {sellCage && (
@@ -81,6 +83,7 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
       <div className={cn('min-w-0 break-words', i.rarity && 'text-gold')}>
         {label}
         <small className="block text-xs text-muted-foreground">{detail(i)}</small>
+        {i.enchanted && <small className="block text-xs text-gold">{i.enchantment_description}</small>}
       </div>
       <div className="flex flex-wrap justify-end gap-1">
         {actions}

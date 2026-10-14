@@ -13,7 +13,7 @@ export function Dashboard() {
     ['status_effects', 'Status effects', 'Create reusable damage, stun and slow effects.'],
     ['items', 'Items & equipment', 'Weapons, shields, food, scrolls and containers.'],
     ['recipes', 'Cooking recipes', 'Ingredients, output, fires, tools and success chances.'],
-    ['revision', 'Crafting & balance', 'Enchanting risks, proficiency, dual wielding, food and perception.'],
+    ['revision', 'Crafting & balance', 'Enchanting levels, duration, bonuses, risks, dual wielding, food and perception.'],
     ['settings', 'Combat & progression', 'Attack pulses, hit chances, XP and death penalties.'],
   ]
   return (

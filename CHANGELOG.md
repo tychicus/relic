@@ -1,3 +1,29 @@
+# Relic Frontier v0.7.0 — 2026-10-13
+
+- Added KILL as a complete ATTACK alias, including named and ambiguous targets.
+- Added named enchanting targets for either hand, worn armor and held armor.
+  HOLD and explicit hand equipment support holding body armor for enchanting;
+  it grants protection only while worn (shields protect while held).
+- Enchanting has its own slow XP/level curve. Valid successes and failures
+  award practice. Chance, strength and duration scale with enchanting level;
+  all progression and balance controls are available in Crafting & balance.
+- Enchantments affect individual items, expire in real time (including offline),
+  and refresh instead of stacking. Sharpening remains independent. Existing
+  weapon failure risks, cost, cooldown and eligibility are preserved.
+- Added separate base/bonus displays such as Armor 10 (+3), active glow prose,
+  expiration messages and enchanting level/progress in SKILLS and the sidebar.
+- Existing proficiency becomes the same numeric amount of XP. Legacy positive
+  permanent bonuses become timed enchantments once on first load. Physical
+  weapon damage is retained. Individual enchanted armor requires this version.
+- Preserved the save snapshot and all authored data except the enchanting
+  skill's outdated description. The local release includes a separate
+  updated folder/ZIP and original backup; personal saves and backup archives
+  remain excluded from this shared repository.
+- Validation: 133 Python tests, map and editor helper suites, TypeScript and
+  production UI build passed; actual saved character and preservation checks
+  passed. Browser visual QA was attempted but the preview connection timed out.
+- No multiplayer, area, story or unrelated editor changes.
+
 # Relic Frontier v0.6.0 — 2026-09-27
 
 - Released from the latest user-edited v0.5.0 source with byte-identical world,

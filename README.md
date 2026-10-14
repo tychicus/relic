@@ -1,4 +1,4 @@
-# Relic Frontier v0.6.0
+# Relic Frontier v0.7.0
 
 A local, editable, keyboard-driven fantasy RPG with relic technology.
 Python 3.11+ and the standard library are the only game requirements.
@@ -19,7 +19,7 @@ Stop any old game with **Ctrl+C** in its launcher. On Windows, open
 Play at http://127.0.0.1:8765 and edit at http://127.0.0.1:8765/admin.
 Check the displayed version; refresh with Ctrl+F5 if the browser is stale.
 
-Read **UPDATE_v0.6.0.txt** for the full update guide, editable balance values,
+Read **UPDATE_v0.7.0.txt** for the full update guide, editable balance values,
 new commands and intentional limitations. **CHANGELOG.md** records the release
 and verification. Older UPDATE files in docs/history describe earlier releases.
 
@@ -27,14 +27,17 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
 
 - Move with N, S, E, W, UP, DOWN. LOOK inspects the current room; LOOK NORTH 2
   attempts a distant view. Descriptions contain discovery clues.
-- ATTACK [creature] begins automatic combat. TARGET [distinct description]
+- ATTACK [creature] or KILL [creature] begins automatic combat. TARGET [distinct description]
   changes opponents. Inject skills, spells, potions or FLEE between pulses.
 - SKILLS shows eligibility and unlocks. CAST [skill name], BASH, KNOCKOUT,
   FIREBALL, LIGHTNING and CHARGE are supported.
 - INVENTORY, EQUIPMENT, BUY, SELL, GET, DROP, EQUIP and UNEQUIP manage items.
   EQUIP [weapon] LEFT/RIGHT and UNEQUIP LEFT/RIGHT manage hands.
 - QUAFF POTION retains the old healing behavior. EAT [food], HARVEST [remains],
-  COOK [recipe], SHARPEN, ENCHANT and RECALL access the new systems.
+  COOK [recipe], SHARPEN, ENCHANT [item] and RECALL access the new systems.
+  Enchant a held weapon or worn/held armor; HOLD [armor] holds it in your left
+  hand. Enchantments temporarily boost damage/protection, shown as a separate
+  (+bonus) with a glow cue. SKILLS shows the slowly trained enchanting level.
 - LOOK [object], UNLOCK [container], PUT [item] IN CHEST [number],
   GET [item] FROM CHEST [number], PUT [creature] IN CAGE [number], RELEASE CAGE
   [number], and SAY [phrase] TO [creature/cage/NPC] retain exploration/storage.
@@ -63,7 +66,8 @@ copy the full folder and remove `saves` only inside the separate stopped copy.
 ## Development and checks
 
 `engine.py` keeps the established game behavior. `expedition.py` extends it
-with instance-based encounters, effects, hands and crafting. `revision_rules.py`
+with instance-based encounters, effects, hands and crafting. `enchanting.py`
+handles temporary item enchantments and slow crafting progression. `revision_rules.py`
 provides the validation/authoring schema used by the editor. `adventure.py`,
 `frontier.py`, and `abilities.py` retain discoveries, containers and eligibility.
 `server.py` is the existing loopback-only transport. The browser interface is

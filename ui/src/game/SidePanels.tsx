@@ -13,7 +13,10 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
         {skills.map((s) => (
           <p key={s.id} className="my-0.5 text-sm" title={s.description || ''}>
             <span className={s.unlocked ? 'text-foreground' : 'text-muted-foreground'}>{s.unlocked ? '✓' : '·'} {s.name}</span>
-            {s.effect === 'enchant' && <span className="text-muted-foreground"> {p.proficiencies?.[s.id] ?? 0}/{p.proficiency_limit ?? 100}</span>}
+            {s.effect === 'enchant' && p.enchanting?.[s.id] && <span className="block text-xs text-muted-foreground">
+              Skill level {p.enchanting[s.id].level} · {p.enchanting[s.id].next_xp === null ? 'Maximum level' : `${p.enchanting[s.id].level_xp}/${p.enchanting[s.id].next_xp} XP to next level`}
+              <br />{p.enchanting[s.id].chance}% success · +{p.enchanting[s.id].bonus} damage/armor · {Math.round(p.enchanting[s.id].duration / 60 * 10) / 10} minutes
+            </span>}
             {!s.unlocked && <span className="text-muted-foreground"> (level {s.unlock_level ?? 1})</span>}
           </p>
         ))}

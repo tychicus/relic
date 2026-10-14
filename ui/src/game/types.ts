@@ -7,6 +7,13 @@ export interface Item {
   price: number
   damage?: number
   armor?: number
+  base_damage?: number
+  base_armor?: number
+  enchanted?: boolean
+  enchantment_bonus?: number
+  enchantment_description?: string
+  enchantment_remaining?: number
+  sharpen_bonus?: number
   heal?: number
   hands?: number
   rarity?: string
@@ -41,6 +48,7 @@ export interface Player {
   cooldowns: Record<string, number>
   proficiencies?: Record<string, number>
   proficiency_limit?: number
+  enchanting?: Record<string, { level: number; max_level: number; level_xp: number; next_xp: number | null; chance: number; bonus: number; duration: number }>
   effects?: Effect[]
 }
 

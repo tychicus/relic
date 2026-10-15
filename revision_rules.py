@@ -26,6 +26,32 @@ ATTACHMENT = dict(effect=reference('Status effect', 'status_effects'), chance=nu
 SPAWN = dict(id=text('Permanent spawn rule ID','group'), enemy=reference('Fixed / initial creature','enemies',True), count=number('Number of spawn slots',1,1,12,True), pool=rows('Weighted random alternatives',dict(enemy=reference('Creature','enemies'),weight=number('Weight',1,.001,100000))), chance=number('Chance per attempt (%; failure spawns nothing)',100,0,100), trigger=choice('Attempt trigger',['timer','entry'],'timer'), respawn=boolean('Respawn after defeat or capture',True), delay=number('Respawn / retry delay (seconds)',60,1,86400), roam=boolean('Allow roaming'), roam_seconds=number('Seconds between moves',30,2,86400), roam_rooms=selections('Permitted roaming destinations (empty stays home)','rooms'))
 SCHEMA = {
  'revision': {
+  'weight_enabled':boolean('Enforce carrying weight limits',True),
+  'enemy_heal_enabled':boolean('Wounded enemies recover outside combat',True),
+  'enemy_heal_delay':number('Enemy recovery delay after combat / injury (seconds)',20,0,86400),
+  'enemy_heal_interval':number('Seconds between enemy healing installments',5,1,3600),
+  'enemy_heal_percent':number('Enemy maximum HP recovered per installment (%)',2,0,100),
+  'learning_enabled':boolean('Choose abilities with learning points',True),
+  'learning_points_per_level':number('Learning points earned per character level after level 1',1,1,10,True),
+  'learning_rank_bonus':number('Power bonus per additional learned rank (fraction)',.1,0,1),
+  'learning_rank_level_gap':number('Additional character levels required per ability rank',5,1,25,True),
+  'mana_enabled':boolean('Spells consume mana',True),
+  'mana_regen':number('Mana recovered per second outside combat',1,0,100),
+  'mana_combat_regen':number('Mana recovered per second in combat',0,0,100),
+  'mana_level_cap':number('Mana mastery level cap',100,1,100,True),
+  'mana_xp_first':number('Mana practice XP to level 2',100,1,100000,True),
+  'mana_xp_step':number('Extra mana XP required per later level',50,0,100000,True),
+  'mana_xp_per_use':number('Mana practice XP per valid paid cast',1,1,10000,True),
+  'mana_per_practice_level':number('Maximum mana gained per mana mastery level',2,0,1000,True),
+  'practice_challenge_bonus':number('Extra practice multiplier for an enemy at or above character level',1,0,10,True),
+  'practice_harder_bonus':number('Additional practice multiplier for a harder enemy',1,0,10,True),
+  'practice_harder_gap':number('Enemy levels above character for harder bonus',3,1,100,True),
+  'action_recovery':number('Recovery between manual combat skills (seconds; 0 disables)',2,0,60),
+  'potion_recovery':number('Recovery between healing potions (seconds; 0 disables)',10,0,3600),
+  'repair_enabled':boolean('Allow equipment repair',True),
+  'repair_anywhere':boolean('Allow repair outside repair shops'),
+  'repair_base_cost':number('Repair fee per item (gold)',0,0,100000,True),
+  'repair_cost_per_point':number('Repair gold per damage / protection point restored',5,0,100000,True),
   'dual_level':number('Dual wield unlock level',3,1,100,True),
   'dual_classes':selections('Classes allowed to dual wield','classes'),
   'offhand_scale':number('Offhand weapon damage contribution',.35,0,1),
@@ -65,6 +91,39 @@ SCHEMA = {
 }
 
 SCHEMA['revision']['dual_classes']['default']=['warrior']
+SCHEMA['rooms']['repair_service']=boolean('Equipment repairs available here')
+SCHEMA['classes']=dict(mana=number('Starting maximum mana',0,0,10000,True),mana_per_level=number('Maximum mana gained per character level',0,0,1000,True),dodge=number('Chance to dodge incoming attacks (%)',0,0,75),flee_bonus=number('Added escape chance (fraction)',0,0,1))
+SCHEMA['classes']['description']=text('Class description shown at character creation')
+SCHEMA['classes']['carry_capacity']=number('Carrying capacity at character level 1 (lb)',60,1,10000)
+SCHEMA['classes']['carry_per_level']=number('Extra carrying capacity per character level (lb)',2,0,1000)
+SCHEMA['items']['weight']=number('Item weight (lb; containers exclude contents)',0,0,10000)
+SCHEMA['items']['armor_slot']=choice('Worn slot (armor = chest; shields use a hand)',['helmet','armor','pants','arms'],'armor')
+SCHEMA['enemies']['weight']=number('Creature carrying weight (lb)',10,0,10000)
+SCHEMA['enemies']['healing_override']=boolean('Use creature-specific recovery settings below')
+SCHEMA['enemies']['heal_delay']=number('Creature recovery delay (seconds; requires override)',20,0,86400)
+SCHEMA['enemies']['heal_interval']=number('Creature recovery interval (seconds; requires override)',5,1,3600)
+SCHEMA['enemies']['heal_percent']=number('Creature recovery HP percent (0 disables; requires override)',2,0,100)
+SCHEMA['classes']['starting_ability']=reference('One starting ability','skills',True)
+SCHEMA['classes']['mana_recovery_scale']=number('Mana recovery multiplier',1,0,3)
+SCHEMA['classes']['affinities']=rows('Ability strengths and disadvantages',dict(category=choice('Ability category',['martial','arcane','subtle','craft'],'martial'),power=number('Power multiplier',1,.05,3),mana=number('Mana cost multiplier',1,.1,5),practice=number('Practice XP multiplier',1,.1,5)))
+SCHEMA['skills']['mana_cost']=number('Mana cost per valid use (0 means no cost)',0,0,10000,True)
+SCHEMA['skills']['category']=choice('Ability category',['martial','arcane','subtle','craft'],'martial')
+SCHEMA['skills']['learn_cost']=number('Learning points per rank',1,1,20,True)
+SCHEMA['skills']['max_rank']=number('Maximum chosen rank',5,1,10,True)
+SCHEMA['skills']['passive']=boolean('Passive basic-attack training (no CAST command)')
+SCHEMA['enemies']['level']=number('Enemy level (sets challenge practice bonus)',1,1,100,True)
+SCHEMA['regions']=dict(
+    rooms=selections('Squares in this region (weather applies to all)', 'rooms'),
+    spawn_rooms=selections('Enemy spawning and wandering squares (overrides their room spawn rules)', 'rooms'),
+    pool=rows('Regional enemy bank',dict(enemy=reference('Enemy','enemies'),weight=number('Relative frequency',1,.001,100000))),
+    max_population=number('Maximum living regional enemies (0 disables new spawns)',0,0,200,True),
+    max_per_room=number('Maximum creatures in one spawn square',3,1,20,True),
+    spawn_seconds=number('Seconds between replacements / attempts',60,1,86400),
+    spawn_chance=number('Chance per spawn attempt (%)',100,0,100),
+    roam=boolean('Enemies wander between neighboring squares',True),
+    roam_seconds=number('Seconds between wandering attempts',30,2,86400),
+    weather=choice('Weather',['clear','mist','fog','rain','storm','snow'],'clear'),
+    fog=number('Fog / weather visibility penalty (%)',0,0,100))
 DEFAULT_RULES={k:v['default'] for k,v in SCHEMA['revision'].items()}
 DEFAULT_RULES['dual_classes']=['warrior']
 
@@ -103,6 +162,24 @@ def validate_revision(w):
         if r.get('safe') and r.get('population'):raise ValueError('Safe rooms cannot have additional enemy groups.')
         for s in r.get('population',[]):
             if not s.get('enemy') and not s.get('pool'):raise ValueError('A spawn group needs a fixed creature or a pool.')
+    assigned=set()
+    for region in w.get('regions',{}).values():
+        members=region.get('rooms',[]);spawn_rooms=region.get('spawn_rooms',[])
+        if assigned.intersection(members):raise ValueError('A square may belong to only one region.')
+        assigned.update(members)
+        if any(rid not in members or w['rooms'][rid].get('safe') for rid in spawn_rooms):raise ValueError('Regional spawn squares must be unsafe squares inside the region.')
+        if region.get('max_population',0) and (not spawn_rooms or not region.get('pool')):raise ValueError('An active regional population needs spawn squares and an enemy bank.')
+    for cid,cls in w['classes'].items():
+        categories=[r['category'] for r in cls.get('affinities',[])]
+        if len(categories)!=len(set(categories)):raise ValueError('A class may define each ability affinity only once.')
+        starter=cls.get('starting_ability')
+        if starter:
+            skill=w['skills'][starter]
+            if skill.get('unlock_level',1)!=1:raise ValueError('A starting ability must unlock at character level 1.')
+            if skill.get('allowed_classes') is not None and cid not in skill.get('allowed_classes',[]):raise ValueError('Starting ability must allow its class.')
+            if skill.get('allowed_races') is not None:raise ValueError('Starting abilities must allow every playable race.')
+    for skill in w['skills'].values():
+        if skill.get('passive') and skill.get('effect','damage')!='damage':raise ValueError('Passive training must use the damage effect.')
     for i in w['items'].values():
         if i.get('shield') and i['kind']!='armor':raise ValueError('Only armor can be a shield.')
         if (i.get('food') or i.get('recall')) and i['kind']!='consumable':raise ValueError('Food and recall scrolls must be consumables.')

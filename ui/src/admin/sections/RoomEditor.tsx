@@ -30,7 +30,11 @@ function MapToolsFields({ room }: { room: Obj }) {
       <FormField label="Permanent reference">
         <strong className="text-sm">{room.code || 'Assigned on creation'}</strong>
       </FormField>
-      <TextField obj={room} k="region" label="Region name" />
+      <TextField obj={room} k="region" label="Map region label" />
+      <FormField label="Regional rules" wide>
+        <p className="text-sm text-muted-foreground">Assign squares and edit their enemy bank, weather and fog in Regions &amp; weather. A regional spawn square uses its regional bank instead of the room spawn settings below.</p>
+        <Button type="button" variant="outline" onClick={() => open('regions', Object.keys(world.regions || {}).find(id => world.regions[id].rooms?.includes(current)))}>Edit regions &amp; weather</Button>
+      </FormField>
       <FormField label="Map tools" wide>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" onClick={() => open('map')}>Open owner map</Button>

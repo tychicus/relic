@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 """Dodge regression tests. Uses temporary data, never the player's live save."""
 import copy
 import json
@@ -15,7 +16,7 @@ class DodgeTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.path = Path(self.temp.name) / 'world.json'
         self.path.write_bytes((ROOT / 'content/world.json').read_bytes())
-        self.g = Game(self.path, Path(self.temp.name) / 'test.sqlite3', random.Random(17), lambda: 1000.0)
+        disable_regions(self.path);self.g = Game(self.path, Path(self.temp.name) / 'test.sqlite3', random.Random(17), lambda: 1000.0)
         self.g.create('Dodge tester')
         self.g.p['room'] = 'meadow'
         self.spec = self.g.w['enemies']['beetle']

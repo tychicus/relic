@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 import copy
 import hashlib
 import json
@@ -13,7 +14,7 @@ class FrontierTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.root=Path(self.temp.name);self.path=self.root/'world.json'
         shutil.copyfile(ROOT/'content/world.json',self.path);self.db=self.root/'save.sqlite3';self.now=1000
-        self.g=Game(self.path,self.db,random.Random(5),lambda:self.now);self.g.create('Tester'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
+        disable_regions(self.path);self.g=Game(self.path,self.db,random.Random(5),lambda:self.now);self.g.create('Tester'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
     def tearDown(self):self.g.db.close();self.temp.cleanup()
     def reload(self):
         self.g.save();self.g.db.close();self.g=Game(self.path,self.db,random.Random(5),lambda:self.now)
@@ -23,6 +24,8 @@ class FrontierTests(unittest.TestCase):
     def cage(self,count=0,eid=None):
         iid=self.g.new_cage('iron_cage');self.g.state['instances'][iid].update(count=count,enemy=eid);self.g.p['inventory'].append(iid);return iid
     def pool(self,initial='beetle',pool=None):
+        # Replace the fixture's already-initialized fixed resident.
+        self.g.state['spawns'].pop('meadow',None)
         r=self.g.w['rooms']['meadow'];r['spawn_pool']=pool if pool is not None else [{'enemy':'horned_hare','weight':1}];r['respawn_seconds']=10
         if initial:r['enemy']=initial
         else:r.pop('enemy',None)

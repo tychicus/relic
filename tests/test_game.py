@@ -1,3 +1,4 @@
+from legacy_fixture import disable_regions
 import copy
 import json
 import random
@@ -23,7 +24,7 @@ class GameTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(); self.root = Path(self.temp.name)
         self.path = self.root / 'world.json'; self.path.write_bytes((ROOT / 'content/world.json').read_bytes())
         self.clock = Clock(); self.db = self.root / 'save.sqlite3'
-        self.g = Game(self.path, self.db, random.Random(10), self.clock); self.g.create('Tester'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
+        disable_regions(self.path);self.g = Game(self.path, self.db, random.Random(10), self.clock); self.g.create('Tester'); self.g.p['inventory'].append('lantern')  # Regression fixture: acquired light; new starts are tested separately.
     def tearDown(self):
         self.g.db.close(); self.temp.cleanup()
     def go_meadow(self):

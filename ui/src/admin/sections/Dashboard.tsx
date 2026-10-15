@@ -6,6 +6,7 @@ export function Dashboard() {
   const { world, open } = useEditor()
   const cards: [group: string, title: string, description: string][] = [
     ['map', 'Visual world map', 'Select rooms, connect new places and export your map.'],
+    ['regions', 'Regions & weather', 'Enemy banks, population caps, wandering, weather and fog.'],
     ['rooms', 'World locations', `${Object.keys(world.rooms).length} rooms · exits, shops, spawning and visibility.`],
     ['enemies', 'Creatures', `${Object.keys(world.enemies).length} creature types · combat, capture and harvest yields.`],
     ['npcs', 'People & dialogue', 'Place people and write their available conversations.'],
@@ -15,6 +16,8 @@ export function Dashboard() {
     ['recipes', 'Cooking recipes', 'Ingredients, output, fires, tools and success chances.'],
     ['revision', 'Crafting & balance', 'Enchanting levels, duration, bonuses, risks, dual wielding, food and perception.'],
     ['settings', 'Combat & progression', 'Attack pulses, hit chances, XP and death penalties.'],
+    ['learning', 'Abilities & learning', 'Learning points, rank bonuses and level requirements.'],
+    ['mana', 'Mana & mastery', 'Mana recovery, long-term reserve growth and challenge practice bonuses.'],
   ]
   return (
     <div className="grid gap-4">

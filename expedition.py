@@ -8,12 +8,19 @@ import math
 import re
 from revision_rules import DEFAULT_RULES
 from enchanting import Enchanting
+from magic_progression import MagicProgression
+from regions import Regions
+from encounters import sync_encounter, ready_actions
+from mana import Mana
+from learning import Learning
+from equipment import Equipment, BODY_SLOTS, SLOT_NAMES, SLOT_ALIASES
+from enemy_healing import EnemyHealing
 
 DIRECTIONS={'n':'north','s':'south','e':'east','w':'west','u':'up','d':'down'}
 TRAITS=['scarred','watchful','lean','broad-shouldered','dust-covered','restless','pale','dark-eyed','weathered','bristling','long-limbed','stout']
 MARKS=['notched-eared','gray-marked','white-marked','red-eyed','mud-spattered','amber-eyed','sharp-eyed','mottled','ragged','dark-backed','light-footed','heavy-browed']
 
-class Revision(Enchanting):
+class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgression, Enchanting):
     def rules(self):
         return {**DEFAULT_RULES,**self.w.get('revision',{})}
 
@@ -24,6 +31,20 @@ class Revision(Enchanting):
         self.state.setdefault('corpses',[])
         self.state['schema_version']=5
         self.migrate_enchantments()
+        self.init_magic_items()
+        self.init_learning()
+        self.init_mana()
+        self.prepare_residents()
+        self.prepare_regions()
+        self._enemy_heal_at={}
+
+    def prepare_residents(self):
+        # Fixed initial residents exist before a player first scouts their room.
+        # This consumes no random draws and never rolls entry encounters or pools.
+        for rid,room in self.w['rooms'].items():
+            if self.region_for(rid, True)[0]:continue
+            if room.get('enemy') and not room.get('safe') and not room.get('encounter') and rid not in self.state['spawns']:
+                self.state['spawns'][rid]=self.spawn_creature(room['enemy'],rid)
 
     def tag_creature(self,e,home):
         if 'uid' not in e:
@@ -37,6 +58,7 @@ class Revision(Enchanting):
         return self.tag_creature({'type':eid,'hp':self.w['enemies'][eid]['hp'],'respawn_at':0},home)
 
     def ensure_legacy(self,rid):
+        if self.region_for(rid, True)[0]:return
         r=self.w['rooms'][rid]
         if r.get('safe'):return
         e=self.state['spawns'].get(rid)
@@ -58,6 +80,7 @@ class Revision(Enchanting):
         else:e['respawn_at']=self.clock()+self.respawn_delay(rid)
 
     def ensure_groups(self,rid,entry=False):
+        if self.region_for(rid, True)[0]:return
         room=self.w['rooms'][rid]
         if room.get('safe'):return
         home=self.state['populations'].setdefault(rid,{})
@@ -90,6 +113,7 @@ class Revision(Enchanting):
             for slot in slots.values():
                 e=slot['creature']
                 if e and e['hp']>0 and e['location']==rid and (unconscious or not e.get('unconscious')):found.append(e)
+        found.extend(e for e in self.region_creatures() if e['location']==rid and (unconscious or not e.get('unconscious')))
         return found
 
     def creature_name(self,e):
@@ -133,6 +157,7 @@ class Revision(Enchanting):
         return next((e for e in rows if e.get('unconscious')),rows[0] if rows else None)
 
     def roll_encounter(self,rid):
+        if self.region_for(rid, True)[0]:return
         room=self.w['rooms'][rid];rule=room.get('encounter');old=self.state['spawns'].get(rid)
         if rule and not (old and old['hp']>0) and (not old or room.get('respawn_enabled',True)):
             until=max(self.state['encounter_rolls'].get(rid,0),(old or {}).get('respawn_at',0))
@@ -144,11 +169,15 @@ class Revision(Enchanting):
         self.ensure_groups(rid,True)
 
     def spawn_rule(self,e):
+        if e.get('region'):
+            region=self.w.get('regions',{}).get(e['region'],{})
+            return dict(roam=region.get('roam',True),roam_rooms=region.get('spawn_rooms',[]),roam_seconds=region.get('roam_seconds',30),delay=region.get('spawn_seconds',60))
         r=self.w['rooms'].get(e['home'],{})
         if e.get('group'):return next((g for g in r.get('population',[]) if g['id']==e['group']),{})
         return dict(roam=r.get('roaming',False),roam_rooms=r.get('roam_rooms',[]),roam_seconds=r.get('roam_seconds',30),delay=self.respawn_delay(e['home'],e['type']))
 
     def roam(self):
+        self.tick_regions()
         all_rows=[]
         for rid,r in self.w['rooms'].items():
             if rid==self.p['room'] or rid in self.state['spawns'] or r.get('roaming'):self.ensure_legacy(rid)
@@ -161,6 +190,7 @@ class Revision(Enchanting):
             e['roam_at']=self.clock()+rule.get('roam_seconds',30)
             room=self.w['rooms'][e['location']]
             options=[rid for rid in room['exits'].values() if rid in rule.get('roam_rooms',[]) and not self.w['rooms'][rid].get('safe')]
+            if e.get('region'):options=[rid for rid in options if rid in self.regional_destinations(e['region'])]
             if options:
                 old=e['location'];e['location']=self.rng.choice(options)
                 if old==self.p['room'] and self.visible():self.log(self.creature_name(e)+' leaves the area.')
@@ -173,6 +203,7 @@ class Revision(Enchanting):
             self.p['target']=e['uid']
             self.p['combat']={'room':self.p['room'],'turn':'player','next_at':self.clock(),'engaged':[e['uid']]}
             self.log('Combat begins: '+self.creature_name(e)+'. Attacks are automatic. TARGET <description>, CAST <skill>, QUAFF POTION or FLEE.','combat')
+            self.retarget()
 
     def retarget(self):
         c=self.p['combat']
@@ -186,6 +217,7 @@ class Revision(Enchanting):
         if not candidates:self.p['combat']=None;self.p.pop('target',None);return
         if not any(e['uid']==self.p.get('target') for e in candidates):
             self.p['target']=candidates[0]['uid'];self.log('You turn toward '+self.creature_name(candidates[0])+'.','combat')
+        sync_encounter(c,[self.p],candidates)
 
     def tick(self):
         with self.lock:
@@ -198,6 +230,8 @@ class Revision(Enchanting):
                 hostile=next((e for e in self.creatures() if self.w['enemies'][e['type']]['aggressive']),None)
                 if hostile:self.p['target']=hostile['uid'];self.start_combat()
             c=self.p['combat']
+            self.recover_mana()
+            self.heal_enemies()
             if c and self.clock()>=c['next_at']:
                 location=self.p['room']
                 stunned={}
@@ -213,7 +247,9 @@ class Revision(Enchanting):
                         elif stunned.get(id(self.p)):self.log('You are stunned and cannot attack this pulse.','combat')
                         c['turn']='enemy'
                     else:
-                        for e in self.creatures():
+                        opponents=[e for e in self.creatures() if e['uid'] in c['engaged']]
+                        roster=sync_encounter(c,[self.p],opponents)
+                        for e,target in ready_actions(c,roster,'enemies',self.clock()):
                             if not self.p['combat'] or self.p['room']!=location:break
                             if e['uid'] in c['engaged'] and not stunned.get(id(e)) and self.clock()>=e.get('attack_ready',0):
                                 self.enemy_strike(e);e['attack_ready']=self.clock()+2*self.w['settings']['attack_interval']*self.slow(e)
@@ -231,7 +267,7 @@ class Revision(Enchanting):
         for token,value in [('target',name),('effect',definition['name']),('damage',str(damage))]:msg=msg.replace('{'+token+'}',value)
         if msg:self.log(msg,'combat')
 
-    def apply_effects(self,attachments,actor):
+    def apply_effects(self,attachments,actor,damage_override=None):
         resistance=self.w['races'][self.p['race']].get('resistances',[]) if actor is self.p else self.w['enemies'][actor['type']].get('resistances',[])
         for a in attachments:
             spec=self.w['status_effects'][a['effect']]
@@ -244,14 +280,17 @@ class Revision(Enchanting):
                 if mode=='ignore':continue
                 old['remaining']=duration
                 if mode=='stack':old['stacks']=min(spec.get('max_stacks',3),old['stacks']+1)
-            else:active.append(dict(id=a['effect'],remaining=duration,stacks=1))
+            else:
+                old=dict(id=a['effect'],remaining=duration,stacks=1);active.append(old)
+            if damage_override is not None and spec['kind']=='damage':old['damage_override']=damage_override
+            else:old.pop('damage_override',None)
             self.effect_message('application',spec,actor)
 
     def pulse_effects(self,actor):
         for active in list(actor.get('effects',[])):
             spec=self.w.get('status_effects',{}).get(active['id'])
             if not spec:actor['effects'].remove(active);continue
-            damage=spec.get('damage',0)*active['stacks'] if spec['kind']=='damage' else 0
+            damage=active.get('damage_override',spec.get('damage',0))*active['stacks'] if spec['kind']=='damage' else 0
             actor['hp']=max(0,actor['hp']-damage)
             self.effect_message('ongoing',spec,actor,damage)
             if damage:self.log(('You lose ' if actor is self.p else self.creature_name(actor)+' loses ')+str(damage)+' HP.','combat')
@@ -266,34 +305,62 @@ class Revision(Enchanting):
         inst=self.state.get('instances',{}).get(iid)
         if inst and inst['kind'] in ('weapon','armor'):
             return self.modified_item(inst)
-        return super().item(iid)
+        return self.magic_template(super().item(iid))
 
     def strike(self,multiplier=1,attack_name=None):
+        if not self.enemy():return
+        practice=self.practice_multiplier(self.enemy())
+        sid=getattr(self,'_active_skill',None)
+        spell=bool(sid and self.w['skills'][sid].get('magic'))
+        used=[]
+        if not spell:
+            for slot in ('weapon','left_hand'):
+                iid=self.ensure_magic_slot(slot)
+                if iid and self.item(iid)['kind']=='weapon':used.append(iid)
+        try:self.resolve_strike(multiplier,attack_name)
+        finally:self.train_magic_items(used,practice)
+
+    def resolve_strike(self,multiplier=1,attack_name=None):
         e=self.enemy()
         if not e:return
         name=self.creature_name(e);eq=self.p['equipment'];right=eq.get('weapon');left=eq.get('left_hand')
         main=self.item(right) if right else {};off=self.item(left) if left else {};dual=main.get('kind')=='weapon' and off.get('kind')=='weapon';rules=self.rules()
-        hit=self.w['settings']['hit_chance']-(rules['dual_hit_penalty'] if dual else 0)
+        sid=getattr(self,'_active_skill',None)
+        progress=self.spell_progress(sid) if sid else None
+        hit=self.w['settings']['hit_chance']-(rules['dual_hit_penalty'] if dual and not progress else 0)
         if self.rng.random()>max(0,hit):self.log(f'Your attack misses {name}.','combat');return
         dodge=self.w['enemies'][e['type']].get('dodge',0)
         if dodge and self.rng.random()<dodge/100:self.log(f'{name} dodges your {attack_name or ("Bash" if multiplier!=1 else "attack")}! No damage dealt.','combat');return
         weapon=main if main.get('kind')=='weapon' else off if off.get('kind')=='weapon' else {}
-        damage=max(1,round((self.rng.randint(*self.w['classes'][self.p['class']]['damage'])+weapon.get('damage',0)+(off.get('damage',0)*rules['offhand_scale'] if dual else 0)+(self.p['level']-1)*self.w['settings']['damage_per_level'])*multiplier))
+        if progress:damage=self.skill_power(sid,progress['power'])
+        else:
+            factor=self.ability_power(sid) if sid else 1
+            if not sid and rules['learning_enabled']:
+                for known in self.available_skill_ids():
+                    if self.w['skills'][known].get('passive'):
+                        factor+=max(0,self.ability_rank(known)-1)*rules['learning_rank_bonus']*self.affinity(known)['power']
+            damage=max(1,round((self.rng.randint(*self.w['classes'][self.p['class']]['damage'])+weapon.get('damage',0)+(off.get('damage',0)*rules['offhand_scale'] if dual else 0)+(self.p['level']-1)*self.w['settings']['damage_per_level'])*multiplier*factor))
+        self.reset_enemy_healing(e)
         e['hp']=max(0,e['hp']-damage);self.log((attack_name+'! ' if attack_name else 'Bash! ' if multiplier!=1 else '')+f'You hit {name} for {damage}.','combat')
         if e['hp']==0:self.victory(e)
         else:
-            attachments=weapon.get('status_effects',[])+(off.get('status_effects',[]) if dual else [])
-            sid=getattr(self,'_active_skill',None)
-            if sid:attachments=attachments+self.w['skills'][sid].get('status_effects',[])
-            self.apply_effects(attachments,e)
+            attachments=[] if progress else weapon.get('status_effects',[])+(off.get('status_effects',[]) if dual else [])
+            if sid:attachments=attachments+[dict(a,chance=a.get('chance',100)*min(1,self.affinity(sid)['power'])) for a in self.w['skills'][sid].get('status_effects',[])]
+            effect_damage=progress['effect_damage'] if progress else None
+            if effect_damage is not None:effect_damage=max(0,round(effect_damage*self.ability_power(sid)))
+            self.apply_effects(attachments,e,damage_override=effect_damage)
 
     def enemy_strike(self,e):
         spec=self.w['enemies'][e['type']];name=self.creature_name(e)
         if spec.get('battle_cries') and spec.get('battle_cry_chance',0)>0 and self.rng.random()<spec['battle_cry_chance']/100:self.log(self.rng.choice(spec['battle_cries']),'combat')
         if self.rng.random()>self.w['settings']['hit_chance']:self.log(name+' misses you.','combat');return
-        armor=sum(self.item(i).get('armor',0) for slot,i in self.p['equipment'].items() if slot=='armor' or self.item(i).get('shield'))
+        dodge=self.w['classes'][self.p['class']].get('dodge',0)
+        if dodge and self.rng.random()<dodge/100:self.log('You dodge '+name+"'s attack.",'combat');return
+        protection=[self.ensure_magic_slot(slot) for slot,i in self.p['equipment'].items() if slot in BODY_SLOTS or self.item(i).get('shield')]
+        armor=sum(self.item(i).get('armor',0) for i in protection)
         damage=max(1,self.rng.randint(*spec['damage'])-armor);self.p['hp']=max(0,self.p['hp']-damage)
         self.log(f'{name} hits you for {damage}.','danger')
+        self.train_magic_items(protection,self.practice_multiplier(e))
         if self.p['hp']==0:self.death()
         else:self.apply_effects(spec.get('status_effects',[]),self.p)
 
@@ -314,9 +381,14 @@ class Revision(Enchanting):
             if self.state['instances'].get(lost,{}).get('kind') in ('weapon','armor'):self.state['instances'].pop(lost)
 
     def knockout(self,target,skill_id='knockout'):
+        old_target=self.p.get('target')
         if target:self.p['target']=self.find_creature(target)['uid']
         c=self.p['combat'];e=self.enemy()
-        super().knockout('',skill_id)
+        try:super().knockout('',skill_id)
+        except ValueError:
+            if old_target is None:self.p.pop('target',None)
+            else:self.p['target']=old_target
+            raise
         if e and e.get('unconscious'):
             e['effects']=[];self.p['combat']=c;self.retarget()
             if self.p['combat']:self.log('Other opponents are still fighting.','danger')
@@ -324,14 +396,31 @@ class Revision(Enchanting):
     def activate_skill(self,sid,target=''):
         if any(self.w['status_effects'][s['id']]['kind']=='stun' for s in self.p.get('effects',[])):raise ValueError('You are stunned. Wait for the effect to expire before using a skill.')
         skill=self.require_skill(sid);kind=skill.get('effect','damage')
-        if kind in ('enchant','sharpen'):self.work_weapon(sid,kind,target);return
+        cost=self.require_mana(sid)
+        if kind in ('enchant','sharpen'):
+            self.work_weapon(sid,kind,target);self.spend_mana(cost,1);return
         remaining=self.p['cooldowns'].get(sid,0)-self.clock()
         if remaining>0:raise ValueError(f'{skill["name"]} is ready in {math.ceil(remaining)} seconds.')
-        if skill.get('initiates') and kind=='damage' and not self.p['combat']:
-            if not self.visible() or not self.enemy():raise ValueError('There is no visible target here.')
+        remaining=self.p.get('action_ready',0)-self.clock()
+        if remaining>0:raise ValueError(f'Recover before using another combat skill: {math.ceil(remaining)} seconds.')
+        if kind=='damage':
+            if not self.visible():raise ValueError('It is too dark to choose a target. Carry a light.')
+            if not self.p['combat'] and not skill.get('initiates'):
+                raise ValueError(skill['name']+' needs an active fight. ATTACK first.')
+            e=self.find_creature(target) if target else self.enemy()
+            if not e:raise ValueError('There is no visible target here.')
+            if self.w['rooms'][self.p['room']].get('safe'):raise ValueError('You cannot attack in this safe place.')
+            self.p['target']=e['uid']
             self.start_combat()
+            if e['uid'] not in self.p['combat']['engaged']:self.p['combat']['engaged'].append(e['uid'])
+        elif kind=='heal' and target:
+            raise ValueError('Healing skills affect you. Use CAST '+sid+' without a target.')
         self._active_skill=sid
-        try:super().activate_skill(sid,target)
+        practice=self.skill_practice(sid,target)
+        try:
+            super().activate_skill(sid,target)
+            self.spend_mana(cost,practice)
+            self.p['action_ready']=self.clock()+self.rules()['action_recovery']
         finally:self._active_skill=None
 
     def work_weapon(self,sid,kind,target=''):
@@ -356,13 +445,13 @@ class Revision(Enchanting):
         for suffix,slot in [(' in left hand','left_hand'),(' left','left_hand'),(' in right hand','weapon'),(' right','weapon')]:
             if target.endswith(suffix):target=target[:-len(suffix)];hand=slot;explicit_hand=True;break
         iid=self.match(target,self.p['inventory']);spec=self.item(iid);eq=self.p['equipment'];proposed=dict(eq)
-        if spec['kind']=='armor' and not explicit_hand:hand='left_hand' if spec.get('shield') else 'armor'
+        if spec['kind']=='armor' and not explicit_hand:hand='left_hand' if spec.get('shield') else spec.get('armor_slot','armor')
         elif spec['kind'] not in ('weapon','armor'):raise ValueError('Only weapons, armor and shields can be equipped.')
         proposed[hand]=iid
         self.validate_hands(proposed,self.w)
         self.p['inventory'].remove(iid)
         if hand in eq:self.p['inventory'].append(eq[hand])
-        eq[hand]=iid;self.log('Equipped '+spec['name']+' in '+{'weapon':'right hand','left_hand':'left hand','armor':'body armor'}[hand]+'.')
+        eq[hand]=iid;self.ensure_magic_slot(hand);self.log('Equipped '+spec['name']+' in '+SLOT_NAMES[hand]+'.')
 
     def validate_hands(self,eq,w):
         def spec(i):
@@ -371,7 +460,12 @@ class Revision(Enchanting):
             return w['items'][template]
         right=spec(eq['weapon']) if eq.get('weapon') else {};left=spec(eq['left_hand']) if eq.get('left_hand') else {}
         if right and right['kind'] not in ('weapon','armor'):raise ValueError('Right hand requires a weapon or armor.')
-        if eq.get('armor') and (spec(eq['armor'])['kind']!='armor' or spec(eq['armor']).get('shield')):raise ValueError('Body armor cannot be a shield.')
+        if set(eq)-set(SLOT_NAMES):raise ValueError('Unknown equipment slot.')
+        for slot in BODY_SLOTS:
+            if eq.get(slot):
+                worn=spec(eq[slot])
+                if worn['kind']!='armor' or worn.get('shield') or worn.get('armor_slot','armor')!=slot:raise ValueError('That armor does not fit the '+SLOT_NAMES[slot]+' slot.')
+        if right.get('shield') and left.get('shield'):raise ValueError('Only one shield can be equipped at a time.')
         if left and left['kind'] not in ('weapon','armor'):raise ValueError('Left hand requires a weapon or armor.')
         if left and (right.get('hands',1)==2 or left.get('hands',1)==2):raise ValueError('Two-handed weapons require an empty left hand and must go in the right hand.')
         rules={**DEFAULT_RULES,**w.get('revision',{})}
@@ -394,7 +488,7 @@ class Revision(Enchanting):
                 adjacent=self.w['rooms'][dest]
                 if adjacent.get('obscured_from_outside'):self.log(adjacent.get('obscured_message','').strip() or 'It is too dark; you cannot see anything.','story');return
                 if not self.visible(dest):self.log('Darkness blocks your view. A carried lantern would help.');return
-                penalty=max(penalty,r.get('fog',0),adjacent.get('fog',0))
+                penalty=max(penalty,self.fog_at(rid),self.fog_at(dest))
                 chance=self.rules()['perception_chance']+(self.p['level']-1)*self.rules()['perception_per_level']+self.w['races'][self.p['race']].get('perception_bonus',0)-(step-1)*self.rules()['perception_distance_penalty']-penalty
                 if (step>1 or penalty) and self.rng.random()>=max(0,min(100,chance))/100:self.log('You make out only indistinct shapes farther '+direction+'.');return
                 # Observation never creates a spawn or rolls an encounter.
@@ -411,6 +505,9 @@ class Revision(Enchanting):
             if any(target==e['uid'] or target in self.creature_name(e).casefold() for e in rows):
                 e=self.find_creature(target,rows);self.log(self.creature_name(e)+': '+self.w['enemies'][e['type']]['description'],'story');return
         super().look(target)
+        if not target:
+            region=self.region_for(self.p['room'])[1]
+            if region:self.log('Weather: '+region.get('weather','clear')+f'. Visibility penalty: {self.fog_at(self.p["room"]):g}%.')
         if not target and self.visible():
             rows=self.creatures(self.p['room'],True)
             if rows:self.log('Creatures here: '+', '.join(self.creature_name(e)+(' (unconscious)' if e.get('unconscious') else f' ({e["hp"]} HP)') for e in rows)+'.')
@@ -443,6 +540,7 @@ class Revision(Enchanting):
         if len(rows)!=1:raise ValueError('Specify which remains to harvest: '+(', '.join(c['name'] for c in rows) or 'none here')+'.')
         corpse=rows[0];yields=[x['item'] for x in self.w['enemies'][corpse['type']].get('harvest',[]) for _ in range(x.get('count',1))]
         if len(self.p['inventory'])+len(yields)>self.w['settings']['bag_capacity']:raise ValueError('Make room in your bag first. The remains are untouched.')
+        self.require_carry_weight(sum(self.item_weight(i) for i in yields))
         self.p['inventory'].extend(self.grant(i) for i in yields);corpse['harvested']=True
         self.log('Harvested: '+', '.join(self.w['items'][i]['name'] for i in yields)+'.','reward')
 
@@ -457,6 +555,7 @@ class Revision(Enchanting):
         count=r.get('count',1);output_count=r.get('output_count',1)
         if inv.count(r['input'])<count:raise ValueError('You do not have enough ingredients.')
         if len(inv)-count+output_count>self.w['settings']['bag_capacity']:raise ValueError('Make room for the cooked food first.')
+        self.require_carry_weight(output_count*self.item_weight(r['output'])-count*self.item_weight(r['input']))
         success=self.rng.random()<r.get('chance',100)/100
         if success or r.get('consume_failure'):
             for _ in range(count):inv.remove(r['input'])
@@ -478,13 +577,13 @@ class Revision(Enchanting):
             self.equip_hand(target);return True
         if verb=='unequip':
             if self.p['combat']:raise ValueError('Finish the fight before rearranging equipment.')
-            slot={'right':'weapon','right hand':'weapon','left':'left_hand','left hand':'left_hand'}.get(target,target)
+            slot=SLOT_ALIASES.get(target,target)
             eq=self.p['equipment']
             if slot not in eq:raise ValueError('That equipment slot is empty.')
             proposed=dict(eq);proposed.pop(slot);self.validate_hands(proposed,self.w)
             if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full.')
             self.p['inventory'].append(eq.pop(slot));self.log('Equipment returned to your bag.');return True
-        if verb in ('enchant','enchanting','sharpen','sharpening','charge','fireball','lightning'):
+        if verb in ('enchant','enchanting','sharpen','sharpening','charge','fireball','lightning','mend','backstab','quickstrike','hamstring','kick','frostbolt','power_strike','cutthroat','arcane_lance','shattering_strike','nerve_strike','meteor','executioner','assassinate'):
             sid={'enchant':'enchanting','sharpen':'sharpening'}.get(verb,verb);self.activate_skill(sid,target);return True
         if verb=='harvest':self.harvest(target);return True
         if verb=='cook':self.cook(target);return True
@@ -514,8 +613,11 @@ class Revision(Enchanting):
                 e=self.find_creature(target,rows)
                 if self.p['combat']:raise ValueError('Finish combat before picking up a creature.')
                 if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full; the unconscious creature remains here.')
+                self.require_carry_weight(self.w['enemies'][e['type']].get('weight',10))
                 self.p['inventory'].append(self.new_instance(dict(kind='captive',enemy=e['type'])));e['hp']=0;e['unconscious']=False;e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60);self.log('You pick up the unconscious creature. No kill rewards are awarded.');return True
         if verb in ('help','?'):
+            self.log('MANA shows your reserve and slow mana mastery. Spells spend mana, which recovers outside combat; REST refills it. Enemy levels determine challenge practice bonuses.')
+            self.log('CAST <spell> [creature] and named attacks share a short recovery between manual combat skills. Healing potions have a separate recovery. REPAIR lists damaged equipment and prices at a repair shop; REPAIR <item> restores it without losing its magic XP.')
             self.log('Commands: ATTACK or KILL <creature>; TARGET <creature description>; EQUIP <item> LEFT or RIGHT; HOLD <armor>; UNEQUIP LEFT / RIGHT; LOOK NORTH 2; FIREBALL; LIGHTNING; CHARGE; SHARPEN; ENCHANT <held weapon or worn/held armor>; RECALL; EAT <food>; HARVEST <creature>; COOK <recipe>. SAY <phrase> TO <NPC>. Enchantments are temporary. Practice slowly improves enchanting level, success, bonus and duration. Weapon failures can damage or destroy the weapon; see SKILLS and owner balance settings.')
         return super().extra_command(verb,target)
 
@@ -527,19 +629,24 @@ class Revision(Enchanting):
         result=super().snapshot()
         if not self.p:return result
         rows=self.creatures();light=self.visible()
-        result['enemies']=[dict(id=e['uid'],name=self.creature_name(e),hp=e['hp'],max_hp=self.w['enemies'][e['type']]['hp'],aggressive=self.w['enemies'][e['type']]['aggressive'],target=e['uid']==self.p.get('target'),effects=copy.deepcopy(e['effects'])) for e in rows] if light else []
+        result['enemies']=[dict(id=e['uid'],name=self.creature_name(e),hp=e['hp'],max_hp=self.w['enemies'][e['type']]['hp'],aggressive=self.w['enemies'][e['type']]['aggressive'],level=self.w['enemies'][e['type']].get('level',1),target=e['uid']==self.p.get('target'),engaged=e['uid'] in (self.p.get('combat') or {}).get('engaged',[]),effects=copy.deepcopy(e['effects'])) for e in rows] if light else []
         chosen=self.enemy()
         if chosen and light:result['enemy']['name']=self.creature_name(chosen)
         result['unconscious_creatures']=[dict(id=e['uid'],name=self.creature_name(e)) for e in self.creatures(unconscious=True) if e.get('unconscious')] if light else []
         result['npcs']=[dict(name=n['name'],appearance=n.get('appearance','')) for n in self.w.get('npcs',{}).values() if n['room']==self.p['room']] if light else []
         result['corpses']=[dict(id=c['uid'],name=c['name']) for c in self.state['corpses'] if c['room']==self.p['room'] and c['expires']>self.clock() and not c.get('harvested')] if light else []
         result['status_effects']=self.w.get('status_effects',{})
+        region=self.region_for(self.p['room'])[1]
+        result['room']['weather']=region.get('weather','clear')
+        result['room']['fog']=self.fog_at(self.p['room'])
+        if region:result['room']['region']=region['name']
         result['player']['hands']={'right':self.p['equipment'].get('weapon'),'left':self.p['equipment'].get('left_hand')}
         result['player']['enchanting']={sid:self.enchant_progress(sid) for sid,s in self.w['skills'].items() if s.get('effect')=='enchant'}
         return result
 
     def check_live_references(self,w):
         super().check_live_references(w)
+        self.check_region_references(w)
         if self.p:self.validate_hands(self.p['equipment'],w)
         for inst in self.state.get('instances',{}).values():
             if inst['kind'] in ('weapon','armor') and w['items'].get(inst['item'],{}).get('kind')!=inst['kind']:raise ValueError('Cannot remove or change an individually modified equipment type.')

@@ -24,19 +24,22 @@ const categories: Record<string, string> = {
   dashboard: 'Dashboard',
   map: 'Visual world map',
   rooms: 'World · Rooms',
+  regions: 'Regions & weather',
   enemies: 'Creatures',
   npcs: 'NPCs & dialogue',
   races: 'Characters · Races',
   classes: 'Characters · Classes',
   items: 'Items & equipment',
   settings: 'Combat & progression',
+  mana: 'Mana & mastery',
+  learning: 'Abilities & learning',
   skills: 'Skills & spells',
   status_effects: 'Status effects',
   recipes: 'Cooking recipes',
   revision: 'Crafting & balance',
   raw: 'Advanced data',
 }
-const SPECIAL = ['settings', 'raw', 'map', 'dashboard', 'revision']
+const SPECIAL = ['settings', 'raw', 'map', 'dashboard', 'revision', 'mana', 'learning']
 
 const placementHelp: Record<string, string> = {
   rooms: 'Use Open owner map or Add connected room to grow the map. Connected creation makes both exits automatically. Manual exit fields connect existing rooms.',
@@ -45,26 +48,31 @@ const placementHelp: Record<string, string> = {
 }
 
 const sectionHelp: Record<string, string> = {
+  learning: 'Characters start with one ability and earn points when they level up. Set each class starting ability and power, mana-cost and practice multipliers in Classes. Set ability categories, learning costs and maximum ranks in Skills & spells. Enchanting remains restricted to mages in its class eligibility.',
+  mana: 'Valid paid casts train mana capacity. Damage and healing spells and magical equipment also earn their own practice. Enemies at or above character level award extra practice, with a further bonus for harder enemies. Lower-level enemies still give base practice. Set starting mana and growth in Characters · Classes, spell costs in Skills & spells, and enemy levels in Creatures.',
+  regions: 'Choose the squares in this region, then its enemy spawning squares. The regional bank replaces room spawn rules only in those spawning squares. Safe squares cannot spawn enemies. Several creatures can share a square; aggressive creatures join the fight. Population limits include unconscious creatures. Lower limits cannot discard living creatures. Weather is descriptive; the visibility penalty controls how fog and weather affect scouting.',
   dashboard: 'Choose a workshop below. Your draft stays intact as you move between categories.',
   rooms: 'Block looking in hides this room’s name and contents from adjacent rooms, even with a lantern. Exits remain visible and movement still works. Once inside, normal darkness rules apply. Exits are directional. To connect a new room both ways, edit the return exit in the neighboring room too.',
   enemies: 'Dodge chance is a percentage: 20 means a 20% chance to avoid a successful basic attack or Bash. A dodge prevents all damage. Missing values mean 0%. Loot weights are relative: a weight of 3 is three times as likely as a weight of 1. One entry is chosen per victory. Saving preserves current enemy health (capped to any lower maximum) and respawn times. Capture requires low health; resistance reduces the skill’s success chance.',
-  items: 'Weapon damage is added to a character’s base attack. Armor reduces each incoming hit. Shop purchase price is shown; resale pays half.',
+  items: 'Weapon damage is added to a character’s base attack. Worn armor pieces and a held shield add protection against each incoming hit. Weight includes equipped gear and container contents; class carrying capacity grows by level. Shop purchase price is shown; resale pays half.',
   settings: 'Probabilities run from 0 to 1: 0.10 means 10%. Attack interval is the time between alternating player and enemy pulses. All engaged enemies may attack on an enemy pulse.',
   races: 'Every race listed here is available when creating a new character. Race HP bonus is added to class health.',
   classes: 'Every class listed here is playable. Set its base HP and damage; assign skills in the Skills section.',
-  skills: 'Create working damage, healing, or knockout skills. Eligibility requires both the selected class and race, plus the unlock level. Any includes future choices. Empty restricted lists allow nobody.',
+  skills: 'Create working damage, healing, or knockout skills. Eligibility requires the selected class and race. The unlock level is the earliest level when players can spend points to learn it. Any includes future choices. Empty restricted lists allow nobody.',
   raw: 'Advanced editor for the complete world, including starting equipment and the working title. Prefer the forms for everyday changes.',
 }
 
 const schemaTitles: Record<string, string> = {
+  classes: 'Starting ability, class strengths, mana & carrying capacity',
   rooms: 'Spawning, roaming, visibility & crafting',
   enemies: 'Status effects, resistance & harvesting',
-  items: 'Hands, food, recall & effects',
-  skills: 'Combat initiation & status effects',
+  items: 'Weight, equipment slots, hands & effects',
+  skills: 'Learning costs, ranks, category & combat effects',
   races: 'Perception & resistance',
 }
 
 const createKinds: Option[] = [
+  ['region', 'Region'],
   ['room', 'Room / place'], ['weapon', 'Weapon'], ['armor', 'Armor'], ['consumable', 'Healing potion'],
   ['light', 'Light / lantern'], ['key', 'Key'], ['chest', 'Storage chest'], ['cage', 'Creature cage'],
   ['loot', 'Other item / treasure'], ['enemy', 'Enemy'], ['race', 'Race'], ['class', 'Class'], ['skill', 'Skill'],
@@ -85,15 +93,16 @@ function CoreFields({ section, current, obj }: { section: string; current: strin
 }
 
 function RecordForm({ section, current, world, schema }: { section: string; current: string; world: World; schema: Schema }) {
-  const obj = section === 'settings' ? world.settings : section === 'revision' ? world.revision : world[section]?.[current]
+  const obj = section === 'settings' ? world.settings : ['revision', 'mana', 'learning'].includes(section) ? world.revision : world[section]?.[current]
   if (!obj) return null
   const core = (
     <>
-      {!['settings', 'revision'].includes(section) && <TextField obj={obj} k="name" label="Display name" />}
+      {!['settings', 'revision', 'mana', 'learning'].includes(section) && <TextField obj={obj} k="name" label="Display name" />}
       <CoreFields section={section} current={current} obj={obj} />
     </>
   )
-  const fields = schema[section]
+  const mastery = (key: string) => key.startsWith('mana_') || key.startsWith('practice_')
+  const fields = section === 'learning' ? Object.fromEntries(Object.entries(schema.revision || {}).filter(([key]) => key.startsWith('learning_'))) : section === 'mana' ? Object.fromEntries(Object.entries(schema.revision || {}).filter(([key]) => mastery(key))) : section === 'revision' ? Object.fromEntries(Object.entries(schema[section] || {}).filter(([key]) => !['action_recovery', 'potion_recovery'].includes(key) && !mastery(key) && !key.startsWith('learning_') && !key.startsWith('enemy_heal_'))) : schema[section]
   if (!fields) return <FieldGrid>{core}</FieldGrid>
   const wrapCore = ['rooms', 'enemies', 'items', 'skills'].includes(section)
   return (
@@ -112,7 +121,7 @@ function RecordForm({ section, current, world, schema }: { section: string; curr
         ) : (
           <FieldGrid>{core}</FieldGrid>
         ))}
-      <Disclosure title={schemaTitles[section] || 'Configuration'} defaultOpen={['revision', 'npcs', 'status_effects', 'recipes'].includes(section)}>
+      <Disclosure title={schemaTitles[section] || 'Configuration'} defaultOpen={['learning', 'mana', 'classes', 'regions', 'revision', 'npcs', 'status_effects', 'recipes'].includes(section)}>
         <SchemaForm obj={obj} fields={fields} />
       </Disclosure>
     </div>
@@ -149,7 +158,7 @@ export function AdminApp() {
     try {
       await api('/api/state') // issues the token needed to save
       const [w, s] = await Promise.all([api<World>('/api/world'), api<Schema>('/api/editor-schema')])
-      for (const group of ['status_effects', 'npcs', 'recipes', 'revision']) w[group] ??= {}
+      for (const group of ['regions', 'status_effects', 'npcs', 'recipes', 'revision']) w[group] ??= {}
       MapTools.ensureMetadata(w)
       world.current = w
       schema.current = s

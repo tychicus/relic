@@ -1,4 +1,4 @@
-# Relic Frontier v0.7.0
+# Relic Frontier v0.9.0
 
 A local, editable, keyboard-driven fantasy RPG with relic technology.
 Python 3.11+ and the standard library are the only game requirements.
@@ -19,7 +19,7 @@ Stop any old game with **Ctrl+C** in its launcher. On Windows, open
 Play at http://127.0.0.1:8765 and edit at http://127.0.0.1:8765/admin.
 Check the displayed version; refresh with Ctrl+F5 if the browser is stale.
 
-Read **UPDATE_v0.7.0.txt** for the full update guide, editable balance values,
+Read **UPDATE_v0.9.0.txt** for the full update guide, editable balance values,
 new commands and intentional limitations. **CHANGELOG.md** records the release
 and verification. Older UPDATE files in docs/history describe earlier releases.
 
@@ -29,19 +29,36 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   attempts a distant view. Descriptions contain discovery clues.
 - ATTACK [creature] or KILL [creature] begins automatic combat. TARGET [distinct description]
   changes opponents. Inject skills, spells, potions or FLEE between pulses.
-- SKILLS shows eligibility and unlocks. CAST [skill name], BASH, KNOCKOUT,
-  FIREBALL, LIGHTNING and CHARGE are supported.
+- New characters start with one learned ability. LEARN lists choices; LEARN KICK
+  spends earned points to learn or improve it. Each character level after the first
+  gives one point. SKILLS lists learned abilities; CAST [skill] uses one.
+  Warriors can study ordinary magic at a strong penalty; enchanting is mage-only.
+  Mages face strong penalties with martial techniques. Stronger skills unlock later.
+- Character, spell, magical-equipment and mana progression reach level 100.
+  Every valid use trains slow mastery; suitable challenges award extra practice.
+  MANA shows your reserve. Spells spend mana, which recovers between fights.
 - INVENTORY, EQUIPMENT, BUY, SELL, GET, DROP, EQUIP and UNEQUIP manage items.
-  EQUIP [weapon] LEFT/RIGHT and UNEQUIP LEFT/RIGHT manage hands.
+  EQUIP [weapon] LEFT/RIGHT and UNEQUIP LEFT/RIGHT manage hands. A two-handed
+  weapon reserves both hands; a one-handed weapon permits a shield. Helmet,
+  chest, pants and arms have separate armor slots. Worn armor and shields add defense.
+  WEIGHT shows total carried weight including worn gear and container contents.
+  Carrying capacity grows with character level. REPAIR [item] repairs damaged gear
+  at a repair service; Anthony's shop offers repairs.
 - QUAFF POTION retains the old healing behavior. EAT [food], HARVEST [remains],
   COOK [recipe], SHARPEN, ENCHANT [item] and RECALL access the new systems.
   Enchant a held weapon or worn/held armor; HOLD [armor] holds it in your left
   hand. Enchantments temporarily boost damage/protection, shown as a separate
   (+bonus) with a glow cue. SKILLS shows the slowly trained enchanting level.
+  Individual magical equipment also earns permanent XP: weapons through attacks
+  and armor through hits received while protecting you. Inspect an item to see
+  its level and progress. Recall scrolls remain single-use.
 - LOOK [object], UNLOCK [container], PUT [item] IN CHEST [number],
   GET [item] FROM CHEST [number], PUT [creature] IN CAGE [number], RELEASE CAGE
   [number], and SAY [phrase] TO [creature/cage/NPC] retain exploration/storage.
-- REST at the inn heals. SAVE is optional: progress saves automatically.
+- Regions have editable wandering enemy populations, caps, weather and fog. Multiple
+  enemies may share a square and participate in a fight. Wounded enemies gradually
+  recover outside combat; rates and delays are editable.
+- REST at the inn restores health and mana. SAVE is optional: progress saves automatically.
 
 Combat continues while the server runs, including with the browser closed.
 Ctrl+C in the launcher stops and saves. No account or external service is used.
@@ -67,10 +84,14 @@ copy the full folder and remove `saves` only inside the separate stopped copy.
 
 `engine.py` keeps the established game behavior. `expedition.py` extends it
 with instance-based encounters, effects, hands and crafting. `enchanting.py`
-handles temporary item enchantments and slow crafting progression. `revision_rules.py`
-provides the validation/authoring schema used by the editor. `adventure.py`,
+handles temporary item enchantments and slow crafting progression.
+`magic_progression.py` handles separate spell and individual equipment XP and
+validates their per-level power tables. `revision_rules.py` provides the other
+validation/authoring schemas used by the editor. `adventure.py`,
 `frontier.py`, and `abilities.py` retain discoveries, containers and eligibility.
-`server.py` is the existing loopback-only transport. The browser interface is
+`learning.py`, `mana.py` and `equipment.py` handle learning, reserves and carrying
+weight. `regions.py` manages regional populations; `encounters.py` tracks multiple
+participants and individual targets. `server.py` is the existing loopback-only transport. The browser interface is
 a React + shadcn/ui app in `ui/`; its built files live in `static/` and are
 all the game needs, so playing never requires Node. New state separates
 player effects/proficiency/targets from world creatures/home slots/remains;

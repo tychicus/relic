@@ -132,7 +132,7 @@ def main():
 
     thread = threading.Thread(target=ticker, daemon=True); thread.start()
     address = f'http://127.0.0.1:{server.server_port}'
-    print(f'\nRELIC FRONTIER v0.7.0\nFolder: {ROOT}\n\nPlay:  {address}\nOwner: {address}/admin\n\nKeep this window open while playing.\nReturn to safety before closing your browser: combat keeps running.\nPress Ctrl+C here to stop the server and save.\n', flush=True)
+    print(f'\nRELIC FRONTIER v0.9.0\nFolder: {ROOT}\n\nPlay:  {address}\nOwner: {address}/admin\n\nKeep this window open while playing.\nReturn to safety before closing your browser: combat keeps running.\nPress Ctrl+C here to stop the server and save.\n', flush=True)
     print(f'Save file: {database_path}', flush=True)
     if game.p:
         print(f'Loaded character: {game.p["name"]} | Level {game.p["level"]} | XP {game.p["xp"]} | Location: {game.w["rooms"][game.p["room"]]["name"]}\n', flush=True)

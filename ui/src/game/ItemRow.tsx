@@ -65,7 +65,7 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
     const sell = !sellCage && data.room.shop.length > 0 && !['key', 'captive'].includes(i.kind) && !i.occupied
     actions = (
       <>
-        <ActionButton send={send} command={`${action.toLowerCase()} ${id}`}>{action}</ActionButton>
+        <ActionButton send={send} command={`${action.toLowerCase()} ${id}`} disabled={action === 'Quaff' && (data.player?.potion_ready || 0) > data.time}>{action}</ActionButton>
         {(i.kind === 'armor' || (i.kind === 'weapon' && (i.hands ?? 1) === 1)) && (
           <ActionButton send={send} command={`equip ${id} left`}>{i.kind === 'armor' ? 'Hold left' : 'Equip left'}</ActionButton>
         )}
@@ -82,11 +82,16 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
       {slot && <small className="basis-full text-xs text-muted-foreground">{slot}:</small>}
       <div className={cn('min-w-0 break-words', i.rarity && 'text-gold')}>
         {label}
-        <small className="block text-xs text-muted-foreground">{detail(i)}</small>
+        <small className="block text-xs text-muted-foreground">{detail(i)} · {i.weight ?? 0} lb{ i.kind === 'weapon' ? ` · ${i.hands || 1}-handed` : i.shield ? ' · shield' : i.kind === 'armor' ? ` · ${i.armor_slot === 'armor' || !i.armor_slot ? 'chest' : i.armor_slot}` : ''}</small>
+        {!!i.damage_penalty && <small className="block text-xs text-destructive">Damage penalty −{i.damage_penalty} · Repair {i.repair_cost} gold</small>}
+        {i.magic_progress && <small className="block text-xs text-gold">
+          Magic level {i.magic_progress.level} · {i.magic_progress.next_xp === null ? 'Maximum level' : `${i.magic_progress.level_xp}/${i.magic_progress.next_xp} XP to next level`}
+        </small>}
         {i.enchanted && <small className="block text-xs text-gold">{i.enchantment_description}</small>}
       </div>
       <div className="flex flex-wrap justify-end gap-1">
         {actions}
+        {['bag', 'equipment'].includes(mode) && !!i.damage_penalty && data.room.repair_service && <ActionButton send={send} command={`repair ${id}`} disabled={!!data.player?.combat || (data.player?.gold ?? 0) < (i.repair_cost ?? 0)}>Repair · {i.repair_cost} gold</ActionButton>}
         {children}
       </div>
     </div>

@@ -27,9 +27,11 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
   const [command, setCommand] = useState('')
   const history = useRef<string[]>([])
   const historyIndex = useRef(0)
+  const actionRecovery = Math.max(0, Math.ceil((p.action_ready || 0) - data.time))
+  const potionRecovery = Math.max(0, Math.ceil((p.potion_ready || 0) - data.time))
 
   const skills = (data.player_skills ?? [])
-    .filter((s) => s.unlocked)
+    .filter((s) => s.unlocked && !s.passive)
     .map((s) => ({ ...s, remaining: Math.max(0, Math.ceil((p.cooldowns[s.id] || 0) - data.time)) }))
 
   const status = p.combat
@@ -104,20 +106,24 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
             title={s.description || ''}
             disabled={
               s.remaining > 0 ||
+              (s.mana_cost || 0) > (p.mana || 0) ||
+              (actionRecovery > 0 && ['damage', 'heal', 'knockout'].includes(s.effect || 'damage')) ||
               (s.effect === 'damage' && !s.initiates && !p.combat) ||
               (s.effect === 'knockout' && !data.enemy) ||
               (s.effect === 'heal' && p.hp >= p.max_hp)
             }
           >
             {s.name.toLowerCase()}
+            {!!s.mana_cost && ` (${s.mana_cost} MP)`}
             {s.remaining > 0 && ` ${s.remaining}s`}
           </ActionButton>
         ))}
-        <ActionButton send={send} command="quaff potion">quaff potion</ActionButton>
+        <ActionButton send={send} command="quaff potion" disabled={potionRecovery > 0}>quaff potion{potionRecovery > 0 && ` ${potionRecovery}s`}</ActionButton>
         <ActionButton send={send} command="flee">flee</ActionButton>
         {data.room.rest && <ActionButton send={send} command="rest">rest</ActionButton>}
         <ActionButton send={send} command="help">help</ActionButton>
       </div>
+      {actionRecovery > 0 && <p className="mt-1 text-sm text-muted-foreground">Combat skill recovery: {actionRecovery}s. Automatic attacks continue.</p>}
     </section>
   )
 }

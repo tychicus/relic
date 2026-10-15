@@ -1,3 +1,21 @@
+# Mechanics follow-up — equipment, shared combat, death recovery and banking
+
+- LOOK SELF and EQUIPMENT show all six slots, including empty and two-handed slots.
+  Item lists use plain names; active enchanted names are violet with their bonus and glow.
+- Shared combat pulses consider all ready participants together. Enemies retain the
+  initiating player's target priority or independently choose a player when they initiate.
+- Death returns the character to the fountain with the requested disorientation message.
+  All carried possessions and gold stay in a recoverable body for 15 minutes. Nested
+  containers and individual item progress survive recovery; unrecovered contents expire.
+- Added the Brass Badger Bank and Osric Tallywick, south then west of the fountain.
+  Deposits persist by character ID, remain private to that character and survive death.
+- Body lifetime and bank room availability are editable; shared combat uses the existing
+  owner-controlled pulse interval. Prepared on the update branch for review before merging.
+- Validation: 242 Python tests, both JavaScript helper suites and the production UI build
+  passed. A headless browser exercised the actual engine through a local test bridge,
+  including equipment colors, responsive layout, banking, body recovery and expiration.
+  Direct browser access to the preview server timed out in this environment.
+
 # Relic Frontier v0.9.0 — 2026-10-14
 
 - Character levels now reach 100. New characters start with one learned ability;

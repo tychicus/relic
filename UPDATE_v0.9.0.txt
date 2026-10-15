@@ -128,11 +128,38 @@ all possessions and remain playable; drop, sell or store weight before acquiring
 more. Heavy creatures may require dropping other gear or gaining levels to carry.
 
 COMBAT AND FIXES
+LOOK SELF and EQUIPMENT show every hand and armor slot. Empty slots are listed;
+two-handed weapons explicitly occupy both hands. Item names no longer have
+decorative wrapping brackets. Active enchanted names appear violet in the
+console and item panels; enchantment bonuses and glow descriptions remain visible.
+
+DEATH RECOVERY AND BANKING
+Death returns you to the fountain with: "You blink awake from death feeling
+strange and disoriented." Your body remains where you died with every carried
+and equipped item and all carried gold. LOOK BODY, GET ALL FROM BODY, or
+GET <item> FROM BODY recovers belongings; BODY <number> selects among several.
+Recovered equipment goes into your bag. Equip it to free bag slots if necessary.
+After 15 minutes of real time, the body and everything still inside disappear,
+including container contents. Closing the game does not pause this deadline.
+The owner can adjust body lifetime in Combat & progression. Existing bodies keep
+their deadline. Disabling recoverable bodies restores the legacy loss settings.
+
+Go SOUTH then WEST from the fountain to the Brass Badger Bank. Osric Tallywick
+keeps character-specific accounts. BALANCE, DEPOSIT <amount or ALL>, and
+WITHDRAW <amount or ALL> work inside the bank. Deposited gold is safe after death.
+Bank availability is a room setting; the banker and dialogue use the NPC editor.
+
+COMBAT TIMING
 Manual combat skills share 2 seconds of recovery in addition to their own
 cooldowns. Automatic attacks continue. Potions share a 10-second recovery;
 full-health use does not consume a potion. Both timings are editable.
-The standard 2-second alternating pulse gives each side one attack every 4 seconds.
-All engaged enemies can act on enemy pulses. Named spell targets now select the
+The standard 2-second shared pulse checks every player and engaged enemy together.
+Each fighter's basic attack recovers for 4 seconds, longer when slowed. The owner
+can adjust the pulse interval. Enemies focus the first player to start a fight;
+when enemies initiate, each independently rolls among the players present. Targets
+persist until they die or leave. The shared scheduler supports multiple players;
+the current local game still has one player and no network sessions.
+Named spell targets now select the
 requested enemy, and scouting includes fixed residents before the first visit.
 Skill validation rejects unlocks beyond the world's configured character cap.
 

@@ -64,6 +64,7 @@ export interface Player {
   next_xp: number | null
   level_start_xp: number
   gold: number
+  bank_gold?: number
   inventory: string[]
   bag_capacity: number
   equipment: Record<string, string>
@@ -78,6 +79,7 @@ export interface Player {
 }
 
 export interface Room {
+  bank_service?: boolean
   name: string
   description: string
   exits: string[]
@@ -152,5 +154,6 @@ export interface Snapshot {
   unconscious_creatures?: { id: string; name: string }[]
   npcs?: { name: string; appearance: string }[]
   corpses?: { id: string; name: string }[]
+  player_bodies?: { id: string; name: string; expires: number; items: number; gold: number; owned: boolean }[]
   status_effects: Record<string, { name: string }>
 }

@@ -19,15 +19,17 @@ class InventoryTests(unittest.TestCase):
   before=self.g.p['inventory'][:];self.g.command('quaff potion');self.g.command('quaff lantern')
   self.assertEqual(self.g.p['inventory'],before)
   self.assertIn('only quaff',self.g.state['log'][-1]['text'])
- def test_vertical_stacked_marked_inventory(self):
+ def test_vertical_stacked_plain_inventory(self):
   self.g.p['inventory']=['potion','iron_sword','potion','chain_vest','potion','lantern','iron_sword']
   before=self.g.p['inventory'][:];self.g.command('inventory')
-  self.assertEqual(self.g.state['log'][-2]['text'],'Inventory:\n(Healing potion) (x3)\n[Iron sword] (x2) — Damage 5\n[Chain vest] — Armor 3\n(Lumen lantern)')
+  self.assertEqual(self.g.state['log'][-2]['text'],'Inventory:\nHealing potion (x3)\nIron sword (x2) — Damage 5\nChain vest — Armor 3\nLumen lantern')
   self.assertEqual(self.g.p['inventory'],before)
  def test_use_alias_and_quaff_during_combat(self):
   now=[1000.];self.g.clock=lambda:now[0]
   self.g.p['hp']=1;self.g.command('use potion');self.assertEqual(self.g.p['hp'],36)
-  self.g.p['room']='meadow';self.g.start_combat();self.g.command('quaff potion')
+  self.g.p['room']='meadow';self.g.start_combat()
+  self.g.p['attack_ready']=self.g.enemy()['attack_ready']=now[0]+1000
+  self.g.command('quaff potion')
   self.assertEqual(self.g.p['hp'],36);self.assertEqual(self.g.p['inventory'].count('potion'),1)
   now[0]+=self.g.rules()['potion_recovery'];self.g.command('quaff potion')
   self.assertEqual(self.g.p['hp'],self.g.max_hp());self.assertIsNotNone(self.g.p['combat'])

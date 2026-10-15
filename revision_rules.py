@@ -64,6 +64,8 @@ SCHEMA = {
   'food_in_combat':boolean('Allow eating during combat'),
   'recall_failure_consumes':boolean('Consume recall scroll on a blocked attempt'),
   'corpse_seconds':number('Harvest remains lifetime (seconds)',300,1,86400),
+  'player_bodies':boolean('Leave recoverable player bodies instead of immediate death losses',True),
+  'player_body_seconds':number('Player body and belongings lifetime (seconds; 900 = 15 minutes)',900,1,86400),
   'enchant_base':number('Enchant success at enchanting level 1 (%)',50,0,100),
   'enchant_level_gain':number('Success percentage gained per enchanting level',2,0,100),
   'enchant_destroy':number('Weapon destruction chance after failure (%)',10,0,100),
@@ -92,6 +94,7 @@ SCHEMA = {
 
 SCHEMA['revision']['dual_classes']['default']=['warrior']
 SCHEMA['rooms']['repair_service']=boolean('Equipment repairs available here')
+SCHEMA['rooms']['bank_service']=boolean('Bank deposits and withdrawals available here')
 SCHEMA['classes']=dict(mana=number('Starting maximum mana',0,0,10000,True),mana_per_level=number('Maximum mana gained per character level',0,0,1000,True),dodge=number('Chance to dodge incoming attacks (%)',0,0,75),flee_bonus=number('Added escape chance (fraction)',0,0,1))
 SCHEMA['classes']['description']=text('Class description shown at character creation')
 SCHEMA['classes']['carry_capacity']=number('Carrying capacity at character level 1 (lb)',60,1,10000)

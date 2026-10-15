@@ -109,11 +109,11 @@ export function ItemEditor({ item }: { item: Obj }) {
 }
 
 const settingNames: Record<string, string> = {
-  attack_interval: 'Seconds between alternating combat pulses (each side attacks every two pulses)',
+  attack_interval: 'Seconds between shared combat pulses (each fighter recovers for two pulses)',
   hit_chance: 'Chance to hit',
   flee_chance: 'Chance to flee',
-  gold_loss: 'Gold fraction lost on death',
-  item_loss_chance: 'Chance to lose one bag item on death',
+  gold_loss: 'Legacy gold loss (only when recoverable player bodies are disabled)',
+  item_loss_chance: 'Legacy bag item loss chance (only when recoverable player bodies are disabled)',
   bag_capacity: 'Bag capacity',
   hp_per_level: 'HP gained per level',
   damage_per_level: 'Damage gained per level',
@@ -130,6 +130,9 @@ export function SettingsEditor({ settings }: { settings: Obj }) {
       ))}
       <NumberField obj={world.revision} k="action_recovery" label="Recovery between manual combat skills (seconds; 0 disables)" fallback={2} min={0} max={60} />
       <NumberField obj={world.revision} k="potion_recovery" label="Recovery between healing potions (seconds; 0 disables)" fallback={10} min={0} max={3600} />
+      <BoolField obj={world.revision} k="player_bodies" label="Leave recoverable player bodies on death" />
+      <NumberField obj={world.revision} k="player_body_seconds" label="Player body lifetime (seconds; 900 = 15 minutes)" fallback={900} min={1} max={86400} />
+      <Note>Bodies hold carried gold and all carried or equipped items, including containers. Their deadlines continue while the game is closed. Banked gold stays safe. Changing this duration affects future deaths.</Note>
       <Note>Skills keep their own cooldowns too. Automatic attacks continue during manual skill recovery. New timing settings apply to the next use; current timers finish normally.</Note>
       <BoolField obj={world.revision} k="enemy_heal_enabled" label="Wounded enemies heal outside combat" />
       <NumberField obj={world.revision} k="enemy_heal_delay" label="Enemy healing delay after combat (seconds)" fallback={20} min={0} max={86400} />

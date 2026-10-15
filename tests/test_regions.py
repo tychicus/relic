@@ -4,6 +4,7 @@ from pathlib import Path
 import random
 import tempfile
 import unittest
+from unittest.mock import Mock
 
 from engine import Game, validate
 from encounters import sync_encounter, ready_actions
@@ -85,6 +86,38 @@ class RegionTests(unittest.TestCase):
         self.g.command('target '+area['creatures'][1]['uid'])
         self.g.tick()
         self.assertEqual(len(self.g.p['combat']['engaged']),2)
+
+    def test_player_and_every_enemy_attack_in_one_pulse_with_independent_recovery(self):
+        region,area=self.road();region['roam']=False
+        for e in area['creatures']:e.update(location='meadow',hp=1000)
+        self.g.w['enemies']['beetle'].update(aggressive=True,damage=[2,2],dodge=0)
+        self.g.w['settings']['hit_chance']=1
+        self.g.p.update(room='meadow',equipment={},hp=1000)
+        self.g.start_combat();target=self.g.enemy()
+        self.g.tick()
+        self.assertLess(target['hp'],1000);self.assertEqual(self.g.p['hp'],996)
+        self.assertEqual(self.g.p['combat']['initiator'],self.g.p['id'])
+        deadlines=[a['attack_ready'] for a in [self.g.p]+area['creatures']]
+        self.assertEqual(deadlines,[self.now+4]*3)
+        hp=target['hp'];self.now+=2;self.g.tick()
+        self.assertEqual(target['hp'],hp);self.assertEqual(self.g.p['hp'],996)
+        area['creatures'][0]['attack_ready']=self.now+100
+        self.now+=2;self.g.tick()
+        self.assertLess(target['hp'],hp);self.assertEqual(self.g.p['hp'],994)
+        # A delayed clock resolves one attack per ready actor, never catch-up bursts.
+        self.now+=1000;self.g.tick();self.assertEqual(self.g.p['hp'],990)
+        self.g.tick();self.assertEqual(self.g.p['hp'],990)
+
+    def test_automatic_encounter_has_no_player_initiator(self):
+        region,area=self.road();region['roam']=False
+        for e in area['creatures']:e.update(location='meadow',hp=1000)
+        self.g.w['enemies']['beetle']['aggressive']=True
+        self.g.p.update(room='meadow',hp=1000)
+        self.g.tick();fight=self.g.p['combat']
+        self.assertIsNone(fight['initiator'])
+        self.assertTrue(all(fight['targets'][e['uid']]==self.g.p['id'] for e in area['creatures']))
+        self.g.command('attack '+area['creatures'][0]['uid'])
+        self.assertIsNone(fight['initiator'])
 
     def test_roaming_uses_edges_boundaries_and_capacity(self):
         region,area=self.road();region['max_per_room']=1
@@ -177,6 +210,41 @@ class RegionTests(unittest.TestCase):
 
 
 class SharedEncounterTests(unittest.TestCase):
+    def test_enemies_focus_initiator_and_keep_target_when_other_players_attack(self):
+        players=[dict(id='p1',hp=30,room='arena',target='e1'),dict(id='p2',hp=30,room='arena',target='e1')]
+        enemies=[dict(uid='e1',hp=20,location='arena'),dict(uid='e2',hp=20,location='arena')]
+        fight=dict(room='arena',initiator='p2');rng=Mock()
+        roster=sync_encounter(fight,players,enemies,rng)
+        self.assertEqual([fight['targets'][e['uid']] for e in enemies],['p2','p2'])
+        self.assertEqual(len(ready_actions(fight,roster,None,10)),4)
+        players[0]['target']='e2'
+        enemies.append(dict(uid='e3',hp=20,location='arena'))
+        sync_encounter(fight,players,enemies,rng)
+        self.assertEqual([fight['targets'][e['uid']] for e in enemies],['p2']*3)
+        rng.choice.assert_not_called()
+
+    def test_automatic_targets_roll_per_enemy_then_stay_until_invalid(self):
+        players=[dict(id='p1',hp=30,room='arena'),dict(id='p2',hp=30,room='arena'),dict(id='p3',hp=30,room='arena')]
+        enemies=[dict(uid='e1',hp=20,location='arena'),dict(uid='e2',hp=20,location='arena')]
+        fight=dict(room='arena');rng=Mock();rng.choice.side_effect=['p2','p1','p3']
+        sync_encounter(fight,players,enemies,rng)
+        self.assertEqual([fight['targets'][e['uid']] for e in enemies],['p2','p1'])
+        self.assertEqual(rng.choice.call_count,2)
+        self.assertEqual(rng.choice.call_args.args[0],['p1','p2','p3'])
+        sync_encounter(fight,list(reversed(players)),enemies,rng)
+        self.assertEqual(rng.choice.call_count,2)
+        players[1]['room']='town'
+        sync_encounter(fight,players,enemies,rng)
+        self.assertEqual(fight['targets']['e1'],'p3')
+        self.assertEqual(fight['targets']['e2'],'p1')
+        self.assertEqual(rng.choice.call_args.args[0],['p1','p3'])
+        players[2]['hp']=0
+        sync_encounter(fight,players,enemies,rng)
+        self.assertEqual(fight['targets']['e1'],'p1')
+        players[0]['hp']=0
+        roster=sync_encounter(fight,players,enemies,rng)
+        self.assertFalse(ready_actions(fight,roster,None,100))
+
     def test_multiple_players_have_independent_targets_and_attack_timers(self):
         players=[dict(id='p1',hp=30,room='arena',target='e1'),dict(id='p2',hp=30,room='arena',target='e2',attack_ready=12)]
         enemies=[dict(uid='e1',hp=20,location='arena'),dict(uid='e2',hp=20,location='arena')]

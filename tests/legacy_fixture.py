@@ -5,7 +5,7 @@ def disable_regions(path):
     world=json.loads(path.read_text(encoding="utf-8"))
     world.pop("regions",None)
     # Isolate older mechanics tests from the new resource and challenge systems.
-    world.setdefault("revision",{}).update(weight_enabled=False,learning_enabled=False,mana_enabled=False,practice_challenge_bonus=0,practice_harder_bonus=0)
+    world.setdefault("revision",{}).update(weight_enabled=False,learning_enabled=False,mana_enabled=False,player_bodies=False,practice_challenge_bonus=0,practice_harder_bonus=0)
     # Exercise the prior editable-world rules independently of new learning gates.
     for cls in world['classes'].values():cls.pop('starting_ability',None)
     for sid in ['swordplay','kick','power_strike','shattering_strike','executioner','cutthroat','nerve_strike','assassinate','frostbolt','arcane_lance','meteor']:

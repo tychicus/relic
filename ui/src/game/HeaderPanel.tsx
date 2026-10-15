@@ -105,6 +105,15 @@ function Here({ data, send }: { data: Snapshot; send: Send }) {
       </Line>,
     )
   }
+  for (const body of data.player_bodies ?? []) {
+    rows.push(
+      <Line key={body.id}>
+        <span className="flex-1">· {body.name}<small className="block text-muted-foreground">{body.items} items · {body.gold} gold · disappears in {Math.max(0, Math.ceil(body.expires - data.time))}s</small></span>
+        <ActionButton send={send} command={`look ${body.id}`}>inspect</ActionButton>
+        {body.owned && <ActionButton send={send} command={`get all from ${body.id}`}>recover items</ActionButton>}
+      </Line>,
+    )
+  }
   for (const box of data.containers ?? []) {
     rows.push(
       <Line key={`box-${box.id}`}>
@@ -133,6 +142,9 @@ function Here({ data, send }: { data: Snapshot; send: Send }) {
 
   if (room.repair_service) {
     rows.push(<Line key="repairs"><span className="flex-1 text-muted-foreground">Equipment repairs are available here.</span><ActionButton send={send} command="repair" disabled={!!data.player?.combat}>Repair prices</ActionButton></Line>)
+  }
+  if (room.bank_service) {
+    rows.push(<Line key="bank"><span className="flex-1 text-muted-foreground">Your bank: {data.player?.bank_gold || 0} gold. DEPOSIT or WITHDRAW an amount.</span><ActionButton send={send} command="balance">balance</ActionButton><ActionButton send={send} command="deposit all">deposit all</ActionButton><ActionButton send={send} command="withdraw all">withdraw all</ActionButton></Line>)
   }
 
   return (

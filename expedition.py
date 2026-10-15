@@ -10,25 +10,29 @@ from revision_rules import DEFAULT_RULES
 from enchanting import Enchanting
 from magic_progression import MagicProgression
 from regions import Regions
-from encounters import sync_encounter, ready_actions
+from encounters import actor_id, sync_encounter, ready_actions
 from mana import Mana
 from learning import Learning
 from equipment import Equipment, BODY_SLOTS, SLOT_NAMES, SLOT_ALIASES
 from enemy_healing import EnemyHealing
+from player_bodies import PlayerBodies
+from banking import Banking
 
 DIRECTIONS={'n':'north','s':'south','e':'east','w':'west','u':'up','d':'down'}
 TRAITS=['scarred','watchful','lean','broad-shouldered','dust-covered','restless','pale','dark-eyed','weathered','bristling','long-limbed','stout']
 MARKS=['notched-eared','gray-marked','white-marked','red-eyed','mud-spattered','amber-eyed','sharp-eyed','mottled','ragged','dark-backed','light-footed','heavy-browed']
 
-class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgression, Enchanting):
+class Revision(Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning, Mana, MagicProgression, Enchanting):
     def rules(self):
         return {**DEFAULT_RULES,**self.w.get('revision',{})}
 
     def init_adventure(self):
         super().init_adventure()
+        self.init_banking()
         self.state.setdefault('populations',{})
         self.state.setdefault('creature_sequence',0)
         self.state.setdefault('corpses',[])
+        self.init_player_bodies()
         self.state['schema_version']=5
         self.migrate_enchantments()
         self.init_magic_items()
@@ -196,12 +200,13 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
                 if old==self.p['room'] and self.visible():self.log(self.creature_name(e)+' leaves the area.')
                 if e['location']==self.p['room'] and self.visible():self.log(self.creature_name(e)+' arrives.')
 
-    def start_combat(self):
+    def start_combat(self,initiated=True):
         e=self.enemy()
         if not e or self.w['rooms'][self.p['room']].get('safe'):return
         if not self.p['combat']:
             self.p['target']=e['uid']
-            self.p['combat']={'room':self.p['room'],'turn':'player','next_at':self.clock(),'engaged':[e['uid']]}
+            self.p['combat']={'room':self.p['room'],'turn':'simultaneous','next_at':self.clock(),'engaged':[e['uid']],
+                              'initiator':actor_id(self.p) if initiated else None}
             self.log('Combat begins: '+self.creature_name(e)+'. Attacks are automatic. TARGET <description>, CAST <skill>, QUAFF POTION or FLEE.','combat')
             self.retarget()
 
@@ -217,18 +222,18 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
         if not candidates:self.p['combat']=None;self.p.pop('target',None);return
         if not any(e['uid']==self.p.get('target') for e in candidates):
             self.p['target']=candidates[0]['uid'];self.log('You turn toward '+self.creature_name(candidates[0])+'.','combat')
-        sync_encounter(c,[self.p],candidates)
+        sync_encounter(c,[self.p],candidates,self.rng)
 
     def tick(self):
         with self.lock:
             if not self.p:return
             before=copy.deepcopy(self.state)
-            self.cleanup_drops();self.roam();self.expire_enchantments()
+            self.cleanup_drops();self.expire_player_bodies();self.roam();self.expire_enchantments()
             self.state['corpses']=[c for c in self.state['corpses'] if c['expires']>self.clock() and not c.get('harvested')]
             self.retarget()
             if not self.p['combat']:
                 hostile=next((e for e in self.creatures() if self.w['enemies'][e['type']]['aggressive']),None)
-                if hostile:self.p['target']=hostile['uid'];self.start_combat()
+                if hostile:self.p['target']=hostile['uid'];self.start_combat(initiated=False)
             c=self.p['combat']
             self.recover_mana()
             self.heal_enemies()
@@ -241,19 +246,23 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
                     if self.p['room']!=location or self.p['hp']<=0:break
                 self.retarget();c=self.p['combat']
                 if c:
-                    if c['turn']=='player':
-                        if not stunned.get(id(self.p)) and self.clock()>=self.p.get('attack_ready',0):
-                            self.strike();self.p['attack_ready']=self.clock()+2*self.w['settings']['attack_interval']*self.slow(self.p)
-                        elif stunned.get(id(self.p)):self.log('You are stunned and cannot attack this pulse.','combat')
-                        c['turn']='enemy'
-                    else:
-                        opponents=[e for e in self.creatures() if e['uid'] in c['engaged']]
-                        roster=sync_encounter(c,[self.p],opponents)
-                        for e,target in ready_actions(c,roster,'enemies',self.clock()):
-                            if not self.p['combat'] or self.p['room']!=location:break
-                            if e['uid'] in c['engaged'] and not stunned.get(id(e)) and self.clock()>=e.get('attack_ready',0):
-                                self.enemy_strike(e);e['attack_ready']=self.clock()+2*self.w['settings']['attack_interval']*self.slow(e)
-                        c['turn']='player'
+                    c['turn']='simultaneous'
+                    opponents=[e for e in self.creatures() if e['uid'] in c['engaged']]
+                    roster=sync_encounter(c,[self.p],opponents,self.rng)
+                    for actor,_ in ready_actions(c,roster,None,self.clock()):
+                        if not self.p['combat'] or self.p['room']!=location:break
+                        self.retarget()
+                        if not self.p['combat']:break
+                        target=roster.get(c['targets'].get(actor_id(actor)))
+                        if actor['hp']<=0 or actor.get('unconscious') or not target or target['hp']<=0:continue
+                        if stunned.get(id(actor)):
+                            if actor is self.p:self.log('You are stunned and cannot attack this pulse.','combat')
+                            continue
+                        if actor is self.p:
+                            self.strike()
+                        elif target is self.p:
+                            self.enemy_strike(actor)
+                        actor['attack_ready']=self.clock()+2*self.w['settings']['attack_interval']*self.slow(actor)
                     if self.p['combat']:c['next_at']=self.clock()+self.w['settings']['attack_interval']
             # Effects pause with combat, so offline time never causes a damage burst.
             if before!=self.state:self.save()
@@ -375,6 +384,8 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
         self.p['combat']=c;self.retarget()
 
     def death(self):
+        if self.rules()['player_bodies']:
+            self.leave_player_body();return
         inventory=set(self.p['inventory']);self.p['effects']=[];self.p.pop('target',None)
         super().death()
         for lost in inventory-set(self.p['inventory']):
@@ -472,6 +483,10 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
         if right.get('kind')=='weapon' and left.get('kind')=='weapon' and (self.p['level']<rules['dual_level'] or self.p['class'] not in rules['dual_classes']):raise ValueError('Dual wielding requires two one-handed weapons, an eligible class and the configured unlock level.')
 
     def look(self,target):
+        if target=='self':
+            self.show_equipment();return
+        if self.is_body_reference(target):
+            self.show_player_body(target);return
         parts=target.split();direction=DIRECTIONS.get(parts[0],parts[0]) if parts else ''
         if direction in ('north','south','east','west','up','down'):
             if len(parts)>2 or len(parts)==2 and not parts[1].isdigit():raise ValueError('Use LOOK NORTH 2 (a positive whole distance).')
@@ -505,6 +520,9 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
             if any(target==e['uid'] or target in self.creature_name(e).casefold() for e in rows):
                 e=self.find_creature(target,rows);self.log(self.creature_name(e)+': '+self.w['enemies'][e['type']]['description'],'story');return
         super().look(target)
+        if not target:
+            for body in self.bodies_here():
+                self.log(f'{body["name"]} lies here. Disappears in {math.ceil(body["expires"]-self.clock())} seconds. LOOK BODY {body["number"]}; GET ALL FROM BODY {body["number"]}.')
         if not target:
             region=self.region_for(self.p['room'])[1]
             if region:self.log('Weather: '+region.get('weather','clear')+f'. Visibility penalty: {self.fog_at(self.p["room"]):g}%.')
@@ -616,6 +634,9 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
                 self.require_carry_weight(self.w['enemies'][e['type']].get('weight',10))
                 self.p['inventory'].append(self.new_instance(dict(kind='captive',enemy=e['type'])));e['hp']=0;e['unconscious']=False;e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60);self.log('You pick up the unconscious creature. No kill rewards are awarded.');return True
         if verb in ('help','?'):
+            self.log('At a bank: BALANCE, DEPOSIT <amount or ALL>, WITHDRAW <amount or ALL>. Banked gold belongs to your character and stays safe on death.')
+            self.log('Death leaves your belongings in a body. LOOK BODY, GET ALL FROM BODY, GET <item> FROM BODY, or LOOT BODY. Use the body number if there are several. Recover gear before the body expires.')
+            self.log('LOOK SELF or EQUIPMENT lists every hand and armor slot, including empty slots. Enchanted item names appear violet with a glow description and separate stat bonus.')
             self.log('MANA shows your reserve and slow mana mastery. Spells spend mana, which recovers outside combat; REST refills it. Enemy levels determine challenge practice bonuses.')
             self.log('CAST <spell> [creature] and named attacks share a short recovery between manual combat skills. Healing potions have a separate recovery. REPAIR lists damaged equipment and prices at a repair shop; REPAIR <item> restores it without losing its magic XP.')
             self.log('Commands: ATTACK or KILL <creature>; TARGET <creature description>; EQUIP <item> LEFT or RIGHT; HOLD <armor>; UNEQUIP LEFT / RIGHT; LOOK NORTH 2; FIREBALL; LIGHTNING; CHARGE; SHARPEN; ENCHANT <held weapon or worn/held armor>; RECALL; EAT <food>; HARVEST <creature>; COOK <recipe>. SAY <phrase> TO <NPC>. Enchantments are temporary. Practice slowly improves enchanting level, success, bonus and duration. Weapon failures can damage or destroy the weapon; see SKILLS and owner balance settings.')
@@ -635,6 +656,7 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
         result['unconscious_creatures']=[dict(id=e['uid'],name=self.creature_name(e)) for e in self.creatures(unconscious=True) if e.get('unconscious')] if light else []
         result['npcs']=[dict(name=n['name'],appearance=n.get('appearance','')) for n in self.w.get('npcs',{}).values() if n['room']==self.p['room']] if light else []
         result['corpses']=[dict(id=c['uid'],name=c['name']) for c in self.state['corpses'] if c['room']==self.p['room'] and c['expires']>self.clock() and not c.get('harvested')] if light else []
+        result['player_bodies']=[dict(id=b['id'],name=b['name'],expires=b['expires'],items=len(b['items']),gold=b['gold'],owned=b['owner']==self.p['id']) for b in self.bodies_here()]
         result['status_effects']=self.w.get('status_effects',{})
         region=self.region_for(self.p['room'])[1]
         result['room']['weather']=region.get('weather','clear')
@@ -646,6 +668,7 @@ class Revision(Regions, EnemyHealing, Equipment, Learning, Mana, MagicProgressio
 
     def check_live_references(self,w):
         super().check_live_references(w)
+        self.check_body_references(w)
         self.check_region_references(w)
         if self.p:self.validate_hands(self.p['equipment'],w)
         for inst in self.state.get('instances',{}).values():

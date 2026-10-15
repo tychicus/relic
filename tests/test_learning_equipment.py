@@ -141,17 +141,34 @@ class LearningEquipmentTests(unittest.TestCase):
         granted=self.g.grant(iid);self.g.p['inventory'].append(granted);self.g.equip_hand(granted)
 
     def test_all_body_slots_shield_and_two_hands(self):
+        self.g.command('LoOk SeLf')
+        text=self.g.state['log'][-2]['text']
+        for label in ('Left hand','Helmet','Pants','Bracers / arms'):
+            self.assertIn(label+': empty',text)
         for iid in ('leather_cap','leather_pants','leather_bracers'):self.equip(iid)
         self.assertTrue(set(('helmet','armor','pants','arms','weapon'))<=set(self.g.p['equipment']))
         shield=next(i for i,s in self.g.w['items'].items() if s.get('shield'));self.equip(shield)
         self.assertEqual(self.g.p['equipment']['left_hand'],shield)
+        equipped=copy.deepcopy(self.g.p['equipment'])
+        self.g.command('look self');text=self.g.state['log'][-2]['text']
+        for slot,label in [('weapon','Right hand'),('left_hand','Left hand'),('helmet','Helmet'),('armor','Chest'),('pants','Pants'),('arms','Bracers / arms')]:
+            self.assertIn(label+': '+self.g.item(equipped[slot])['name']+' — ',text)
+        self.assertEqual(self.g.p['equipment'],equipped)
+        self.g.command('eq');self.assertEqual(self.g.state['log'][-2]['text'],text)
         self.g.p['inventory'].append('greatsword');before=copy.deepcopy(self.g.p)
         with self.assertRaisesRegex(ValueError,'Two-handed'):self.g.equip_hand('greatsword')
         self.assertEqual(self.g.p,before)
         self.g.extra_command('unequip','shield');self.g.equip_hand('greatsword')
         with self.assertRaisesRegex(ValueError,'Two-handed'):self.g.equip_hand(shield)
         self.assertEqual(self.g.item(self.g.p['equipment']['weapon'])['hands'],2)
+        self.g.command('look self');text=self.g.state['log'][-2]['text']
+        self.assertIn('Left hand: occupied by Iron Greatsword',text)
+        self.assertIn('two-handed',text);self.assertNotIn('Left hand: empty',text)
         self.g.extra_command('unequip','bracers');self.assertNotIn('arms',self.g.p['equipment'])
+        self.g.p['equipment']={};self.g.p['inventory']=[]
+        self.g.w['rooms'][self.g.p['room']]['dark']=True
+        self.g.command('look self');text=self.g.state['log'][-2]['text']
+        self.assertEqual(text.count(': empty'),6)
 
     def test_all_worn_armor_and_shield_reduce_hits_held_armor_does_not(self):
         self.g.p['equipment']={};e=self.arena();self.g.w['enemies'][e['type']]['damage']=[20,20]

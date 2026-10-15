@@ -5,6 +5,25 @@ SLOT_ALIASES={'right':'weapon','right hand':'weapon','left':'left_hand','left ha
 
 
 class Equipment:
+    def show_equipment(self):
+        equipped=self.p['equipment']
+        right=self.item(equipped['weapon']) if equipped.get('weapon') else None
+        lines=[]
+        for slot,label in SLOT_NAMES.items():
+            iid=equipped.get(slot)
+            if iid:
+                item=self.item(iid)
+                text=item['name']+' — '+self.gear_stats(item)
+                if item.get('hands',1)==2:text+=' · two-handed'
+                if item.get('enchantment_description'):text+='\n  '+item['enchantment_description']
+            elif slot=='left_hand' and right and right.get('hands',1)==2:
+                text='occupied by '+right['name']+' · two-handed'
+            else:
+                text='empty'
+            lines.append(label.capitalize()+': '+text)
+        self.log('Equipment:\n'+'\n'.join(lines))
+        self.log(f'Carrying {self.carried_weight():g}/{self.carry_capacity():g} lb, including worn equipment and container contents.')
+
     def item_weight(self,iid):
         inst=self.state.get('instances',{}).get(iid,{})
         if inst.get('kind')=='captive':return self.w['enemies'][inst['enemy']].get('weight',10)
@@ -34,6 +53,8 @@ class Equipment:
     def require_carry(self,iid):self.require_carry_weight(self.item_weight(iid))
 
     def extra_command(self,verb,target):
+        if verb=='equipment':
+            self.show_equipment();return True
         if verb in ('weight','capacity'):
             self.log(f'Carrying {self.carried_weight():g}/{self.carry_capacity():g} lb, including worn gear and container contents. Capacity grows with character level.');return True
         return super().extra_command(verb,target)

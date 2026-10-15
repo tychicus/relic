@@ -4,13 +4,15 @@ The local game supplies one player today. A future server supplies its room rost
 to the same functions, resolves actions once under its world lock, and distributes
 results. Network sessions, parties and shared rewards are outside this module.
 """
+import random
 
 def actor_id(actor):
     return actor.get('uid') or actor['id']
 
 
-def sync_encounter(encounter, players, enemies):
-    """Prune absent/dead actors and preserve each participant's chosen target."""
+def sync_encounter(encounter, players, enemies, rng=None):
+    """Keep targets; enemies focus the initiator or roll among present players."""
+    rng = rng or random
     room = encounter['room']
     sides = {
         'players': [p for p in players if p['hp'] > 0 and p['room'] == room],
@@ -24,7 +26,15 @@ def sync_encounter(encounter, players, enemies):
         for actor in rows:
             ident = actor_id(actor)
             selected = actor.get('target') if side == 'players' else previous.get(ident)
-            targets[ident] = selected if selected in opponents else next(iter(opponents), None)
+            if selected not in opponents:
+                if side == 'players':
+                    selected = next(iter(opponents), None)
+                elif encounter.get('initiator') in opponents:
+                    selected = encounter['initiator']
+                else:
+                    choices = list(opponents)
+                    selected = rng.choice(choices) if len(choices) > 1 else next(iter(choices), None)
+            targets[ident] = selected
     encounter['participants'] = {side: [actor_id(a) for a in rows] for side, rows in sides.items()}
     encounter['targets'] = targets
     return roster
@@ -33,13 +43,16 @@ def sync_encounter(encounter, players, enemies):
 def ready_actions(encounter, roster, side, now):
     """Return due actor/target pairs; cooldowns belong to actors, not a player slot.
 
-    The resolver must revalidate targets after each hit (a previous action may
+    Use side=None for a shared pulse across every player and enemy. The resolver
+    must revalidate targets after each hit (a previous action may
     kill one), and advance attack_ready after resolving each action.
     """
     actions = []
-    for ident in encounter.get('participants', {}).get(side, []):
+    participants = encounter.get('participants', {})
+    ids = participants.get(side, []) if side else [ident for team in ('players', 'enemies') for ident in participants.get(team, [])]
+    for ident in ids:
         actor = roster.get(ident)
         target = roster.get(encounter['targets'].get(ident))
-        if actor and target and actor['hp'] > 0 and target['hp'] > 0 and now >= actor.get('attack_ready', 0):
+        if actor and target and actor['hp'] > 0 and target['hp'] > 0 and not actor.get('unconscious') and not target.get('unconscious') and now >= actor.get('attack_ready', 0):
             actions.append((actor, target))
-    return actions
+    return sorted(actions, key=lambda pair: pair[0].get('attack_ready', 0))

@@ -2,7 +2,7 @@ import { TerminalBox } from '@/components/Terminal'
 import { ActionButton, ItemRow, countItems, type Send } from './ItemRow'
 import type { Snapshot } from './types'
 
-const slotNames: Record<string, string> = { helmet: 'Helmet', armor: 'Chest', pants: 'Pants', arms: 'Bracers / arms', weapon: 'Right hand', left_hand: 'Left hand / shield' }
+const slotNames: Record<string, string> = { helmet: 'Helmet', armor: 'Chest', pants: 'Pants', arms: 'Arms', weapon: 'Right hand', left_hand: 'Left hand / shield' }
 
 export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
   const p = data.player!
@@ -32,7 +32,7 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
       </TerminalBox>
 
       {data.learning_enabled && <TerminalBox title={`Learn abilities · ${p.ability_points || 0} points`} muted>
-        <p className="mb-3 text-sm text-story">Choose new abilities or improve their ranks. Earn points by gaining character levels; save them for later unlocks. Spell mastery also grows through practice.</p>
+        <p className="mb-3 text-sm text-story">Choose new abilities or improve their ranks. Earn {data.learning_schedule || 'points by gaining character levels.'} Save them for later unlocks. Spell mastery also grows through practice.</p>
         <details>
           <summary className="cursor-pointer text-sm text-gold">View learning choices</summary>
           <div className="mt-3 grid gap-3">
@@ -63,7 +63,7 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
         {Object.keys(slotNames)
           .filter((slot) => !p.equipment[slot])
           .map((slot) => (
-              <p key={slot} className="text-sm text-muted-foreground">{slotNames[slot]}: {slot === 'left_hand' && (data.items[p.equipment.weapon]?.hands || 1) === 2 ? 'occupied by two-handed weapon' : 'empty'}</p>
+              <p key={slot} className="text-sm text-muted-foreground">{slotNames[slot]}: {slot === 'left_hand' && (data.items[p.equipment.weapon]?.hands || 1) === 2 ? 'occupied by two-handed weapon' : slot === 'pants' ? 'boxers' : 'nothing'}</p>
           ))}
       </TerminalBox>
 

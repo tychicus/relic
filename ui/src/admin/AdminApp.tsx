@@ -30,6 +30,7 @@ const categories: Record<string, string> = {
   races: 'Characters · Races',
   classes: 'Characters · Classes',
   items: 'Items & equipment',
+  rare_loot: 'Rare equipment drops',
   settings: 'Combat & progression',
   mana: 'Mana & mastery',
   learning: 'Abilities & learning',
@@ -39,7 +40,7 @@ const categories: Record<string, string> = {
   revision: 'Crafting & balance',
   raw: 'Advanced data',
 }
-const SPECIAL = ['settings', 'raw', 'map', 'dashboard', 'revision', 'mana', 'learning']
+const SPECIAL = ['settings', 'raw', 'map', 'dashboard', 'revision', 'mana', 'learning', 'rare_loot']
 
 const placementHelp: Record<string, string> = {
   rooms: 'Use Open owner map or Add connected room to grow the map. Connected creation makes both exits automatically. Manual exit fields connect existing rooms.',
@@ -48,7 +49,8 @@ const placementHelp: Record<string, string> = {
 }
 
 const sectionHelp: Record<string, string> = {
-  learning: 'Characters start with one ability and earn points when they level up. Set each class starting ability and power, mana-cost and practice multipliers in Classes. Set ability categories, learning costs and maximum ranks in Skills & spells. Enchanting remains restricted to mages in its class eligibility.',
+  rare_loot: 'Each eligible defeated enemy gets one independent bonus roll alongside normal loot. Default: 0.1% (about 1 in 1000 kills), enemy level 10 or higher. This is an average, not a guarantee. A successful roll chooses one eligible item by weight. Captured or released creatures give no special drop. All pool items must be drop-only weapons or armor; shops cannot stock them. Full bags or excess weight leave the item on the ground.',
+  learning: 'Characters start with one ability and earn points at the configured level interval: by default, one point at levels 5, 10, 15 and so on. Existing learned abilities remain; available points use the allowance minus points already spent. Set starting abilities in Classes and learning costs in Skills & spells.',
   mana: 'Valid paid casts train mana capacity. Damage and healing spells and magical equipment also earn their own practice. Enemies at or above character level award extra practice, with a further bonus for harder enemies. Lower-level enemies still give base practice. Set starting mana and growth in Characters · Classes, spell costs in Skills & spells, and enemy levels in Creatures.',
   regions: 'Choose the squares in this region, then its enemy spawning squares. The regional bank replaces room spawn rules only in those spawning squares. Safe squares cannot spawn enemies. Several creatures can share a square; aggressive creatures join the fight. Population limits include unconscious creatures. Lower limits cannot discard living creatures. Weather is descriptive; the visibility penalty controls how fog and weather affect scouting.',
   dashboard: 'Choose a workshop below. Your draft stays intact as you move between categories.',
@@ -56,19 +58,20 @@ const sectionHelp: Record<string, string> = {
   enemies: 'Dodge chance is a percentage: 20 means a 20% chance to avoid a successful basic attack or Bash. A dodge prevents all damage. Missing values mean 0%. Loot weights are relative: a weight of 3 is three times as likely as a weight of 1. One entry is chosen per victory. Saving preserves current enemy health (capped to any lower maximum) and respawn times. Capture requires low health; resistance reduces the skill’s success chance.',
   items: 'Weapon damage is added to a character’s base attack. Worn armor pieces and a held shield add protection against each incoming hit. Weight includes equipped gear and container contents; class carrying capacity grows by level. Shop purchase price is shown; resale pays half.',
   settings: 'Probabilities run from 0 to 1: 0.10 means 10%. Attack interval sets the shared combat pulse. Every ready player and enemy can attack in the same pulse; each basic attack recovers for two pulses, longer when slowed.',
-  races: 'Every race listed here is available when creating a new character. Race HP bonus is added to class health.',
-  classes: 'Every class listed here is playable. Set its base HP and damage; assign skills in the Skills section.',
+  races: 'Race HP bonus is added to class health. Races without magic cannot choose classes that require it or use spells, enchanting, magical equipment or scrolls.',
+  classes: 'Set base HP and damage; assign skills in the Skills section. Classes that require magic are unavailable to races without magic.',
   skills: 'Create working damage, healing, or knockout skills. Eligibility requires the selected class and race. The unlock level is the earliest level when players can spend points to learn it. Any includes future choices. Empty restricted lists allow nobody.',
   raw: 'Advanced editor for the complete world, including starting equipment and the working title. Prefer the forms for everyday changes.',
 }
 
 const schemaTitles: Record<string, string> = {
+  rare_loot: 'Drop chance, enemy levels & reward pool',
   classes: 'Starting ability, class strengths, mana & carrying capacity',
   rooms: 'Spawning, roaming, visibility & crafting',
   enemies: 'Status effects, resistance & harvesting',
   items: 'Weight, equipment slots, hands & effects',
   skills: 'Learning costs, ranks, category & combat effects',
-  races: 'Perception & resistance',
+    races: 'Race description, magic & resistances',
 }
 
 const createKinds: Option[] = [
@@ -93,16 +96,16 @@ function CoreFields({ section, current, obj }: { section: string; current: strin
 }
 
 function RecordForm({ section, current, world, schema }: { section: string; current: string; world: World; schema: Schema }) {
-  const obj = section === 'settings' ? world.settings : ['revision', 'mana', 'learning'].includes(section) ? world.revision : world[section]?.[current]
+  const obj = section === 'settings' ? world.settings : ['revision', 'mana', 'learning', 'rare_loot'].includes(section) ? world.revision : world[section]?.[current]
   if (!obj) return null
   const core = (
     <>
-      {!['settings', 'revision', 'mana', 'learning'].includes(section) && <TextField obj={obj} k="name" label="Display name" />}
+      {!['settings', 'revision', 'mana', 'learning', 'rare_loot'].includes(section) && <TextField obj={obj} k="name" label="Display name" />}
       <CoreFields section={section} current={current} obj={obj} />
     </>
   )
   const mastery = (key: string) => key.startsWith('mana_') || key.startsWith('practice_')
-  const fields = section === 'learning' ? Object.fromEntries(Object.entries(schema.revision || {}).filter(([key]) => key.startsWith('learning_'))) : section === 'mana' ? Object.fromEntries(Object.entries(schema.revision || {}).filter(([key]) => mastery(key))) : section === 'revision' ? Object.fromEntries(Object.entries(schema[section] || {}).filter(([key]) => !['action_recovery', 'potion_recovery', 'player_bodies', 'player_body_seconds'].includes(key) && !mastery(key) && !key.startsWith('learning_') && !key.startsWith('enemy_heal_'))) : schema[section]
+  const fields = section === 'rare_loot' ? Object.fromEntries(Object.entries(schema.revision || {}).filter(([key]) => key.startsWith('rare_'))) : section === 'learning' ? Object.fromEntries(Object.entries(schema.revision || {}).filter(([key]) => key.startsWith('learning_'))) : section === 'mana' ? Object.fromEntries(Object.entries(schema.revision || {}).filter(([key]) => mastery(key))) : section === 'revision' ? Object.fromEntries(Object.entries(schema[section] || {}).filter(([key]) => !['action_recovery', 'potion_recovery', 'player_bodies', 'player_body_seconds'].includes(key) && !mastery(key) && !key.startsWith('learning_') && !key.startsWith('enemy_heal_') && !key.startsWith('rare_'))) : schema[section]
   if (!fields) return <FieldGrid>{core}</FieldGrid>
   const wrapCore = ['rooms', 'enemies', 'items', 'skills'].includes(section)
   return (
@@ -121,7 +124,7 @@ function RecordForm({ section, current, world, schema }: { section: string; curr
         ) : (
           <FieldGrid>{core}</FieldGrid>
         ))}
-      <Disclosure title={schemaTitles[section] || 'Configuration'} defaultOpen={['learning', 'mana', 'classes', 'regions', 'revision', 'npcs', 'status_effects', 'recipes'].includes(section)}>
+      <Disclosure title={schemaTitles[section] || 'Configuration'} defaultOpen={['learning', 'mana', 'classes', 'regions', 'revision', 'rare_loot', 'npcs', 'status_effects', 'recipes'].includes(section)}>
         <SchemaForm obj={obj} fields={fields} />
       </Disclosure>
     </div>

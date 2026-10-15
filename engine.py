@@ -137,7 +137,11 @@ class LegacyGame(Abilities):
                 raise ValueError('Use 1–32 letters, numbers, spaces, apostrophes, or hyphens for your name.')
             if race not in self.w['races'] or character_class not in self.w['classes']:
                 raise ValueError('Choose an existing race and class.')
+            if not self.class_eligible(race,character_class):
+                raise ValueError(self.w['races'][race]['name']+' characters cannot choose a class that requires magic.')
             a = self.w['starting']
+            if not self.can_use_magic(race) and any(self.magical_item(self.w['items'][iid]) for iid in a['equipment'].values()):
+                raise ValueError('This race needs nonmagical starting equipment. Change the starting equipment in the owner editor.')
             self.p = self.state['player'] = {'id': 'player-'+uuid.uuid4().hex, 'name': name, 'race': race, 'class': character_class, 'level': 1, 'xp': 0, 'hp': self.w['classes'][character_class]['hp'] + self.w['races'][race]['hp_bonus'], 'gold': a['gold'], 'room': a['room'], 'inventory': a['inventory'][:], 'equipment': dict(a['equipment']), 'cooldowns': {}, 'combat': None, 'learned_skills': {}, 'ability_points_spent': 0}
             self.init_adventure()
             self.log(f'Welcome, {name}. Your story begins in Center Square.', 'story')
@@ -371,7 +375,7 @@ class LegacyGame(Abilities):
                     if verb in ('buy', 'sell') and 'shop' not in room:
                         raise ValueError('You need to be at a shop.')
                     if verb == 'buy' and not target:
-                        self.log('For sale:\n' + '\n'.join(f'{self.marked(i, room["shop"].count(i))} — {self.item(i)["price"]} gold each' for i in dict.fromkeys(room['shop']))); return self.finish()
+                        self.log('For sale:\n' + '\n'.join(f'{self.marked(i, room["shop"].count(i))} — {self.item(i)["price"]} gold each' for i in dict.fromkeys(room['shop']) if not self.item(i).get('drop_only'))); return self.finish()
                     if verb == 'unequip':
                         if target not in self.p['equipment']:
                             raise ValueError('Use UNEQUIP WEAPON or UNEQUIP ARMOR.')
@@ -386,6 +390,8 @@ class LegacyGame(Abilities):
                     if verb == 'get' and not self.visible():
                         raise ValueError('It is too dark to find items on the ground.')
                     if verb == 'buy':
+                        if item.get('drop_only'):
+                            raise ValueError('This rare equipment is an enemy drop and cannot be purchased.')
                         if self.p['gold'] < item['price']:
                             raise ValueError('You do not have enough gold.')
                         self.p['gold'] -= item['price']; inv.append(self.grant(i))
@@ -410,6 +416,7 @@ class LegacyGame(Abilities):
                     self.log(f'{verb.title()}: {item["name"]}.')
                 elif verb in ('use', 'quaff'):
                     i = self.match(target, self.p['inventory']); item = self.item(i)
+                    self.require_item_use(item)
                     if verb == 'quaff' and item['kind'] != 'consumable':
                         raise ValueError('You can only quaff a potion or another consumable.')
                     if item['kind'] == 'light':
@@ -447,6 +454,8 @@ class LegacyGame(Abilities):
             result = {'title': self.w['title'], 'player': None, 'log': self.state['log'], 'time': self.clock()}
             if not self.p:
                 result['creation']={group:[{'id':i,**value} for i,value in sorted(self.w[group].items(),key=lambda x:x[1]['name'].casefold())] for group in ('races','classes')}
+                for race in result['creation']['races']:
+                    race['available_classes']=[cid for cid in self.w['classes'] if self.class_eligible(race['id'],cid)]
                 return result
             p = copy.deepcopy(self.p); p['max_hp'] = self.max_hp()
             thresholds = self.w['settings']['level_xp']; p['next_xp'] = thresholds[p['level']] if p['level'] < len(thresholds) else None

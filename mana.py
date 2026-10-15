@@ -14,7 +14,7 @@ class Mana:
         return dict(level=level,max_level=rules['mana_level_cap'],level_xp=xp-start,next_xp=needed)
 
     def max_mana(self):
-        if not self.p:return 0
+        if not self.p or not self.can_use_magic():return 0
         cls=self.w['classes'][self.p['class']]
         return cls.get('mana',0)+(self.p['level']-1)*cls.get('mana_per_level',0)+(self.mana_progress()['level']-1)*self.rules()['mana_per_practice_level']
 
@@ -69,6 +69,8 @@ class Mana:
 
     def extra_command(self,verb,target):
         if verb in ('mana','meditate'):
+            if not self.can_use_magic():
+                self.log('Your race cannot use magic and has no mana reserve.');return True
             progress=self.mana_progress()
             scale=self.w['classes'][self.p['class']].get('mana_recovery_scale',1)
             self.log(f'Mana: {math.floor(self.p["mana"])}/{self.max_mana():g}. Mana mastery level {progress["level"]}. Recovery: {self.rules()["mana_regen"]*scale:g}/second outside combat, {self.rules()["mana_combat_regen"]*scale:g}/second in combat. REST at an inn restores health and mana. Valid mana-consuming casts slowly train your reserve.')

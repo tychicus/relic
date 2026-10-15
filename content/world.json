@@ -120,6 +120,12 @@
     "elf": {
       "name": "Elf",
       "hp_bonus": 0
+    },
+    "orc": {
+      "name": "Orc",
+      "hp_bonus": 5,
+      "magic_allowed": false,
+      "description": "Hardy fighters who rely on strength and cunning. Orcs have no affinity for magic."
     }
   },
   "classes": {
@@ -136,7 +142,7 @@
       ],
       "mana": 12,
       "mana_per_level": 1,
-      "description": "Starts with Swordplay. Strong weapon techniques and durable health; can study magic at 35% power and twice the mana cost.",
+      "description": "Starts with Swordplay. Strong weapon techniques and durable health. Races able to use magic can study it at 35% power and twice the mana cost.",
       "starting_ability": "swordplay",
       "mana_recovery_scale": 0.35,
       "affinities": [
@@ -170,6 +176,7 @@
     },
     "mage": {
       "name": "Mage",
+      "requires_magic": true,
       "hp": 55,
       "damage": [
         2,
@@ -227,7 +234,7 @@
       "mana_per_level": 1,
       "dodge": 15,
       "flee_bonus": 0.15,
-      "description": "Starts with Backstab. Agile specialist with dodge and escape bonuses; can study magic at 50% power and 1.5 times the mana cost.",
+      "description": "Starts with Backstab. Agile specialist with dodge and escape bonuses. Races able to use magic can study it at 50% power and 1.5 times the mana cost.",
       "starting_ability": "backstab",
       "mana_recovery_scale": 0.5,
       "affinities": [
@@ -3760,6 +3767,499 @@
     }
   },
   "items": {
+    "kingsfall": {
+      "name": "Kingsfall",
+      "kind": "weapon",
+      "damage": 30,
+      "hands": 1,
+      "weight": 4,
+      "description": "A blacksteel longsword with a perfectly balanced edge. An extraordinary feat of smithing, without magic. A legendary enemy drop; never sold in shops.",
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
+    "mountainbreaker": {
+      "name": "Mountainbreaker",
+      "kind": "weapon",
+      "damage": 40,
+      "hands": 2,
+      "weight": 10,
+      "description": "An immense two-handed axe forged from layered meteor iron. Its brutal cutting edge is entirely physical. A legendary enemy drop; never sold in shops.",
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
+    "starwake": {
+      "name": "Starwake",
+      "kind": "weapon",
+      "damage": 30,
+      "hands": 1,
+      "weight": 3,
+      "description": "A slender blade carrying a cold seam of starlight. Each individual blade grows stronger through magical mastery. A legendary enemy drop; never sold in shops.",
+      "magic": true,
+      "magic_xp_per_use": 1,
+      "magic_levels": [
+        {
+          "xp": 0,
+          "power": 30
+        },
+        {
+          "xp": 100,
+          "power": 31
+        },
+        {
+          "xp": 250,
+          "power": 32
+        },
+        {
+          "xp": 450,
+          "power": 33
+        },
+        {
+          "xp": 700,
+          "power": 34
+        },
+        {
+          "xp": 1000,
+          "power": 35
+        },
+        {
+          "xp": 1350,
+          "power": 36
+        },
+        {
+          "xp": 1750,
+          "power": 37
+        },
+        {
+          "xp": 2200,
+          "power": 38
+        },
+        {
+          "xp": 2700,
+          "power": 39
+        },
+        {
+          "xp": 3250,
+          "power": 40
+        },
+        {
+          "xp": 3850,
+          "power": 41
+        },
+        {
+          "xp": 4500,
+          "power": 42
+        },
+        {
+          "xp": 5200,
+          "power": 43
+        },
+        {
+          "xp": 5950,
+          "power": 44
+        },
+        {
+          "xp": 6750,
+          "power": 45
+        },
+        {
+          "xp": 7600,
+          "power": 46
+        },
+        {
+          "xp": 8500,
+          "power": 47
+        },
+        {
+          "xp": 9450,
+          "power": 48
+        },
+        {
+          "xp": 10450,
+          "power": 49
+        },
+        {
+          "xp": 11500,
+          "power": 50
+        },
+        {
+          "xp": 12600,
+          "power": 51
+        },
+        {
+          "xp": 13750,
+          "power": 52
+        },
+        {
+          "xp": 14950,
+          "power": 53
+        },
+        {
+          "xp": 16200,
+          "power": 54
+        },
+        {
+          "xp": 17500,
+          "power": 55
+        },
+        {
+          "xp": 18850,
+          "power": 56
+        },
+        {
+          "xp": 20250,
+          "power": 57
+        },
+        {
+          "xp": 21700,
+          "power": 58
+        },
+        {
+          "xp": 23200,
+          "power": 59
+        },
+        {
+          "xp": 24750,
+          "power": 60
+        },
+        {
+          "xp": 26350,
+          "power": 61
+        },
+        {
+          "xp": 28000,
+          "power": 62
+        },
+        {
+          "xp": 29700,
+          "power": 63
+        },
+        {
+          "xp": 31450,
+          "power": 64
+        },
+        {
+          "xp": 33250,
+          "power": 65
+        },
+        {
+          "xp": 35100,
+          "power": 66
+        },
+        {
+          "xp": 37000,
+          "power": 67
+        },
+        {
+          "xp": 38950,
+          "power": 68
+        },
+        {
+          "xp": 40950,
+          "power": 69
+        },
+        {
+          "xp": 43000,
+          "power": 70
+        },
+        {
+          "xp": 45100,
+          "power": 71
+        },
+        {
+          "xp": 47250,
+          "power": 72
+        },
+        {
+          "xp": 49450,
+          "power": 73
+        },
+        {
+          "xp": 51700,
+          "power": 74
+        },
+        {
+          "xp": 54000,
+          "power": 75
+        },
+        {
+          "xp": 56350,
+          "power": 76
+        },
+        {
+          "xp": 58750,
+          "power": 77
+        },
+        {
+          "xp": 61200,
+          "power": 78
+        },
+        {
+          "xp": 63700,
+          "power": 79
+        },
+        {
+          "xp": 66250,
+          "power": 80
+        },
+        {
+          "xp": 68850,
+          "power": 81
+        },
+        {
+          "xp": 71500,
+          "power": 82
+        },
+        {
+          "xp": 74200,
+          "power": 83
+        },
+        {
+          "xp": 76950,
+          "power": 84
+        },
+        {
+          "xp": 79750,
+          "power": 85
+        },
+        {
+          "xp": 82600,
+          "power": 86
+        },
+        {
+          "xp": 85500,
+          "power": 87
+        },
+        {
+          "xp": 88450,
+          "power": 88
+        },
+        {
+          "xp": 91450,
+          "power": 89
+        },
+        {
+          "xp": 94500,
+          "power": 90
+        },
+        {
+          "xp": 97600,
+          "power": 91
+        },
+        {
+          "xp": 100750,
+          "power": 92
+        },
+        {
+          "xp": 103950,
+          "power": 93
+        },
+        {
+          "xp": 107200,
+          "power": 94
+        },
+        {
+          "xp": 110500,
+          "power": 95
+        },
+        {
+          "xp": 113850,
+          "power": 96
+        },
+        {
+          "xp": 117250,
+          "power": 97
+        },
+        {
+          "xp": 120700,
+          "power": 98
+        },
+        {
+          "xp": 124200,
+          "power": 99
+        },
+        {
+          "xp": 127750,
+          "power": 100
+        },
+        {
+          "xp": 131350,
+          "power": 101
+        },
+        {
+          "xp": 135000,
+          "power": 102
+        },
+        {
+          "xp": 138700,
+          "power": 103
+        },
+        {
+          "xp": 142450,
+          "power": 104
+        },
+        {
+          "xp": 146250,
+          "power": 105
+        },
+        {
+          "xp": 150100,
+          "power": 106
+        },
+        {
+          "xp": 154000,
+          "power": 107
+        },
+        {
+          "xp": 157950,
+          "power": 108
+        },
+        {
+          "xp": 161950,
+          "power": 109
+        },
+        {
+          "xp": 166000,
+          "power": 110
+        },
+        {
+          "xp": 170100,
+          "power": 111
+        },
+        {
+          "xp": 174250,
+          "power": 112
+        },
+        {
+          "xp": 178450,
+          "power": 113
+        },
+        {
+          "xp": 182700,
+          "power": 114
+        },
+        {
+          "xp": 187000,
+          "power": 115
+        },
+        {
+          "xp": 191350,
+          "power": 116
+        },
+        {
+          "xp": 195750,
+          "power": 117
+        },
+        {
+          "xp": 200200,
+          "power": 118
+        },
+        {
+          "xp": 204700,
+          "power": 119
+        },
+        {
+          "xp": 209250,
+          "power": 120
+        },
+        {
+          "xp": 213850,
+          "power": 121
+        },
+        {
+          "xp": 218500,
+          "power": 122
+        },
+        {
+          "xp": 223200,
+          "power": 123
+        },
+        {
+          "xp": 227950,
+          "power": 124
+        },
+        {
+          "xp": 232750,
+          "power": 125
+        },
+        {
+          "xp": 237600,
+          "power": 126
+        },
+        {
+          "xp": 242500,
+          "power": 127
+        },
+        {
+          "xp": 247450,
+          "power": 128
+        },
+        {
+          "xp": 252450,
+          "power": 129
+        }
+      ],
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
+    "crownguard_helm": {
+      "name": "Crownguard Helm",
+      "kind": "armor",
+      "armor": 4,
+      "armor_slot": "helmet",
+      "weight": 3,
+      "description": "A beautifully fitted steel helm with a reinforced brow and overlapping cheek guards. Nonmagical. A legendary enemy drop; never sold in shops.",
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
+    "ironheart_cuirass": {
+      "name": "Ironheart Cuirass",
+      "kind": "armor",
+      "armor": 8,
+      "armor_slot": "armor",
+      "weight": 9,
+      "description": "Closely articulated plates of exceptional steel protect the chest without a wasted gap. Nonmagical. A legendary enemy drop; never sold in shops.",
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
+    "pathwarden_greaves": {
+      "name": "Pathwarden Greaves",
+      "kind": "armor",
+      "armor": 4,
+      "armor_slot": "pants",
+      "weight": 4,
+      "description": "Layered thigh and shin plates flex smoothly over tough fitted leggings. Nonmagical. A legendary enemy drop; never sold in shops.",
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
+    "sentinel_vambraces": {
+      "name": "Sentinel Vambraces",
+      "kind": "armor",
+      "armor": 4,
+      "armor_slot": "arms",
+      "weight": 2,
+      "description": "Perfectly joined forearm plates turn blades away from wrist and elbow. Nonmagical. A legendary enemy drop; never sold in shops.",
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
+    "last_bastion": {
+      "name": "Last Bastion",
+      "kind": "armor",
+      "armor": 5,
+      "shield": true,
+      "armor_slot": "armor",
+      "weight": 6,
+      "description": "A broad shield whose layered metal face bears the marks of a hundred victories. Nonmagical. A legendary enemy drop; never sold in shops.",
+      "price": 600,
+      "rarity": "legendary",
+      "drop_only": true
+    },
     "rusted_sword": {
       "name": "Rusted sword",
       "kind": "weapon",
@@ -5663,6 +6163,53 @@
     }
   },
   "revision": {
+    "rare_drops_enabled": true,
+    "rare_drop_chance": 0.1,
+    "rare_drop_min_level": 10,
+    "rare_drop_pool": [
+      {
+        "item": "kingsfall",
+        "weight": 1,
+        "min_level": 10
+      },
+      {
+        "item": "mountainbreaker",
+        "weight": 1,
+        "min_level": 10
+      },
+      {
+        "item": "starwake",
+        "weight": 1,
+        "min_level": 10
+      },
+      {
+        "item": "crownguard_helm",
+        "weight": 1,
+        "min_level": 10
+      },
+      {
+        "item": "ironheart_cuirass",
+        "weight": 1,
+        "min_level": 10
+      },
+      {
+        "item": "pathwarden_greaves",
+        "weight": 1,
+        "min_level": 10
+      },
+      {
+        "item": "sentinel_vambraces",
+        "weight": 1,
+        "min_level": 10
+      },
+      {
+        "item": "last_bastion",
+        "weight": 1,
+        "min_level": 10
+      }
+    ],
+    "learning_points_per_level": 1,
+    "learning_point_interval": 5,
     "dual_level": 3,
     "dual_classes": [
       "warrior",

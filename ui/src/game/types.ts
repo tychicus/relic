@@ -32,6 +32,7 @@ export interface Item {
   heal?: number
   hands?: number
   rarity?: string
+  drop_only?: boolean
   recall?: boolean
   food?: boolean
   capacity?: number
@@ -134,10 +135,14 @@ export interface Choice {
   id: string
   name: string
   description?: string
+  hp_bonus?: number
+  magic_allowed?: boolean
+  available_classes?: string[]
 }
 
 export interface Snapshot {
   learning_enabled?: boolean
+  learning_schedule?: string
   title: string
   time: number
   player: Player | null

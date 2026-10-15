@@ -81,7 +81,8 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
     <div className="my-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
       {slot && <small className="basis-full text-xs text-muted-foreground">{slot}:</small>}
       <div className={cn('min-w-0 break-words', i.rarity && 'text-gold')}>
-        <span className={i.enchanted ? 'text-enchanted' : undefined}>{label}</span>
+        <span className={i.enchanted ? 'text-enchanted' : i.drop_only ? 'text-gold' : undefined}>{label}</span>
+        {i.drop_only && <small className="block text-xs text-gold">{i.rarity === 'legendary' ? 'Legendary find' : 'Rare find'} · Enemy drop only</small>}
         <small className="block text-xs text-muted-foreground">{detail(i)} · {i.weight ?? 0} lb{ i.kind === 'weapon' ? ` · ${i.hands || 1}-handed` : i.shield ? ' · shield' : i.kind === 'armor' ? ` · ${i.armor_slot === 'armor' || !i.armor_slot ? 'chest' : i.armor_slot}` : ''}</small>
         {!!i.damage_penalty && <small className="block text-xs text-destructive">Damage penalty −{i.damage_penalty} · Repair {i.repair_cost} gold</small>}
         {i.magic_progress && <small className="block text-xs text-gold">

@@ -17,12 +17,13 @@ from equipment import Equipment, BODY_SLOTS, SLOT_NAMES, SLOT_ALIASES
 from enemy_healing import EnemyHealing
 from player_bodies import PlayerBodies
 from banking import Banking
+from rare_drops import RareDrops
 
 DIRECTIONS={'n':'north','s':'south','e':'east','w':'west','u':'up','d':'down'}
 TRAITS=['scarred','watchful','lean','broad-shouldered','dust-covered','restless','pale','dark-eyed','weathered','bristling','long-limbed','stout']
 MARKS=['notched-eared','gray-marked','white-marked','red-eyed','mud-spattered','amber-eyed','sharp-eyed','mottled','ragged','dark-backed','light-footed','heavy-browed']
 
-class Revision(Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning, Mana, MagicProgression, Enchanting):
+class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning, Mana, MagicProgression, Enchanting):
     def rules(self):
         return {**DEFAULT_RULES,**self.w.get('revision',{})}
 
@@ -376,6 +377,7 @@ class Revision(Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning
     def victory(self,e):
         c=self.p['combat'];name=self.creature_name(e)
         super().victory(e)
+        self.award_rare_drop(e)
         e['effects']=[]
         if not e.get('released'):
             e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60)
@@ -456,6 +458,7 @@ class Revision(Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning
         for suffix,slot in [(' in left hand','left_hand'),(' left','left_hand'),(' in right hand','weapon'),(' right','weapon')]:
             if target.endswith(suffix):target=target[:-len(suffix)];hand=slot;explicit_hand=True;break
         iid=self.match(target,self.p['inventory']);spec=self.item(iid);eq=self.p['equipment'];proposed=dict(eq)
+        self.require_item_use(spec)
         if spec['kind']=='armor' and not explicit_hand:hand='left_hand' if spec.get('shield') else spec.get('armor_slot','armor')
         elif spec['kind'] not in ('weapon','armor'):raise ValueError('Only weapons, armor and shields can be equipped.')
         proposed[hand]=iid
@@ -612,6 +615,7 @@ class Revision(Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning
                 iid=candidates[0]
             else:iid=self.match(target,self.p['inventory'])
             item=self.item(iid)
+            self.require_item_use(item)
             if item.get('recall'):
                 blocked=self.p['combat'] or self.w['rooms'][self.p['room']].get('recall_disabled')
                 if blocked:

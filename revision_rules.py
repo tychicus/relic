@@ -27,12 +27,17 @@ SPAWN = dict(id=text('Permanent spawn rule ID','group'), enemy=reference('Fixed 
 SCHEMA = {
  'revision': {
   'weight_enabled':boolean('Enforce carrying weight limits',True),
+  'rare_drops_enabled':boolean('Enable very rare bonus equipment drops',True),
+  'rare_drop_chance':number('Special drop chance per eligible kill (%) — 0.1 means 1 in 1000',.1,0,100),
+  'rare_drop_min_level':number('Minimum enemy level for special drops',10,1,100,True),
+  'rare_drop_pool':rows('Special equipment pool',dict(item=reference('Drop-only weapon or armor','items'),weight=number('Relative selection weight',1,.001,100000),min_level=number('Minimum enemy level for this item',10,1,100,True))),
   'enemy_heal_enabled':boolean('Wounded enemies recover outside combat',True),
   'enemy_heal_delay':number('Enemy recovery delay after combat / injury (seconds)',20,0,86400),
   'enemy_heal_interval':number('Seconds between enemy healing installments',5,1,3600),
   'enemy_heal_percent':number('Enemy maximum HP recovered per installment (%)',2,0,100),
   'learning_enabled':boolean('Choose abilities with learning points',True),
-  'learning_points_per_level':number('Learning points earned per character level after level 1',1,1,10,True),
+  'learning_points_per_level':number('Learning points earned per award',1,1,10,True),
+  'learning_point_interval':number('Character levels between point awards (5 = levels 5, 10, 15; 1 starts at level 2)',5,1,100,True),
   'learning_rank_bonus':number('Power bonus per additional learned rank (fraction)',.1,0,1),
   'learning_rank_level_gap':number('Additional character levels required per ability rank',5,1,25,True),
   'mana_enabled':boolean('Spells consume mana',True),
@@ -97,6 +102,11 @@ SCHEMA['rooms']['repair_service']=boolean('Equipment repairs available here')
 SCHEMA['rooms']['bank_service']=boolean('Bank deposits and withdrawals available here')
 SCHEMA['classes']=dict(mana=number('Starting maximum mana',0,0,10000,True),mana_per_level=number('Maximum mana gained per character level',0,0,1000,True),dodge=number('Chance to dodge incoming attacks (%)',0,0,75),flee_bonus=number('Added escape chance (fraction)',0,0,1))
 SCHEMA['classes']['description']=text('Class description shown at character creation')
+SCHEMA['classes']['requires_magic']=boolean('Class requires a race that can use magic')
+SCHEMA['races']['description']=text('Race description shown at character creation')
+SCHEMA['races']['magic_allowed']=boolean('Race can use magic (spells, enchanting, magical equipment and scrolls)',True)
+SCHEMA['items']['requires_magic']=boolean('Requires magic use (also applies to consumables)')
+SCHEMA['items']['drop_only']=boolean('Enemy-drop equipment only — cannot be sold by shops')
 SCHEMA['classes']['carry_capacity']=number('Carrying capacity at character level 1 (lb)',60,1,10000)
 SCHEMA['classes']['carry_per_level']=number('Extra carrying capacity per character level (lb)',2,0,1000)
 SCHEMA['items']['weight']=number('Item weight (lb; containers exclude contents)',0,0,10000)
@@ -184,9 +194,17 @@ def validate_revision(w):
     for skill in w['skills'].values():
         if skill.get('passive') and skill.get('effect','damage')!='damage':raise ValueError('Passive training must use the damage effect.')
     for i in w['items'].values():
+        if i.get('drop_only') and i['kind'] not in ('weapon','armor'):raise ValueError('Drop-only special equipment must be a weapon or armor.')
         if i.get('shield') and i['kind']!='armor':raise ValueError('Only armor can be a shield.')
         if (i.get('food') or i.get('recall')) and i['kind']!='consumable':raise ValueError('Food and recall scrolls must be consumables.')
         if i.get('food') and i.get('recall'):raise ValueError('An item cannot be both food and a recall scroll.')
+    pool=w.get('revision',{}).get('rare_drop_pool',[])
+    if len({row['item'] for row in pool})!=len(pool):raise ValueError('Each item may appear only once in the special equipment pool; adjust its weight instead.')
+    for row in pool:
+        if not w['items'][row['item']].get('drop_only'):raise ValueError('Special equipment pool entries must have enemy-drop equipment only enabled.')
+    for room in w['rooms'].values():
+        if any(w['items'][iid].get('drop_only') for iid in room.get('shop',[])):
+            raise ValueError('Shops cannot stock drop-only special equipment. Remove it from '+room['name']+'.')
     for effect in w.get('status_effects',{}).values():
         if effect.get('kind') not in ('damage','stun','slow'):raise ValueError('A status effect requires a mechanical effect type.')
     for npc in w.get('npcs',{}).values():

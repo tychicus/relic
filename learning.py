@@ -11,11 +11,18 @@ class Learning:
             # Preserve previously available/practiced abilities when importing a save.
             known=set(self.state.get('announced_skills',[])) | set(self.p.get('spell_xp',{})) | set(self.p.get('proficiencies',{})) | set(self.p.get('cooldowns',{}))
             self.p['learned_skills']={sid:1 for sid in known if sid in self.w['skills'] and self.skill_eligible(sid)}
-        if starter and needs_starter:self.p['learned_skills'].setdefault(starter,1)
+        if starter and needs_starter and self.skill_eligible(starter):self.p['learned_skills'].setdefault(starter,1)
         self.p.setdefault('ability_points_spent',0)
 
     def ability_points(self):
-        return max(0,(self.p['level']-1)*self.rules()['learning_points_per_level']-self.p.get('ability_points_spent',0))
+        interval=self.rules()['learning_point_interval']
+        awards=self.p['level']//interval-1//interval
+        return max(0,awards*self.rules()['learning_points_per_level']-self.p.get('ability_points_spent',0))
+
+    def learning_schedule(self):
+        rules=self.rules();interval=rules['learning_point_interval']
+        if interval==1:return f'{rules["learning_points_per_level"]} point(s) each character level after level 1.'
+        return f'{rules["learning_points_per_level"]} point(s) every {interval} character levels, starting at level {interval}.'
 
     def ability_rank(self,sid):
         return self.p.get('learned_skills',{}).get(sid,0)
@@ -60,7 +67,7 @@ class Learning:
     def learn_ability(self,target):
         if not self.rules()['learning_enabled']:raise ValueError('Ability selection is disabled by the owner.')
         if not target:
-            self.log(f'Learning points: {self.ability_points()}. Each character level after the first grants {self.rules()["learning_points_per_level"]}. LEARN <ability> learns it or improves its rank.')
+            self.log(f'Learning points: {self.ability_points()}. Earn {self.learning_schedule()} LEARN <ability> learns it or improves its rank.')
             for sid,s in sorted(self.w['skills'].items(),key=lambda row:(row[1].get('unlock_level',1),row[1]['name'])):
                 if not self.skill_eligible(sid):continue
                 rank=self.ability_rank(sid);cap=s.get('max_rank',5);cost=s.get('learn_cost',1)
@@ -104,6 +111,7 @@ class Learning:
             enabled=self.rules()['learning_enabled']
             result['player']['ability_points']=self.ability_points()
             result['learning_enabled']=enabled
+            result['learning_schedule']=self.learning_schedule()
             for s in result.get('player_skills',[]):
                 rank=self.ability_rank(s['id'])
                 s.update(rank=rank,learn_cost=s.get('learn_cost',1),max_rank=s.get('max_rank',5),affinity=self.affinity(s['id']))
@@ -117,6 +125,14 @@ class Learning:
     def check_live_references(self,w):
         super().check_live_references(w)
         if self.p:
+            if not self.class_eligible(self.p['race'],self.p['class'],w):
+                raise ValueError('The saved character class requires a race that can use magic.')
+            if not self.can_use_magic(w=w):
+                for iid in self.p['equipment'].values():
+                    inst=self.state.get('instances',{}).get(iid,{})
+                    spec=w['items'][inst.get('item',iid)]
+                    if self.magical_item(spec) or inst.get('enchantment',{}).get('until',0)>self.clock():
+                        raise ValueError('Unequip magical equipment before disabling magic for this race.')
             for sid,rank in self.p.get('learned_skills',{}).items():
                 if sid not in w['skills']:raise ValueError('Cannot remove a learned ability.')
                 if rank>w['skills'][sid].get('max_rank',5):raise ValueError('Cannot lower an ability rank cap below a learned rank.')

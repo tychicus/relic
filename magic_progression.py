@@ -102,7 +102,7 @@ class MagicProgression:
 
     def grant(self, iid):
         spec = self.w['items'][iid]
-        if spec.get('magic'):
+        if spec.get('magic') or spec.get('drop_only'):
             return self.new_instance(dict(kind=spec['kind'], item=iid, bonus=0, magic_xp=0))
         return super().grant(iid)
 

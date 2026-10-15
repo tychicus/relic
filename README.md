@@ -33,8 +33,12 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   timers. Enemies focus the player who starts a fight; enemies starting a fight choose
   a random present player independently. They keep that target until it becomes invalid.
 - New characters start with one learned ability. LEARN lists choices; LEARN KICK
-  spends earned points to learn or improve it. Each character level after the first
-  gives one point. SKILLS lists learned abilities; CAST [skill] uses one.
+  spends earned points to learn or improve it. One point is earned at levels 5, 10,
+  15 and every fifth level through 100. SKILLS lists learned abilities; CAST [skill] uses one.
+  Existing learned abilities remain; available points use the new allowance minus points spent.
+  Orcs start with +5 HP and cannot use magic, including spells, enchanting, magical
+  equipment or recall scrolls. They can choose Warrior or Rogue; their HP bonus and
+  magic restriction are editable under Races. The point interval is editable under Learning.
   Warriors can study ordinary magic at a strong penalty; enchanting is mage-only.
   Mages face strong penalties with martial techniques. Stronger skills unlock later.
 - Character, spell, magical-equipment and mana progression reach level 100.
@@ -76,6 +80,24 @@ Combat continues while the server runs, including with the browser closed.
 Ctrl+C in the launcher stops and saves. No account or external service is used.
 
 ## Edit and preserve
+
+Rare equipment is a separate bonus drop: each defeated enemy of level 10 or higher
+has a 0.1% chance to drop one of eight legendary weapons or armor pieces. That is
+about one special item per 1,000 eligible kills on average, not a guaranteed drop.
+Dark Vampires and Cave Trolls currently qualify. Normal loot is still awarded.
+Captures and released creatures never grant a special drop. Each eligible defeat
+is checked once; reloading cannot reroll a checked corpse.
+
+These items cannot be purchased. Weapons and armor exceed ordinary gear in their
+matching slots; Starwake's damage exceeds the Elven sword at every equal mastery
+level. Seven rewards are nonmagical and usable by Orcs. Full bags or excess weight
+leave the reward on the ground. Each copy has its own identity, so storage, repairs,
+enchantments, saving and death recovery preserve the individual item.
+
+Use **Rare equipment drops** in the owner editor to change the chance, enemy-level
+threshold, item pool, selection weights and each item's minimum enemy level.
+Edit reward stats under **Items & equipment**. The enemy-drop-only flag prevents
+shop purchases; selling a recovered reward does not add it to shop stock.
 
 Use the owner dashboard, visual block map, record forms and **Save world
 changes**. New skills, status effects, NPCs, recipes and spawning rules use

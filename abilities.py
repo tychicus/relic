@@ -27,8 +27,31 @@ def validate_abilities(w):
 
 
 class Abilities(Frontier):
+    def can_use_magic(self,race=None,w=None):
+        world=self.w if w is None else w
+        race=race or (self.p['race'] if self.p else None)
+        return world['races'].get(race,{}).get('magic_allowed',True)
+
+    @staticmethod
+    def magical_skill(skill):
+        return bool(skill.get('magic') or skill.get('category')=='arcane' or skill.get('effect')=='enchant' or skill.get('mana_cost',0)>0)
+
+    @staticmethod
+    def magical_item(item):
+        return bool(item.get('magic') or item.get('recall') or item.get('enchanted') or item.get('requires_magic'))
+
+    def require_item_use(self,item):
+        if not self.can_use_magic() and self.magical_item(item):
+            raise ValueError(self.w['races'][self.p['race']]['name']+' characters cannot use magic, including magical equipment and scrolls.')
+
+    def class_eligible(self,race,cid,w=None):
+        world=self.w if w is None else w
+        cls=world['classes'][cid];starter=world['skills'].get(cls.get('starting_ability'),{})
+        return self.can_use_magic(race,world) or not (cls.get('requires_magic') or self.magical_skill(starter))
+
     def skill_eligible(self,sid):
         skill=self.w['skills'][sid]
+        if not self.can_use_magic() and self.magical_skill(skill):return False
         # Old content retains class memberships until migrated or edited.
         classes=skill.get('allowed_classes',[cid for cid,c in self.w['classes'].items() if sid in c.get('skills',[])])
         races=skill.get('allowed_races')

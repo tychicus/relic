@@ -101,7 +101,7 @@ export function ItemEditor({ item }: { item: Obj }) {
       <SelectField
         label="Rarity"
         value={item.rarity || ''}
-        options={[['', 'Normal'], ['uncommon', 'Uncommon']]}
+        options={[['', 'Normal'], ['uncommon', 'Uncommon'], ['legendary', 'Legendary']]}
         onChange={(v) => { if (v) item.rarity = v; else delete item.rarity }}
       />
     </>

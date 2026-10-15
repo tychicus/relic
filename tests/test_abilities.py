@@ -23,7 +23,7 @@ class AbilityTests(unittest.TestCase):
     def test_new_starts_without_lantern_and_keeps_equipment(self):
         self.create();self.assertEqual(self.g.p['inventory'],['potion','potion']);self.assertEqual(self.g.p['gold'],30);self.assertEqual(self.g.p['equipment'],self.g.w['starting']['equipment'])
     def test_race_class_selection_and_snapshot(self):
-        self.add_options();s=self.g.snapshot();self.assertEqual([r['name'] for r in s['creation']['races']],['Elf','Human'])
+        self.add_options();s=self.g.snapshot();self.assertEqual([r['name'] for r in s['creation']['races']],['Elf','Human','Orc'])
         self.create('elf','mage');self.assertEqual(self.g.max_hp(),48);self.assertEqual(self.g.p['hp'],48);self.assertEqual(self.g.snapshot()['player']['class_name'],'Mage')
         self.path.write_text(json.dumps(self.g.w));self.g.save();self.g.db.close();self.g=Game(self.path,self.db,clock=lambda:self.now);self.assertEqual(self.g.p['race'],'elf');self.assertEqual(self.g.p['class'],'mage')
     def test_invalid_selection_creates_no_character(self):

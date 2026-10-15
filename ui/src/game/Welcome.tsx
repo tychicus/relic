@@ -24,12 +24,14 @@ export function Welcome({ choices, onCreate }: Props) {
   const [race, setRace] = useState('human')
   const [cls, setCls] = useState('warrior')
   const races = choices?.races ?? []
-  const classes = choices?.classes ?? []
+  const selectedRace = races.find(r => r.id === race)
+  const classes = (choices?.classes ?? []).filter(c => !selectedRace?.available_classes || selectedRace.available_classes.includes(c.id))
+  const selectedClass = pick(cls, classes, 'warrior')
 
   useEffect(() => {
     setRace((current) => pick(current, races, 'human'))
     setCls((current) => pick(current, classes, 'warrior'))
-  }, [JSON.stringify(choices)])
+  }, [JSON.stringify(choices), race])
 
   return (
     <div className="mx-auto grid max-w-4xl gap-5 py-6">
@@ -46,7 +48,7 @@ export function Welcome({ choices, onCreate }: Props) {
               className="mt-3 grid gap-3"
               onSubmit={(event) => {
                 event.preventDefault()
-                onCreate(name, race, cls)
+                onCreate(name, race, selectedClass)
               }}
             >
               <div className="grid gap-3 sm:grid-cols-2">
@@ -58,17 +60,20 @@ export function Welcome({ choices, onCreate }: Props) {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="class-choice">Class</FieldLabel>
-                  <NativeSelect id="class-choice" className="w-full" value={cls} onChange={(e) => setCls(e.target.value)}>
+                  <NativeSelect id="class-choice" className="w-full" value={selectedClass} onChange={(e) => setCls(e.target.value)}>
                     {classes.map((c) => <NativeSelectOption key={c.id} value={c.id}>{c.name}</NativeSelectOption>)}
                   </NativeSelect>
                 </Field>
               </div>
-              {classes.find(c => c.id === cls)?.description && <p className="text-sm text-muted-foreground">{classes.find(c => c.id === cls)?.description}</p>}
+              {!!selectedRace?.hp_bonus && <p className="text-sm text-story">Starting health bonus: +{selectedRace.hp_bonus} HP.</p>}
+              {selectedRace?.description && <p className="text-sm text-muted-foreground">{selectedRace.description}</p>}
+              {selectedRace?.magic_allowed === false && <p className="text-sm text-story">Cannot use spells, enchanting, magical equipment or scrolls. Choose a class that does not require magic.</p>}
+              {classes.find(c => c.id === selectedClass)?.description && <p className="text-sm text-muted-foreground">{classes.find(c => c.id === selectedClass)?.description}</p>}
               <Field>
                 <FieldLabel htmlFor="name">Character name</FieldLabel>
                 <div className="flex flex-col gap-2 sm:flex-row">
                   <Input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={32} placeholder="Name your adventurer" autoComplete="off" required className="flex-1" />
-                  <Button type="submit">Enter the square</Button>
+                  <Button type="submit" disabled={!selectedClass || !race}>Enter the square</Button>
                 </div>
               </Field>
             </form>

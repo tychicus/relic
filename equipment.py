@@ -1,6 +1,6 @@
 """Equipment locations and carrying weight, including container contents."""
 BODY_SLOTS=('helmet','armor','pants','arms')
-SLOT_NAMES=dict(weapon='right hand',left_hand='left hand',helmet='helmet',armor='chest',pants='pants',arms='bracers / arms')
+SLOT_NAMES=dict(weapon='right hand',left_hand='left hand',helmet='helmet',armor='chest',pants='pants',arms='arms')
 SLOT_ALIASES={'right':'weapon','right hand':'weapon','left':'left_hand','left hand':'left_hand','body':'armor','chest':'armor','head':'helmet','bracers':'arms','legs':'pants','shield':'left_hand'}
 
 
@@ -19,7 +19,7 @@ class Equipment:
             elif slot=='left_hand' and right and right.get('hands',1)==2:
                 text='occupied by '+right['name']+' · two-handed'
             else:
-                text='empty'
+                text='boxers' if slot=='pants' else 'nothing'
             lines.append(label.capitalize()+': '+text)
         self.log('Equipment:\n'+'\n'.join(lines))
         self.log(f'Carrying {self.carried_weight():g}/{self.carry_capacity():g} lb, including worn equipment and container contents.')

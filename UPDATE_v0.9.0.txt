@@ -22,7 +22,7 @@ Each new character begins with ONE learned combat ability:
   Rogue: Backstab, a stronger physical strike.
 ATTACK / KILL still starts automatic basic combat for all classes.
 
-Every character level after the first grants one learning point. Points can be
+One learning point is earned at levels 5, 10, 15 and every fifth level. Points can be
 saved. LEARN lists choices; LEARN KICK or the learning panel spends points to
 learn an eligible ability. LEARN on a known ability improves its chosen rank.
 Most abilities have five ranks and each later rank adds 10% power. Each later

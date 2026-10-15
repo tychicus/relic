@@ -43,8 +43,10 @@ class LearningEquipmentTests(unittest.TestCase):
     def test_real_level_gain_awards_points_not_abilities(self):
         self.g.p.update(room='meadow',xp=29)
         self.g.w['enemies']['beetle']['xp']=1;self.g.victory(self.g.enemy())
-        self.assertEqual(self.g.p['level'],2);self.assertEqual(self.g.ability_points(),1)
+        self.assertEqual(self.g.p['level'],2);self.assertEqual(self.g.ability_points(),0)
         self.assertEqual(self.g.available_skill_ids(),['swordplay'])
+        self.level(4);self.g.p['xp']=549;self.g.victory(self.g.spawn_creature('beetle','meadow'))
+        self.assertEqual(self.g.p['level'],5);self.assertEqual(self.g.ability_points(),1)
         self.g.learn_ability('fireball');self.assertEqual(self.g.ability_points(),0)
         self.assertEqual(self.g.ability_rank('fireball'),1)
 
@@ -63,10 +65,11 @@ class LearningEquipmentTests(unittest.TestCase):
     def test_rank_requirements_spending_and_save(self):
         self.level(5)
         with self.assertRaisesRegex(ValueError,'level 6'):self.g.learn_ability('swordplay')
-        self.level(6);self.g.learn_ability('swordplay');self.g.learn_ability('kick')
-        self.assertEqual(self.g.ability_points(),3);self.reload()
+        self.level(6);self.g.learn_ability('swordplay')
+        self.level(10);self.g.learn_ability('kick')
+        self.assertEqual(self.g.ability_points(),0);self.reload()
         self.assertEqual(self.g.ability_rank('swordplay'),2);self.assertEqual(self.g.ability_rank('kick'),1)
-        self.assertEqual(self.g.ability_points(),3)
+        self.assertEqual(self.g.ability_points(),0)
         self.level(100)
         for _ in range(3):self.g.learn_ability('swordplay')
         before=self.g.ability_points()
@@ -79,7 +82,7 @@ class LearningEquipmentTests(unittest.TestCase):
         self.reload()
         self.assertEqual(self.g.p['spell_xp']['fireball'],250)
         self.assertEqual(self.g.ability_rank('bash'),1);self.assertEqual(self.g.ability_rank('fireball'),1)
-        self.assertEqual(self.g.ability_rank('enchanting'),0);self.assertEqual(self.g.ability_points(),9)
+        self.assertEqual(self.g.ability_rank('enchanting'),0);self.assertEqual(self.g.ability_points(),2)
         known=copy.deepcopy(self.g.p['learned_skills']);self.reload();self.assertEqual(self.g.p['learned_skills'],known)
 
     def test_unlearned_skill_cannot_cast_or_spend_mana(self):
@@ -101,7 +104,7 @@ class LearningEquipmentTests(unittest.TestCase):
         self.assertTrue(self.g.item(self.g.p['equipment']['weapon'])['enchanted'])
 
     def test_cross_class_spell_power_cost_and_practice(self):
-        self.level(2);self.g.learn_ability('fireball');e=self.arena()
+        self.level(5);self.g.learn_ability('fireball');e=self.arena()
         before=self.g.p['mana'];self.g.activate_skill('fireball')
         self.assertEqual(10000-e['hp'],6);self.assertEqual(before-self.g.p['mana'],12)
         self.assertEqual(self.g.p['spell_xp']['fireball'],.5)
@@ -113,7 +116,7 @@ class LearningEquipmentTests(unittest.TestCase):
             self.assertEqual(self.g.skill_power('fireball',0),expected)
 
     def test_mage_martial_penalty_affects_actual_damage(self):
-        self.level(10);self.g.learn_ability('kick');self.g.learn_ability('bash')
+        self.level(15);self.g.learn_ability('kick');self.g.learn_ability('bash')
         self.g.w['classes']['warrior']['damage']=[10,10];self.g.w['classes']['mage']['damage']=[10,10]
         self.g.p['equipment']={};e=self.arena()
         self.g.activate_skill('kick');warrior=10000-e['hp']
@@ -129,7 +132,7 @@ class LearningEquipmentTests(unittest.TestCase):
 
     def test_learning_snapshot_and_live_validation(self):
         self.level(5);self.g.learn_ability('kick');data=self.g.snapshot()
-        self.assertEqual(data['player']['ability_points'],3)
+        self.assertEqual(data['player']['ability_points'],0)
         self.assertFalse(next(s for s in data['player_skills'] if s['id']=='bash')['unlocked'])
         self.assertFalse(any(s['id']=='enchanting' for s in data['player_skills']))
         w=copy.deepcopy(self.g.w);w['skills'].pop('kick')
@@ -143,15 +146,15 @@ class LearningEquipmentTests(unittest.TestCase):
     def test_all_body_slots_shield_and_two_hands(self):
         self.g.command('LoOk SeLf')
         text=self.g.state['log'][-2]['text']
-        for label in ('Left hand','Helmet','Pants','Bracers / arms'):
-            self.assertIn(label+': empty',text)
+        for label in ('Left hand','Helmet','Pants','Arms'):
+            self.assertIn(label+': '+('boxers' if label=='Pants' else 'nothing'),text)
         for iid in ('leather_cap','leather_pants','leather_bracers'):self.equip(iid)
         self.assertTrue(set(('helmet','armor','pants','arms','weapon'))<=set(self.g.p['equipment']))
-        shield=next(i for i,s in self.g.w['items'].items() if s.get('shield'));self.equip(shield)
+        shield=next(i for i,s in self.g.w['items'].items() if s.get('shield') and not s.get('drop_only'));self.equip(shield)
         self.assertEqual(self.g.p['equipment']['left_hand'],shield)
         equipped=copy.deepcopy(self.g.p['equipment'])
         self.g.command('look self');text=self.g.state['log'][-2]['text']
-        for slot,label in [('weapon','Right hand'),('left_hand','Left hand'),('helmet','Helmet'),('armor','Chest'),('pants','Pants'),('arms','Bracers / arms')]:
+        for slot,label in [('weapon','Right hand'),('left_hand','Left hand'),('helmet','Helmet'),('armor','Chest'),('pants','Pants'),('arms','Arms')]:
             self.assertIn(label+': '+self.g.item(equipped[slot])['name']+' — ',text)
         self.assertEqual(self.g.p['equipment'],equipped)
         self.g.command('eq');self.assertEqual(self.g.state['log'][-2]['text'],text)
@@ -163,12 +166,13 @@ class LearningEquipmentTests(unittest.TestCase):
         self.assertEqual(self.g.item(self.g.p['equipment']['weapon'])['hands'],2)
         self.g.command('look self');text=self.g.state['log'][-2]['text']
         self.assertIn('Left hand: occupied by Iron Greatsword',text)
-        self.assertIn('two-handed',text);self.assertNotIn('Left hand: empty',text)
+        self.assertIn('two-handed',text);self.assertNotIn('Left hand: nothing',text)
         self.g.extra_command('unequip','bracers');self.assertNotIn('arms',self.g.p['equipment'])
         self.g.p['equipment']={};self.g.p['inventory']=[]
         self.g.w['rooms'][self.g.p['room']]['dark']=True
         self.g.command('look self');text=self.g.state['log'][-2]['text']
-        self.assertEqual(text.count(': empty'),6)
+        self.assertEqual(text.count(': nothing'),5)
+        self.assertIn('Pants: boxers',text)
 
     def test_all_worn_armor_and_shield_reduce_hits_held_armor_does_not(self):
         self.g.p['equipment']={};e=self.arena();self.g.w['enemies'][e['type']]['damage']=[20,20]
@@ -279,6 +283,6 @@ class LearningEquipmentTests(unittest.TestCase):
         self.reload();self.assertEqual(self.g.p['learned_skills'],{'swordplay':1})
 
     def test_owner_zero_damage_spell_is_respected(self):
-        self.level(2);self.g.learn_ability('fireball');e=self.arena()
+        self.level(5);self.g.learn_ability('fireball');e=self.arena()
         self.g.w['skills']['fireball']['magic_levels'][0]['power']=0
         self.g.activate_skill('fireball');self.assertEqual(e['hp'],10000)

@@ -159,7 +159,7 @@ class EnchantingTests(unittest.TestCase):
         self.g.w['revision']['enchant_bonus'] = 3
         self.g.command('enchant leather vest')
         iid = self.g.p['equipment']['armor']
-        for cmd in ('look '+iid, 'equipment', 'unequip armor', 'inventory'):
+        for cmd in ('look '+iid, 'look self', 'equipment', 'unequip armor', 'inventory'):
             self.g.command(cmd)
             if cmd != 'unequip armor':
                 self.assertIn('Armor 10 (+3)', self.log())

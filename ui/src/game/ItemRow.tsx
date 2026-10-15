@@ -54,7 +54,7 @@ interface Props {
 export function ItemRow({ id, count, mode, data, send, slot, children }: Props) {
   const i = data.items[id]
   const gear = ['weapon', 'armor'].includes(i.kind)
-  const label = (gear ? `[${i.name}]` : `(${i.name})`) + (count > 1 ? ` (x${count})` : '')
+  const label = i.name + (count > 1 ? ` (x${count})` : '')
   let actions: ReactNode
   if (mode === 'shop') actions = <ActionButton send={send} command={`buy ${id}`}>{i.price} gold</ActionButton>
   else if (mode === 'ground') actions = <ActionButton send={send} command={`get ${id}`}>Get</ActionButton>
@@ -81,13 +81,13 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
     <div className="my-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
       {slot && <small className="basis-full text-xs text-muted-foreground">{slot}:</small>}
       <div className={cn('min-w-0 break-words', i.rarity && 'text-gold')}>
-        {label}
+        <span className={i.enchanted ? 'text-enchanted' : undefined}>{label}</span>
         <small className="block text-xs text-muted-foreground">{detail(i)} · {i.weight ?? 0} lb{ i.kind === 'weapon' ? ` · ${i.hands || 1}-handed` : i.shield ? ' · shield' : i.kind === 'armor' ? ` · ${i.armor_slot === 'armor' || !i.armor_slot ? 'chest' : i.armor_slot}` : ''}</small>
         {!!i.damage_penalty && <small className="block text-xs text-destructive">Damage penalty −{i.damage_penalty} · Repair {i.repair_cost} gold</small>}
         {i.magic_progress && <small className="block text-xs text-gold">
           Magic level {i.magic_progress.level} · {i.magic_progress.next_xp === null ? 'Maximum level' : `${i.magic_progress.level_xp}/${i.magic_progress.next_xp} XP to next level`}
         </small>}
-        {i.enchanted && <small className="block text-xs text-gold">{i.enchantment_description}</small>}
+        {i.enchanted && <small className="block text-xs text-enchanted">{i.enchantment_description}</small>}
       </div>
       <div className="flex flex-wrap justify-end gap-1">
         {actions}

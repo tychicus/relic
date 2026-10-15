@@ -5580,11 +5580,13 @@
       "description": "Warm brick walls border a short street south of Center Square. A painted beetle hangs above the eastern doorway, where an occasional chirp or low growl escapes from Jake’s Critters.",
       "exits": {
         "north": "square",
-        "east": "jakes_critters"
+        "east": "jakes_critters",
+        "west": "brass_badger_bank"
       },
       "safe": true,
       "objects": {
-        "painted beetle": "The sign reads: Jake’s Critters. Fair coin for unusual company. Cages included."
+        "painted beetle": "The sign reads: Jake’s Critters. Fair coin for unusual company. Cages included.",
+        "bank sign": "WEST: The Brass Badger Bank. Your gold, your account, no exceptions. Ask for Osric Tallywick."
       },
       "region": "Town",
       "code": "TOWN-006",
@@ -5593,6 +5595,21 @@
         1,
         0
       ]
+    },
+    "brass_badger_bank": {
+      "name": "The Brass Badger Bank",
+      "description": "A brass badger above the door insists, in tiny letters, that it is not a piggy bank. Inside, crooked towers of ledgers surround a polished counter and a humming relic vault. The banker sorts coins into teacups while arguing with a clock that has thirteen hands. BALANCE checks your account; DEPOSIT and WITHDRAW accept an amount or ALL.",
+      "safe": true,
+      "bank_service": true,
+      "exits": { "east": "south_street" },
+      "objects": {
+        "vault": "Blue threads of light recognize each depositor. The vault releases gold only to the character who owns the account.",
+        "clock": "Thirteen hands disagree with one another. A label reads: INTERESTING, BUT NOT INTEREST-BEARING.",
+        "teacups": "Each teacup holds a different coin denomination. None contains tea."
+      },
+      "region": "Town",
+      "code": "TOWN-009",
+      "map_position": [-1, 1, 0]
     },
     "jakes_critters": {
       "name": "Jake's Critters",
@@ -5661,6 +5678,8 @@
     "food_in_combat": false,
     "recall_failure_consumes": false,
     "corpse_seconds": 300,
+    "player_bodies": true,
+    "player_body_seconds": 900,
     "enchant_base": 50,
     "enchant_gain": 0.4,
     "enchant_difficulty": 12,
@@ -5778,6 +5797,20 @@
     }
   },
   "npcs": {
+    "osric_tallywick": {
+      "name": "Osric Tallywick",
+      "room": "brass_badger_bank",
+      "appearance": "A narrow man in a violet waistcoat wears three pairs of spectacles and keeps a brass spoon tucked behind each ear.",
+      "description": "Osric addresses every coin as 'Professor' and insists the vault is shy. He counts flawlessly while wearing his ledger upside down on a stand.",
+      "interactions": ["look", "talk"],
+      "dialogue": [
+        { "phrase": "hello", "response": "Welcome, welcome! Wipe your boots and introduce your gold. The vault dislikes strangers, but remembers its depositors perfectly." },
+        { "phrase": "bank", "response": "BALANCE, DEPOSIT 20, WITHDRAW 20! ALL works too. Your account follows your identity, not your name or your face. Especially not your face." },
+        { "phrase": "death", "response": "Death is a dreadful accountant. Your purse stays with your body, but gold deposited here remains yours. Come back in whatever state you find yourself." },
+        { "phrase": "clock", "response": "Thirteen hands, and not one has stolen a penny. An exemplary employee." }
+      ],
+      "default_response": "Ask me about the bank, death, or that suspiciously punctual clock."
+    },
     "tamsin": {
       "name": "Tamsin",
       "room": "square",
@@ -5836,6 +5869,7 @@
         "dungeon",
         "south_street",
         "jakes_critters",
+        "brass_badger_bank",
         "hidden_dungeon_bedroom"
       ],
       "spawn_rooms": [],

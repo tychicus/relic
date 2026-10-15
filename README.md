@@ -29,6 +29,9 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   attempts a distant view. Descriptions contain discovery clues.
 - ATTACK [creature] or KILL [creature] begins automatic combat. TARGET [distinct description]
   changes opponents. Inject skills, spells, potions or FLEE between pulses.
+  Ready players and enemies attack in the same shared pulse, with individual recovery
+  timers. Enemies focus the player who starts a fight; enemies starting a fight choose
+  a random present player independently. They keep that target until it becomes invalid.
 - New characters start with one learned ability. LEARN lists choices; LEARN KICK
   spends earned points to learn or improve it. Each character level after the first
   gives one point. SKILLS lists learned abilities; CAST [skill] uses one.
@@ -38,6 +41,8 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   Every valid use trains slow mastery; suitable challenges award extra practice.
   MANA shows your reserve. Spells spend mana, which recovers between fights.
 - INVENTORY, EQUIPMENT, BUY, SELL, GET, DROP, EQUIP and UNEQUIP manage items.
+  LOOK SELF (or EQUIPMENT) lists every hand and armor slot, including empty slots.
+  Enchanted item names appear violet, with their glow description and separate bonus.
   EQUIP [weapon] LEFT/RIGHT and UNEQUIP LEFT/RIGHT manage hands. A two-handed
   weapon reserves both hands; a one-handed weapon permits a shield. Helmet,
   chest, pants and arms have separate armor slots. Worn armor and shields add defense.
@@ -59,6 +64,13 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   enemies may share a square and participate in a fight. Wounded enemies gradually
   recover outside combat; rates and delays are editable.
 - REST at the inn restores health and mana. SAVE is optional: progress saves automatically.
+- Death returns you to the fountain. Your body keeps all carried gold, inventory and
+  worn gear for 15 minutes, including time with the game closed. Return and LOOK BODY,
+  GET ALL FROM BODY, or GET <item> FROM BODY. If several bodies remain, use BODY <number>.
+  Recovered gear goes into your bag; equip it again. Bag and weight limits still apply.
+- From the fountain, go SOUTH then WEST to the Brass Badger Bank. Osric Tallywick
+  handles BALANCE, DEPOSIT <amount or ALL> and WITHDRAW <amount or ALL>. Accounts belong
+  to the character's permanent identity. Banked gold remains safe after death.
 
 Combat continues while the server runs, including with the browser closed.
 Ctrl+C in the launcher stops and saves. No account or external service is used.

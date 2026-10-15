@@ -51,14 +51,17 @@ class GameTests(unittest.TestCase):
         self.assertIn('Darkness blocks', self.g.state['log'][-1]['text'])
         self.g.command('get lantern'); self.g.command('look north')
         self.assertIn('Dark Conduit', self.g.state['log'][-1]['text'])
-    def test_04_alternating_combat_and_bash_cooldown(self):
+    def test_04_shared_combat_and_bash_cooldown(self):
         self.go_meadow(); self.g.w['settings']['hit_chance'] = 1
         e = self.g.enemy(); e['hp'] = 1000
-        self.g.command('attack'); self.assertEqual(self.g.p['combat']['turn'], 'player')
-        hp = self.g.p['hp']; self.g.tick(); self.assertEqual(self.g.p['hp'], hp)
+        self.g.command('attack'); self.assertEqual(self.g.p['combat']['turn'], 'simultaneous')
+        hp = self.g.p['hp']; self.g.tick(); self.assertLess(self.g.p['hp'], hp)
         self.assertLess(e['hp'], 1000); enemy_hp = e['hp']
+        hp = self.g.p['hp']
         self.clock.advance(1.9); self.g.tick(); self.assertEqual(e['hp'], enemy_hp)
-        self.clock.advance(.1); self.g.tick(); self.assertLess(self.g.p['hp'], hp)
+        self.clock.advance(.1); self.g.tick(); self.assertEqual(self.g.p['hp'], hp)
+        self.clock.advance(2); self.g.tick(); self.assertLess(self.g.p['hp'], hp)
+        self.assertLess(e['hp'],enemy_hp)
         self.g.command('bash'); after = e['hp']; self.g.command('bash'); self.assertEqual(e['hp'], after)
         self.assertIn('ready in', self.g.state['log'][-1]['text'])
     def test_05_victory_loot_level_and_timestamp_respawn(self):
@@ -74,6 +77,7 @@ class GameTests(unittest.TestCase):
         self.g.p['gold'] = 100; self.g.w['settings']['item_loss_chance'] = 1
         old_eq = dict(self.g.p['equipment']); self.g.p['room'] = 'vault'; self.g.death()
         self.assertEqual(self.g.p['gold'], 90); self.assertEqual(self.g.p['room'], 'square')
+        self.assertIn('You blink awake from death feeling strange and disoriented.', [line['text'] for line in self.g.state['log']])
         self.assertEqual(old_eq, self.g.p['equipment']); self.assertIn('lantern', self.g.p['inventory'])
         self.assertEqual(len(self.g.p['inventory']), 2)
     def test_07_progress_and_combat_resume_without_offline_burst(self):

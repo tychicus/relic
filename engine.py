@@ -6,6 +6,7 @@ import random
 import sqlite3
 import threading
 import time
+import uuid
 from pathlib import Path
 from adventure import validate_adventure
 from frontier import validate_frontier
@@ -137,7 +138,7 @@ class LegacyGame(Abilities):
             if race not in self.w['races'] or character_class not in self.w['classes']:
                 raise ValueError('Choose an existing race and class.')
             a = self.w['starting']
-            self.p = self.state['player'] = {'id': 'local-player', 'name': name, 'race': race, 'class': character_class, 'level': 1, 'xp': 0, 'hp': self.w['classes'][character_class]['hp'] + self.w['races'][race]['hp_bonus'], 'gold': a['gold'], 'room': a['room'], 'inventory': a['inventory'][:], 'equipment': dict(a['equipment']), 'cooldowns': {}, 'combat': None, 'learned_skills': {}, 'ability_points_spent': 0}
+            self.p = self.state['player'] = {'id': 'player-'+uuid.uuid4().hex, 'name': name, 'race': race, 'class': character_class, 'level': 1, 'xp': 0, 'hp': self.w['classes'][character_class]['hp'] + self.w['races'][race]['hp_bonus'], 'gold': a['gold'], 'room': a['room'], 'inventory': a['inventory'][:], 'equipment': dict(a['equipment']), 'cooldowns': {}, 'combat': None, 'learned_skills': {}, 'ability_points_spent': 0}
             self.init_adventure()
             self.log(f'Welcome, {name}. Your story begins in Center Square.', 'story')
             self.state['announced_skills']=[]
@@ -154,7 +155,7 @@ class LegacyGame(Abilities):
     def enemy(self, room_id=None):
         return self.resident_enemy(room_id)
 
-    def start_combat(self):
+    def start_combat(self, initiated=True):
         e = self.enemy()
         if e and not self.p['combat']:
             self.p['combat'] = {'room': self.p['room'], 'turn': 'player', 'next_at': self.clock()}
@@ -257,7 +258,7 @@ class LegacyGame(Abilities):
             lost = self.rng.choice(eligible); self.p['inventory'].remove(lost)
         self.log(f'You fall. {loss} gold is lost.' + (f' You also lose {self.item(lost)["name"]}.' if lost else ' Your belongings survive.'), 'danger')
         self.p['combat'] = None; self.p['room'] = self.w['starting']['room']; self.p['hp'] = self.max_hp()
-        self.log('You awaken beside the fountain in Center Square.', 'story'); self.look('')
+        self.log('You blink awake from death feeling strange and disoriented.', 'story'); self.look('')
 
     def match(self, target, candidates):
         return self.instance_match(target, candidates)
@@ -326,7 +327,7 @@ class LegacyGame(Abilities):
                     self.p['room'] = room['exits'][verb]; self.roll_encounter(self.p['room']); self.look('')
                     e = self.enemy()
                     if e and self.w['enemies'][e['type']]['aggressive']:
-                        self.start_combat()
+                        self.start_combat(initiated=False)
                 elif verb == 'look':
                     self.look(target)
                 elif verb == 'attack':
@@ -350,14 +351,13 @@ class LegacyGame(Abilities):
                         self.log('You break away and escape.', 'story'); self.roll_encounter(self.p['room']); self.look('')
                     else:
                         self.log('You cannot break away!', 'danger')
-                elif verb in ('inventory', 'equipment'):
-                    ids = self.p['inventory'] if verb == 'inventory' else list(self.p['equipment'].values())
+                elif verb == 'inventory':
+                    ids = self.p['inventory']
                     lines = []
                     for i in dict.fromkeys(ids):
                         item = self.item(i)
-                        left, right = ('[', ']') if item['kind'] in ('weapon', 'armor') else ('(', ')')
                         count = ids.count(i)
-                        lines.append(f'{left}{item["name"]}{right}' + (f' (x{count})' if count > 1 else ''))
+                        lines.append(self.marked(i, count))
                         if item['kind'] in ('weapon','armor'):
                             lines[-1] += ' — ' + self.gear_stats(item)
                         if item.get('enchantment_description'):

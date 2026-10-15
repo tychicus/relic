@@ -88,8 +88,7 @@ class Adventure:
         return {'kind':'captive', 'name':f'Unconscious {e["name"]} {instance["number"]}', 'price':0, 'description':e.get('captive_description') or f'{e["name"]} lies unconscious.', 'protected':True, 'instance':True}
 
     def marked(self, iid, count=1):
-        i=self.item(iid); a,b=('[',']') if i['kind'] in ('weapon','armor') else ('(',')')
-        return a+i['name']+b+(f' (x{count})' if count>1 else '')
+        return self.item(iid)['name']+(f' (x{count})' if count>1 else '')
 
     def instance_match(self, target, candidates):
         ids=list(dict.fromkeys(candidates)); t=target.lower().strip()

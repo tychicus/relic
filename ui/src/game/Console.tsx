@@ -29,13 +29,23 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
   const historyIndex = useRef(0)
   const actionRecovery = Math.max(0, Math.ceil((p.action_ready || 0) - data.time))
   const potionRecovery = Math.max(0, Math.ceil((p.potion_ready || 0) - data.time))
+  const enchantedNames = new Set(Object.values(data.items).filter(i => i.enchanted).map(i => i.name))
+  const enchantedPattern = enchantedNames.size ? new RegExp('(' + [...enchantedNames]
+    .sort((a, b) => b.length - a.length)
+    .map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'g') : null
+
+  function itemText(text: string) {
+    if (!enchantedPattern) return text
+    return text.split(enchantedPattern).map((part, index) => enchantedNames.has(part)
+      ? <span key={index} className="text-enchanted">{part}</span> : part)
+  }
 
   const skills = (data.player_skills ?? [])
     .filter((s) => s.unlocked && !s.passive)
     .map((s) => ({ ...s, remaining: Math.max(0, Math.ceil((p.cooldowns[s.id] || 0) - data.time)) }))
 
   const status = p.combat
-    ? `in combat · next ${p.combat.turn} pulse in ${Math.max(0, Math.ceil(p.combat.next_at - data.time))}s`
+    ? `in combat · next shared pulse in ${Math.max(0, Math.ceil(p.combat.next_at - data.time))}s`
     : 'exploring'
 
   function submit(event: React.FormEvent) {
@@ -69,7 +79,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
       >
         {log.map((line) => (
           <p key={line.id} className={cn('mb-2 leading-relaxed break-words whitespace-pre-line', lineStyles[line.kind ?? ''])}>
-            {line.kind === 'command' ? `❯ ${line.text.replace(/^>\s*/, '')}` : line.text}
+            {line.kind === 'command' ? `❯ ${line.text.replace(/^>\s*/, '')}` : itemText(line.text)}
           </p>
         ))}
       </div>

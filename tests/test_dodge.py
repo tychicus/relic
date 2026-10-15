@@ -43,8 +43,9 @@ class DodgeTests(unittest.TestCase):
         before = (self.g.p['xp'], self.g.p['gold'], self.g.p['inventory'][:])
         self.g.start_combat(); self.g.tick()
         self.assertEqual(self.g.enemy()['hp'], 1000)
-        self.assertEqual(self.g.p['combat']['turn'], 'enemy')
-        self.assertIn('dodges your attack', self.g.state['log'][-1]['text'])
+        self.assertEqual(self.g.p['combat']['turn'], 'simultaneous')
+        self.assertGreater(self.g.p['attack_ready'],self.g.clock())
+        self.assertIn('dodges your attack', '\n'.join(line['text'] for line in self.g.state['log']))
         self.assertEqual(before, (self.g.p['xp'], self.g.p['gold'], self.g.p['inventory']))
 
     def test_dodged_bash_still_uses_its_cooldown(self):

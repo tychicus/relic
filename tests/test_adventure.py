@@ -34,11 +34,11 @@ class AdventureTests(unittest.TestCase):
         # Keep automatic attacks from landing before the requested skill.
         self.g.start_combat();self.g.p['combat']['next_at']=self.now+2
         return e
-    def test_shop_vertical_marked_grouped(self):
+    def test_shop_vertical_plain_grouped(self):
         self.g.p['room']='shop';self.g.w['rooms']['shop']['shop'].append('potion')
         self.g.command('buy');text=self.g.state['log'][-1]['text']
-        self.assertIn('For sale:\n',text);self.assertIn('(Healing potion) (x2)',text)
-        self.assertIn('\n[Iron sword]',text);self.assertNotIn(';',text)
+        self.assertIn('For sale:\n',text);self.assertIn('Healing potion (x2)',text)
+        self.assertIn('\nIron sword —',text);self.assertNotIn(';',text)
     def test_prairie_connected_troll_settings(self):
         w=self.g.w;self.assertEqual(w['rooms']['meadow']['exits']['west'],'prairie_3_0')
         opposite={'north':'south','south':'north','east':'west','west':'east'}
@@ -167,10 +167,16 @@ class AdventureTests(unittest.TestCase):
         target=self.root/'imported.sqlite3';shutil.copyfile(original,target)
         import sqlite3
         db=sqlite3.connect(target);old=json.loads(db.execute("SELECT body FROM state WHERE id='world'").fetchone()[0]);db.close()
-        game=Game(self.path,target,clock=lambda:self.now)
+        migration_world=self.root/'migration-world.json'
+        migration_world.write_bytes((ROOT/'content/world.json').read_bytes())
+        game=Game(migration_world,target,clock=lambda:self.now)
         try:
-            self.assertEqual({k:game.p[k] for k in old['player']},old['player']);self.assertEqual(game.state['ground'],old['ground'])
-            self.assertEqual(game.p['mana_xp'],0);self.assertEqual(game.p['mana'],game.max_mana())
+            expected=copy.deepcopy(old['player'])
+            if expected.get('combat'):
+                expected['combat']['next_at']=self.now+game.w['settings']['attack_interval']
+            self.assertEqual({k:game.p[k] for k in expected},expected);self.assertEqual(game.state['ground'],old['ground'])
+            self.assertEqual(game.p['mana_xp'],old['player'].get('mana_xp',0))
+            self.assertEqual(game.p['mana'],old['player'].get('mana',game.max_mana()))
             self.assertIn('instances',game.state);game.snapshot();game.command('buy')
         finally:game.db.close()
         self.assertEqual(hashlib.sha256(original.read_bytes()).hexdigest(),digest)

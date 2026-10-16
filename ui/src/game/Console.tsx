@@ -67,7 +67,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
   }
 
   return (
-    <section aria-label="Adventure console" className="min-w-0">
+    <section aria-label="Adventure console" className="game-console min-w-0">
       <div
         ref={logRef}
         tabIndex={0}
@@ -75,7 +75,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
         aria-label="Adventure log"
         aria-live="polite"
         aria-relevant="additions"
-        className="h-[min(440px,55vh)] overflow-y-auto py-2 pr-2 [scrollbar-color:#3a3a3a_transparent] focus-visible:outline-1 focus-visible:outline-border"
+        className="game-log h-[min(440px,55vh)] overflow-y-auto py-2 pr-2 [scrollbar-color:#3a3a3a_transparent] focus-visible:outline-1 focus-visible:outline-border"
       >
         {log.map((line) => (
           <p key={line.id} className={cn('mb-2 leading-relaxed break-words whitespace-pre-line', lineStyles[line.kind ?? ''])}>
@@ -106,7 +106,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
         <span className="text-muted-foreground">↑↓ for history · enter to send</span>
       </div>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
+      <div className="game-actions mt-3 flex flex-wrap gap-1.5">
         <ActionButton send={send} command="attack">attack</ActionButton>
         {skills.map((s) => (
           <ActionButton

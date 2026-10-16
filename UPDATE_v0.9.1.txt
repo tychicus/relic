@@ -1,0 +1,21 @@
+RELIC FRONTIER v0.9.1 - WIDER GAME LAYOUT
+
+The game view now uses more of a wide screen, up to 1760 pixels, with less
+outer spacing and a smaller character emblem. The room description has more
+space beside the character summary.
+
+On desktop windows at least 1024 pixels wide and 640 pixels high, the command
+box and action buttons stay visible. The adventure log, long room/shop lists,
+and the skills/equipment/inventory column scroll independently. Point at the
+panel you want to scroll, or focus it with Tab and use the keyboard.
+
+Entering a different room returns its panel to the top. Opening learning
+choices or browsing a long inventory no longer pushes the command box below
+the screen. Smaller or shorter windows keep normal page scrolling.
+
+Refresh an already-open game with Ctrl+F5 to load the updated interface.
+Gameplay rules, commands, balance, the authored world and save format are
+unchanged by this layout update. Existing characters continue normally.
+
+See UPDATE_v0.9.0.txt for the mechanics guide and README.md for current game
+instructions, including the rare loot, orcs and progression updates.

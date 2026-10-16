@@ -1,4 +1,4 @@
-# Relic Frontier v0.9.0
+# Relic Frontier v0.9.1
 
 A local, editable, keyboard-driven fantasy RPG with relic technology.
 Python 3.11+ and the standard library are the only game requirements.
@@ -19,7 +19,8 @@ Stop any old game with **Ctrl+C** in its launcher. On Windows, open
 Play at http://127.0.0.1:8765 and edit at http://127.0.0.1:8765/admin.
 Check the displayed version; refresh with Ctrl+F5 if the browser is stale.
 
-Read **UPDATE_v0.9.0.txt** for the full update guide, editable balance values,
+Read **UPDATE_v0.9.1.txt** for the wider layout and screen controls.
+Read **UPDATE_v0.9.0.txt** for the full mechanics guide, editable balance values,
 new commands and intentional limitations. **CHANGELOG.md** records the release
 and verification. Older UPDATE files in docs/history describe earlier releases.
 

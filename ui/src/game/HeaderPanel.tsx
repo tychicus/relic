@@ -17,7 +17,7 @@ const WARRIOR = [
 
 export function Emblem() {
   return (
-    <pre aria-hidden className="my-3 text-center leading-[1.05] text-primary">
+    <pre aria-hidden className="my-2 text-center text-xs leading-[1.05] text-primary">
       {WARRIOR}
     </pre>
   )
@@ -38,7 +38,7 @@ function CharacterSummary({ data }: { data: Snapshot }) {
       <p className="text-muted-foreground">
         {p.race_name} {p.class_name} · Level {p.level}
       </p>
-      <div className="mt-3 grid w-full max-w-72 gap-1 text-left text-sm">
+      <div className="mt-2 grid w-full max-w-72 gap-1 text-left text-sm">
         <TextMeter label="HP" value={p.hp} max={p.max_hp} text={`${p.hp}/${p.max_hp}`} tone={p.hp <= p.max_hp / 4 ? 'text-destructive' : 'text-primary'} />
         {!!p.max_mana && <TextMeter label="MP" value={p.mana || 0} max={p.max_mana} text={`${Math.floor(p.mana || 0)}/${p.max_mana}`} tone="text-story" />}
         <TextMeter label="XP" value={xpInto} max={xpSpan} text={p.next_xp ? `${p.xp}/${p.next_xp}` : `${p.xp} max`} tone="text-gold" />
@@ -182,8 +182,8 @@ export function HeaderPanel({ data, send }: { data: Snapshot; send: Send }) {
   const { room } = data
   const area = [room.code, room.region].filter(Boolean).join(' · ') || (room.safe ? 'Within the town walls' : 'Beyond the walls')
   return (
-    <TerminalBox title="Relic Frontier v0.9.0">
-      <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+    <TerminalBox title="Relic Frontier v0.9.1">
+      <div className="grid gap-4 md:grid-cols-[minmax(240px,1fr)_minmax(0,2fr)]">
         <CharacterSummary data={data} />
         <div className="min-w-0 border-t border-primary pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-4">
           <div className="flex flex-wrap items-baseline justify-between gap-x-3">

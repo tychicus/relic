@@ -107,7 +107,7 @@ export function GameApp() {
   }, [apply])
 
   return (
-    <div className="min-h-screen">
+    <div className={cn('min-h-screen', data?.player && 'game-shell')}>
       <Masthead>
         <span role="status" className={cn(connected === false ? 'text-destructive' : 'text-muted-foreground')}>
           {connected === null ? '○ connecting…' : connected ? '● connected · autosaving' : '✕ disconnected · reopen launcher'}
@@ -116,15 +116,19 @@ export function GameApp() {
           owner editor ↗
         </a>
       </Masthead>
-      <main className="mx-auto max-w-[1400px] px-4 pt-6 pb-4 sm:px-[3vw]">
+      <main className="game-main mx-auto w-full max-w-[1760px] px-4 pt-4 pb-3 sm:px-6">
         {data && !data.player && <Welcome choices={data.creation} onCreate={create} />}
         {data?.player && (
-          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-            <div className="grid min-w-0 gap-4">
-              <HeaderPanel data={data} send={send} />
+          <div className="game-layout grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_clamp(320px,25%,400px)]">
+            <div className="game-play grid min-w-0 gap-3">
+              <div key={data.room.code ?? data.room.name} className="game-scene" role="region" aria-label="Character and current room" tabIndex={0}>
+                <HeaderPanel data={data} send={send} />
+              </div>
               <Console data={data} log={log} send={send} logRef={logRef} commandRef={commandRef} />
             </div>
-            <SidePanels data={data} send={send} />
+            <aside className="game-sidebar min-w-0" aria-label="Skills, equipment and inventory" tabIndex={0}>
+              <SidePanels data={data} send={send} />
+            </aside>
           </div>
         )}
         {error && (
@@ -133,7 +137,7 @@ export function GameApp() {
           </Callout>
         )}
       </main>
-      <footer className="px-[3vw] pt-2 pb-6 text-sm text-muted-foreground sm:text-center">
+      <footer className="game-footer px-4 pt-1 pb-3 text-sm text-muted-foreground sm:text-center">
         Progress saves automatically. Combat continues while the game server is running.
       </footer>
     </div>

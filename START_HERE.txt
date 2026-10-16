@@ -1,4 +1,4 @@
-RELIC FRONTIER v0.9.0 - SHARED DEVELOPMENT COPY
+RELIC FRONTIER v0.9.1 - SHARED DEVELOPMENT COPY
 
 1. Install Python 3.11 or newer if it is not already available.
 2. Extract the downloaded ZIP before starting the game.
@@ -19,5 +19,6 @@ will be created in saves/game.sqlite3 and is excluded from version control.
 The game runs locally. Hosting this repository does not create an online
 multiplayer server.
 
-Read UPDATE_v0.9.0.txt for the new controls, README.md for development, and CONTRIBUTING.md for
+Read UPDATE_v0.9.1.txt for the layout update, UPDATE_v0.9.0.txt for game mechanics,
+README.md for development, and CONTRIBUTING.md for
 working together. Historical release notes describe older packaged copies.

@@ -1,3 +1,19 @@
+# Relic Frontier v0.9.1 — 2026-10-15
+
+- Widened the game view to a maximum of 1760 pixels, reduced outer spacing,
+  and made the character emblem more compact to leave more room for text.
+- Desktop command entry and action buttons stay visible while the adventure
+  log, long room/shop lists and character sidebar scroll independently.
+- Room panels return to the top on entering a different room. Narrow or short
+  windows retain ordinary page scrolling.
+- Updated game, editor, launcher and package version labels to v0.9.1.
+  Gameplay rules, authored content and the save format are unchanged.
+- Validation: all 268 Python tests (including copied-save migration), both
+  JavaScript helper suites and the production UI build passed. Browser checks
+  covered desktop and narrow layouts, command entry, learning expansion,
+  equipment actions, long shop lists and resetting the room panel on movement,
+  using a disposable preview character.
+
 # Mechanics follow-up — equipment, shared combat, death recovery and banking
 
 - LOOK SELF and EQUIPMENT show all six slots, including empty and two-handed slots.

@@ -56,7 +56,8 @@ class EnchantingTests(unittest.TestCase):
         self.assertIsNone(self.g.p['combat'])
         self.g.p['room'] = 'meadow'
         self.g.w['enemies']['beetle']['aggressive'] = False
-        self.g.w['rooms']['meadow']['population'] = [dict(id='extra',enemy='beetle',count=1,chance=100)]
+        self.g.w['enemies']['iron_beetle'] = dict(self.g.w['enemies']['beetle'],name='Iron beetle')
+        self.g.w['rooms']['meadow']['population'] = [dict(id='extra',enemy='iron_beetle',count=1,chance=100)]
         self.g.command('kill beetle')
         self.assertIsNone(self.g.p['combat'])
         self.assertIn('distinct', self.log())

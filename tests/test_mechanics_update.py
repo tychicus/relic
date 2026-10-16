@@ -102,7 +102,8 @@ class MechanicsUpdateTests(unittest.TestCase):
 
     def test_missing_ambiguous_and_dark_targets_spend_nothing(self):
         self.arena()
-        self.g.w['rooms']['meadow']['population'].append(dict(id='extra',enemy='beetle',count=1,chance=100))
+        self.g.w['enemies']['iron_beetle']=dict(self.g.w['enemies']['beetle'],name='Iron beetle')
+        self.g.w['rooms']['meadow']['population'].append(dict(id='extra',enemy='iron_beetle',count=1,chance=100))
         for target in ('missing','beetle'):
             before=copy.deepcopy(self.g.p)
             self.g.command('fireball '+target)

@@ -30,6 +30,10 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   attempts a distant view. Descriptions contain discovery clues.
 - ATTACK [creature] or KILL [creature] begins automatic combat. TARGET [distinct description]
   changes opponents. Inject skills, spells, potions or FLEE between pulses.
+  Generic names such as KILL BEETLE, TARGET BEETLE or CAST FIREBALL BEETLE work
+  when all matches are the same creature type. They keep your matching current
+  target, otherwise choose the first match. If different types match, specify
+  the type or a description such as SCARRED COPPER BEETLE to choose an individual.
   Ready players and enemies attack in the same shared pulse, with individual recovery
   timers. Enemies focus the player who starts a fight; enemies starting a fight choose
   a random present player independently. They keep that target until it becomes invalid.

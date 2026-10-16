@@ -648,14 +648,6 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
                 if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full; the unconscious creature remains here.')
                 self.require_carry_weight(self.w['enemies'][e['type']].get('weight',10))
                 self.p['inventory'].append(self.new_instance(dict(kind='captive',enemy=e['type'])));e['hp']=0;e['unconscious']=False;e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60);self.log('You pick up the unconscious creature. No kill rewards are awarded.');return True
-        if verb in ('help','?'):
-            self.log(f'Recall scrolls return you to town outside combat and rooms that block recall. They are reusable below level {self.rules()["recall_reusable_below_level"]}, then single-use, and cannot be used at level {self.rules()["recall_disabled_from_level"]} or above.')
-            self.log('At a bank: BALANCE, DEPOSIT <amount or ALL>, WITHDRAW <amount or ALL>. Banked gold belongs to your character and stays safe on death.')
-            self.log('Death leaves your belongings in a body. LOOK BODY, GET ALL FROM BODY, GET <item> FROM BODY, or LOOT BODY. Use the body number if there are several. Recover gear before the body expires.')
-            self.log('LOOK SELF or EQUIPMENT lists every hand and armor slot, including empty slots. Enchanted item names appear violet with a glow description and separate stat bonus.')
-            self.log('MANA shows your reserve and slow mana mastery. Spells spend mana, which recovers outside combat; REST refills it. Enemy levels determine challenge practice bonuses.')
-            self.log('CAST <spell> [creature] and named attacks share a short recovery between manual combat skills. Healing potions have a separate recovery. REPAIR lists damaged equipment and prices at a repair shop; REPAIR <item> restores it without losing its magic XP.')
-            self.log('Commands: ATTACK or KILL <creature>; TARGET <creature description>; EQUIP <item> LEFT or RIGHT; HOLD <armor>; UNEQUIP LEFT / RIGHT; LOOK NORTH 2; FIREBALL; LIGHTNING; CHARGE; SHARPEN; ENCHANT <held weapon or worn/held armor>; RECALL; EAT <food>; HARVEST <creature>; COOK <recipe>. SAY <phrase> TO <NPC>. Enchantments are temporary. Practice slowly improves enchanting level, success, bonus and duration. Weapon failures can damage or destroy the weapon; see SKILLS and owner balance settings.')
         return super().extra_command(verb,target)
 
     def snapshot(self):

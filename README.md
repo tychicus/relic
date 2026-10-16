@@ -24,6 +24,33 @@ Read **UPDATE_v0.9.0.txt** for the full mechanics guide, editable balance values
 new commands and intentional limitations. **CHANGELOG.md** records the release
 and verification. Older UPDATE files in docs/history describe earlier releases.
 
+## Help, syntax and emotes
+
+HELP is a short topic index. HELP COMBAT, HELP CAPTURE and HELP BANK explain
+those systems; HELP FIREBALL (or any skill name/ID) shows live mana costs,
+cooldowns, power, targets and learning requirements. SYNTAX CAST, SYNTAX GET
+and SYNTAX TALK give command formats and examples. Skill cards include a Help
+button. Mistakes suggest useful commands; suggestions never execute actions.
+
+TALK TAMSIN and TALK TO TAMSIN say hello. TALK TAMSIN ABOUT COOKING or
+ASK TAMSIN ABOUT COOKING uses the existing conversation. SAY COOKING TO TAMSIN
+still works. Useful aliases include GO N, MOVE NORTH, INSPECT, INV, WEAR,
+WIELD, TAKE and DRINK. Full skill names work directly, such as QUICK STRIKE.
+
+HELP EMOTES lists enabled actions. Try WAVE TAMSIN, SMILE, BOW or
+ME brushes dust from a coat. Emotes are cosmetic: they do not trigger NPC
+conversations, change combat targets, spend resources or award practice.
+Combat time still passes normally while reading help or using emotes.
+
+In the owner workshop, open **Emotes & socials** to edit names, commands,
+aliases, descriptions and messages, with a sample message preview. To add one,
+choose **Emote / social** under Create and edit. New entries start with an
+editable gesture_ command. Use {actor} in messages and {target} in the optional
+targeted message; leave the targeted message blank to disallow targets.
+Disable an entry to remove it from player commands and help, then save world
+changes. Existing game commands, skill names and help topics cannot be reused.
+Older world files without an emotes section still load; ME remains available.
+
 ## Play
 
 - Move with N, S, E, W, UP, DOWN. LOOK inspects the current room; LOOK NORTH 2

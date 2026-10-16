@@ -304,7 +304,7 @@
       "multiplier": 1.6,
       "allowed_classes": null,
       "allowed_races": null,
-      "description": "A fire attack; 25% chance to scorch for three pulses. No mana cost.",
+      "description": "A fire attack that can scorch its target. Use HELP FIREBALL for current power, mana cost and timing.",
       "initiates": true,
       "status_effects": [
         {
@@ -6590,6 +6590,86 @@
       "roam_seconds": 30,
       "weather": "clear",
       "fog": 0
+    }
+  },
+  "emotes": {
+    "wave": {
+      "name": "Wave",
+      "command": "wave",
+      "aliases": [
+        "wavehello"
+      ],
+      "enabled": true,
+      "description": "Offer a friendly wave.",
+      "message": "{actor} waves.",
+      "target_message": "{actor} waves to {target}."
+    },
+    "smile": {
+      "name": "Smile",
+      "command": "smile",
+      "aliases": [],
+      "enabled": true,
+      "description": "Share a warm smile.",
+      "message": "{actor} smiles.",
+      "target_message": "{actor} smiles at {target}."
+    },
+    "bow": {
+      "name": "Bow",
+      "command": "bow",
+      "aliases": [],
+      "enabled": true,
+      "description": "Show respect with a bow.",
+      "message": "{actor} bows.",
+      "target_message": "{actor} bows respectfully to {target}."
+    },
+    "nod": {
+      "name": "Nod",
+      "command": "nod",
+      "aliases": [],
+      "enabled": true,
+      "description": "Give a small nod.",
+      "message": "{actor} nods.",
+      "target_message": "{actor} nods to {target}."
+    },
+    "shrug": {
+      "name": "Shrug",
+      "command": "shrug",
+      "aliases": [],
+      "enabled": true,
+      "description": "Express uncertainty.",
+      "message": "{actor} shrugs.",
+      "target_message": "{actor} shrugs toward {target}."
+    },
+    "laugh": {
+      "name": "Laugh",
+      "command": "laugh",
+      "aliases": [
+        "chuckle"
+      ],
+      "enabled": true,
+      "description": "Let out a laugh.",
+      "message": "{actor} laughs.",
+      "target_message": "{actor} shares a laugh with {target}."
+    },
+    "cheer": {
+      "name": "Cheer",
+      "command": "cheer",
+      "aliases": [
+        "applaud"
+      ],
+      "enabled": true,
+      "description": "Celebrate the moment.",
+      "message": "{actor} cheers!",
+      "target_message": "{actor} cheers for {target}!"
+    },
+    "sigh": {
+      "name": "Sigh",
+      "command": "sigh",
+      "aliases": [],
+      "enabled": true,
+      "description": "Release a weary sigh.",
+      "message": "{actor} sighs.",
+      "target_message": ""
     }
   }
 }

@@ -10,6 +10,7 @@ export function Dashboard() {
     ['rooms', 'World locations', `${Object.keys(world.rooms).length} rooms · exits, shops, spawning and visibility.`],
     ['enemies', 'Creatures', `${Object.keys(world.enemies).length} creature types · combat, capture and harvest yields.`],
     ['npcs', 'People & dialogue', 'Place people and write their available conversations.'],
+    ['emotes', 'Emotes & socials', 'Edit commands, aliases, descriptions and character actions.'],
     ['skills', 'Skills & spells', 'Set eligibility, unlock levels, cooldowns and attached effects.'],
     ['status_effects', 'Status effects', 'Create reusable damage, stun and slow effects.'],
     ['items', 'Items & equipment', 'Weapons, shields, food, scrolls and containers.'],

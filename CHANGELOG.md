@@ -1,3 +1,23 @@
+# Unreleased — Specific help and editable emotes
+
+- HELP is a short topic index. Added focused combat, capture, bank, inventory,
+  storage, progression and other guides, plus live HELP <skill> details and
+  SYNTAX <command> formats/examples. Removed the overlapping general help dumps.
+- Added TALK / TALK TO and ASK ... ABOUT through existing dialogue, useful
+  command aliases, full skill-name commands and non-executing typo suggestions.
+- Added eight editable preset emotes, EMOTES, EMOTE and free-form ME actions.
+  The owner workshop supports creating, editing, previewing and disabling emotes;
+  validation rejects conflicting commands and unsupported message placeholders.
+- Added skill Help buttons and an emotes shortcut; rebuilt the browser assets.
+  Corrected Fireball's obsolete description claiming it had no mana cost.
+- Validation: 305 Python tests passed; one optional personal-save migration test
+  was skipped because no personal save was present. Both JavaScript helper
+  suites passed, and TypeScript/Vite built successfully.
+  Disposable browser checks covered player commands, editor create/edit/save/
+  reload/disable, conflict rejection, and desktop/mobile layouts.
+- Existing worlds without emotes remain compatible. No account, networking,
+  save format or balance changes are included.
+
 # Unreleased — Generic creature targeting
 
 - Commands such as KILL BEETLE now accept several matching individuals of the

@@ -11,6 +11,7 @@ const lineStyles: Record<string, string> = {
   danger: 'border-l-2 border-destructive pl-3 text-destructive',
   notice: 'text-muted-foreground italic',
   story: 'text-story',
+  emote: 'text-story italic',
   combat: 'text-combat',
 }
 
@@ -132,6 +133,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
         <ActionButton send={send} command="flee">flee</ActionButton>
         {data.room.rest && <ActionButton send={send} command="rest">rest</ActionButton>}
         <ActionButton send={send} command="help">help</ActionButton>
+        <ActionButton send={send} command="emotes">emotes</ActionButton>
       </div>
       {actionRecovery > 0 && <p className="mt-1 text-sm text-muted-foreground">Combat skill recovery: {actionRecovery}s. Automatic attacks continue.</p>}
     </section>

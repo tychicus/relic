@@ -25,6 +25,7 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
               Skill level {p.enchanting[s.id].level} · {p.enchanting[s.id].next_xp === null ? 'Maximum level' : `${p.enchanting[s.id].level_xp}/${p.enchanting[s.id].next_xp} XP to next level`}
               <br />{p.enchanting[s.id].chance}% success · +{p.enchanting[s.id].bonus} damage/armor · {Math.round(p.enchanting[s.id].duration / 60 * 10) / 10} minutes
             </span>}
+            <ActionButton send={send} command={`help ${s.id}`} aria-label={`Help for ${s.name}`} className="ml-1">Help</ActionButton>
             {!s.unlocked && <span className="text-muted-foreground"> (level {s.unlock_level ?? 1})</span>}
           </p>
         ))}
@@ -43,6 +44,7 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
                 <p>{s.name} · rank {s.rank || 0}/{s.max_rank || 5}</p>
                 <p className="text-xs text-muted-foreground">{s.description}</p>
                 <p className="my-1 text-xs text-muted-foreground">Class power {Math.round((s.affinity?.power || 1) * 100)}% · mana cost ×{s.affinity?.mana || 1} · practice ×{s.affinity?.practice || 1}</p>
+                <ActionButton send={send} command={`help ${s.id}`} aria-label={`Learn about ${s.name}`} className="mr-1">Help</ActionButton>
                 <ActionButton send={send} command={`learn ${s.id}`} disabled={!!p.combat || capped || locked || (p.ability_points || 0) < (s.learn_cost || 1)}>
                   {capped ? 'Maximum rank' : `${s.rank ? 'Improve' : 'Learn'} · ${s.learn_cost || 1} point(s)${locked ? ` · level ${s.learn_level}` : ''}`}
                 </ActionButton>

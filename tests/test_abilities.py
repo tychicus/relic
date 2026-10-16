@@ -74,7 +74,7 @@ class AbilityTests(unittest.TestCase):
             self.assertEqual(self.path.read_bytes(),before)
     def test_unavailable_skills_not_in_player_list_and_no_object_hints(self):
         self.skill(classes=[]);self.create();s=self.g.snapshot();self.assertNotIn('mend',[k['id'] for k in s['player_skills']]);self.assertEqual(s['room']['objects'],[])
-        self.g.command('look nonexistent');self.assertEqual(self.log(),'You do not see that here.')
+        self.g.command('look nonexistent');self.assertEqual(self.log(),'You do not see that here. See SYNTAX LOOK or HELP EXPLORATION.')
         self.g.command('look fountain');self.assertNotEqual(self.log(),'You do not see that here.')
     def test_skill_configuration_saves_and_reload(self):
         self.add_options();self.skill('sunburst','damage',3,['mage'],['elf']);self.create();self.g.update_world(copy.deepcopy(self.g.w));self.g.db.close();self.g=Game(self.path,self.db,clock=lambda:self.now)

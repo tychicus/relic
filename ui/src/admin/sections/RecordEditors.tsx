@@ -9,6 +9,27 @@ import {
 
 type Obj = Record<string, any>
 
+export function EmoteEditor({ emote }: { emote: Obj }) {
+  const preview = (message: string) => (message || '').replace(/\{(actor|target)\}/g, (_, key) => key === 'actor' ? 'Traveler' : 'Tamsin')
+  return (
+    <>
+      <BoolField obj={emote} k="enabled" label="Enabled for players" />
+      <TextField obj={emote} k="command" label="Command (one lowercase word)" maxLength={40} />
+      <LinesField obj={emote} k="aliases" label="Aliases (one lowercase word per line; up to 10)" />
+      <Note>Commands and aliases must be unique and cannot replace game commands, skills or help topics. New entries begin with a gesture_ command you can rename.</Note>
+      <TextField obj={emote} k="description" label="Description shown in HELP EMOTES" maxLength={600} multiline />
+      <TextField obj={emote} k="message" label="Message without a target" maxLength={600} multiline />
+      <TextField obj={emote} k="target_message" label="Message with a target (optional)" maxLength={600} multiline />
+      <Note>Use {'{actor}'} for the character’s name and {'{target}'} for a visible target’s name. Leave the targeted message blank to disallow targets. Disable an entry to remove it from player commands and help.</Note>
+      <Note>
+        <strong className="text-foreground">Message preview</strong>
+        <span className="mt-1 block break-words whitespace-pre-line">{preview(emote.message)}</span>
+        {emote.target_message && <span className="mt-1 block break-words whitespace-pre-line">{preview(emote.target_message)}</span>}
+      </Note>
+    </>
+  )
+}
+
 export function EnemyEditor({ enemy }: { enemy: Obj }) {
   const { world } = useEditor()
   const items: Option[] = [['', 'No item'], ...sortedEntries(world.items).map(([id, v]): Option => [id, v.name])]

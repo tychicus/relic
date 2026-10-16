@@ -13,6 +13,7 @@ from frontier import validate_frontier
 from abilities import Abilities, validate_abilities
 from revision_rules import validate_revision
 from magic_progression import validate_magic
+from help_system import PlayerHelp, validate_emotes
 
 DIRECTIONS = {'n': 'north', 's': 'south', 'e': 'east', 'w': 'west', 'u': 'up', 'd': 'down'}
 
@@ -96,10 +97,10 @@ def validate(w):
     right=w['items'].get(a['equipment'].get('weapon'),{});left=w['items'].get(a['equipment'].get('left_hand'),{})
     require(not left or right.get('hands',1)!=2 and left.get('hands',1)!=2,'Starting two-handed weapon requires both hands.')
     require(not (right.get('shield') and left.get('shield')),'Starting equipment can contain only one shield.')
-    return validate_magic(validate_abilities(validate_adventure(validate_frontier(validate_revision(w)))))
+    return validate_emotes(validate_magic(validate_abilities(validate_adventure(validate_frontier(validate_revision(w))))))
 
 
-class LegacyGame(Abilities):
+class LegacyGame(PlayerHelp, Abilities):
     def __init__(self, content_path, database_path, rng=None, clock=None):
         self.path = Path(content_path)
         self.w = validate(json.loads(self.path.read_text(encoding='utf-8')))
@@ -317,11 +318,10 @@ class LegacyGame(Abilities):
             if not raw:
                 return self.snapshot()
             self.log('> ' + raw, 'command')
-            parts = raw.lower().split(' ', 1); verb = DIRECTIONS.get(parts[0], parts[0]); target = parts[1] if len(parts) > 1 else ''
-            verb = {'l': 'look', 'i': 'inventory', 'eq': 'equipment', 'a': 'attack', 'kill': 'attack'}.get(verb, verb)
+            verb, target = self.normalize_command(raw)
             try:
                 room = self.w['rooms'][self.p['room']]
-                if self.skill_command(verb, target) or self.extra_command(verb, target):
+                if self.guide_command(verb, target) or self.skill_command(verb, target) or self.extra_command(verb, target):
                     return self.finish()
                 if verb in ('north', 'south', 'east', 'west', 'up', 'down'):
                     if self.p['combat']:
@@ -436,14 +436,12 @@ class LegacyGame(Abilities):
                     if self.p['combat'] or not room.get('rest'):
                         raise ValueError('Rest at The Quiet Coil, west of Center Square.')
                     self.p['hp'] = self.max_hp();self.p['mana']=self.max_mana(); self.log('You rest by the fire. Health and mana fully restored.', 'reward')
-                elif verb in ('help', '?'):
-                    self.log('LEARN [ability] to choose or improve abilities with earned points. MANA for reserves, WEIGHT for carrying capacity, REPAIR [item] at a repair service. MOVE: N S E W UP DOWN. LOOK [direction/object/item]. INVENTORY (I), EQUIPMENT, EQUIP <item>, UNEQUIP <weapon/armor>. BUY [item], SELL <item>, GET <item>, DROP <item>, QUAFF POTION. ATTACK [enemy], SKILLS, CAST <skill name>, BASH, KNOCKOUT [enemy], FLEE. UNLOCK <box>. GET <unconscious creature>, PUT <creature> IN CAGE <number>, LOOK CAGE <number>, RELEASE CAGE <number>. PUT <item> IN CHEST <number>, GET <item> FROM CHEST <number>, LOOK CHEST <number>. SAY <phrase> TO <creature/cage>. REST at the inn. Progress saves automatically; combat continues while this server is running, even if you close the browser.')
                 elif verb == 'save':
                     self.log('Progress saved. Saving is also automatic.')
                 else:
-                    raise ValueError('Unknown command. Type HELP for commands.')
+                    raise ValueError(self.unknown_command(verb))
             except ValueError as error:
-                self.log(str(error), 'notice')
+                self.log(self.command_error(verb, str(error)), 'notice')
             return self.finish()
 
     def finish(self):

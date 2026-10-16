@@ -17,7 +17,7 @@ import { Disclosure, FieldGrid, SelectInput, TextField, type Option } from './fi
 import { SchemaForm } from './SchemaForm'
 import { Dashboard } from './sections/Dashboard'
 import { OwnerMap } from './sections/OwnerMap'
-import { ClassEditor, EnemyEditor, ItemEditor, RaceEditor, SettingsEditor, SkillEditor } from './sections/RecordEditors'
+import { ClassEditor, EmoteEditor, EnemyEditor, ItemEditor, RaceEditor, SettingsEditor, SkillEditor } from './sections/RecordEditors'
 import { RoomEditor } from './sections/RoomEditor'
 
 const categories: Record<string, string> = {
@@ -27,6 +27,7 @@ const categories: Record<string, string> = {
   regions: 'Regions & weather',
   enemies: 'Creatures',
   npcs: 'NPCs & dialogue',
+  emotes: 'Emotes & socials',
   races: 'Characters · Races',
   classes: 'Characters · Classes',
   items: 'Items & equipment',
@@ -49,6 +50,7 @@ const placementHelp: Record<string, string> = {
 }
 
 const sectionHelp: Record<string, string> = {
+  emotes: 'Create cosmetic actions players can type directly or use with EMOTE. HELP EMOTES lists enabled entries. Messages support {actor}; targeted messages also support {target}. Emotes do not trigger NPC dialogue or combat. Save world changes to apply your edits.',
   rare_loot: 'Each eligible defeated enemy gets one independent bonus roll alongside normal loot. Default: 0.1% (about 1 in 1000 kills), enemy level 10 or higher. This is an average, not a guarantee. A successful roll chooses one eligible item by weight. Captured or released creatures give no special drop. All pool items must be drop-only weapons or armor; shops cannot stock them. Full bags or excess weight leave the item on the ground.',
   learning: 'Characters start with one ability and earn points at the configured level interval: by default, one point at levels 5, 10, 15 and so on. Existing learned abilities remain; available points use the allowance minus points already spent. Set starting abilities in Classes and learning costs in Skills & spells.',
   mana: 'Valid paid casts train mana capacity. Damage and healing spells and magical equipment also earn their own practice. Enemies at or above character level award extra practice, with a further bonus for harder enemies. Lower-level enemies still give base practice. Set starting mana and growth in Characters · Classes, spell costs in Skills & spells, and enemy levels in Creatures.',
@@ -79,7 +81,7 @@ const createKinds: Option[] = [
   ['room', 'Room / place'], ['weapon', 'Weapon'], ['armor', 'Armor'], ['consumable', 'Healing potion'],
   ['light', 'Light / lantern'], ['key', 'Key'], ['chest', 'Storage chest'], ['cage', 'Creature cage'],
   ['loot', 'Other item / treasure'], ['enemy', 'Enemy'], ['race', 'Race'], ['class', 'Class'], ['skill', 'Skill'],
-  ['npc', 'NPC / person'], ['status_effect', 'Status effect'], ['recipe', 'Cooking recipe'],
+  ['npc', 'NPC / person'], ['emote', 'Emote / social'], ['status_effect', 'Status effect'], ['recipe', 'Cooking recipe'],
 ]
 
 function CoreFields({ section, current, obj }: { section: string; current: string; obj: Record<string, any> }) {
@@ -91,6 +93,7 @@ function CoreFields({ section, current, obj }: { section: string; current: strin
     case 'races': return <RaceEditor race={obj} />
     case 'classes': return <ClassEditor cls={obj} />
     case 'skills': return <SkillEditor skill={obj} id={current} />
+    case 'emotes': return <EmoteEditor emote={obj} />
     default: return null
   }
 }
@@ -162,7 +165,7 @@ export function AdminApp() {
     try {
       await api('/api/state') // issues the token needed to save
       const [w, s] = await Promise.all([api<World>('/api/world'), api<Schema>('/api/editor-schema')])
-      for (const group of ['regions', 'status_effects', 'npcs', 'recipes', 'revision']) w[group] ??= {}
+      for (const group of ['regions', 'status_effects', 'npcs', 'recipes', 'emotes', 'revision']) w[group] ??= {}
       MapTools.ensureMetadata(w)
       world.current = w
       schema.current = s

@@ -58,7 +58,7 @@ const sectionHelp: Record<string, string> = {
   enemies: 'Dodge chance is a percentage: 20 means a 20% chance to avoid a successful basic attack or Bash. A dodge prevents all damage. Missing values mean 0%. Loot weights are relative: a weight of 3 is three times as likely as a weight of 1. One entry is chosen per victory. Saving preserves current enemy health (capped to any lower maximum) and respawn times. Capture requires low health; resistance reduces the skill’s success chance.',
   items: 'Weapon damage is added to a character’s base attack. Worn armor pieces and a held shield add protection against each incoming hit. Weight includes equipped gear and container contents; class carrying capacity grows by level. Shop purchase price is shown; resale pays half.',
   settings: 'Probabilities run from 0 to 1: 0.10 means 10%. Attack interval sets the shared combat pulse. Every ready player and enemy can attack in the same pulse; each basic attack recovers for two pulses, longer when slowed.',
-  races: 'Race HP bonus is added to class health. Races without magic cannot choose classes that require it or use spells, enchanting, magical equipment or scrolls.',
+  races: 'Race HP bonus is added to class health. Races without magic cannot choose classes that require it or use spells, enchanting or magical equipment. A separate recall-scroll exception is enabled for Orcs by default. Recall level limits, combat and room restrictions still apply.',
   classes: 'Set base HP and damage; assign skills in the Skills section. Classes that require magic are unavailable to races without magic.',
   skills: 'Create working damage, healing, or knockout skills. Eligibility requires the selected class and race. The unlock level is the earliest level when players can spend points to learn it. Any includes future choices. Empty restricted lists allow nobody.',
   raw: 'Advanced editor for the complete world, including starting equipment and the working title. Prefer the forms for everyday changes.',
@@ -114,6 +114,7 @@ function RecordForm({ section, current, world, schema }: { section: string; curr
         <p className="text-sm text-muted-foreground">
           All values below are live game rules. Changes apply after Save world changes. Chance fields marked % use 0–100;
           fractions use 0–1. Existing cooldown deadlines and spawn timers keep their scheduled time.
+          {' '}Recall scrolls are reusable below the first recall level, single-use until the second, and unusable from the second level onward. Reusable scrolls and attempts above the level limit are never consumed.
         </p>
       )}
       {section !== 'revision' &&

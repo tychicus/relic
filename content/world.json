@@ -125,6 +125,7 @@
       "name": "Orc",
       "hp_bonus": 5,
       "magic_allowed": false,
+      "recall_without_magic": true,
       "description": "Hardy fighters who rely on strength and cunning. Orcs have no affinity for magic."
     }
   },
@@ -4787,7 +4788,7 @@
       "name": "Recall scroll",
       "kind": "consumable",
       "price": 150,
-      "description": "USE RECALL SCROLL to return to Center Square outside combat. A blocked recall preserves the scroll by default.",
+      "description": "USE RECALL SCROLL to return to Center Square outside combat. Reusable at levels 1-2, consumed on use at levels 3-29, and unusable from level 30. Combat and room blocks preserve the scroll by default.",
       "heal": 0,
       "recall": true,
       "weight": 0.5
@@ -6101,7 +6102,9 @@
       "description": "A brass badger above the door insists, in tiny letters, that it is not a piggy bank. Inside, crooked towers of ledgers surround a polished counter and a humming relic vault. The banker sorts coins into teacups while arguing with a clock that has thirteen hands. BALANCE checks your account; DEPOSIT and WITHDRAW accept an amount or ALL.",
       "safe": true,
       "bank_service": true,
-      "exits": { "east": "south_street" },
+      "exits": {
+        "east": "south_street"
+      },
       "objects": {
         "vault": "Blue threads of light recognize each depositor. The vault releases gold only to the character who owns the account.",
         "clock": "Thirteen hands disagree with one another. A label reads: INTERESTING, BUT NOT INTEREST-BEARING.",
@@ -6109,7 +6112,11 @@
       },
       "region": "Town",
       "code": "TOWN-009",
-      "map_position": [-1, 1, 0]
+      "map_position": [
+        -1,
+        1,
+        0
+      ]
     },
     "jakes_critters": {
       "name": "Jake's Critters",
@@ -6155,7 +6162,8 @@
     "gold": 30,
     "inventory": [
       "potion",
-      "potion"
+      "potion",
+      "recall_scroll"
     ],
     "equipment": {
       "weapon": "rusted_sword",
@@ -6223,6 +6231,8 @@
     "perception_distance_penalty": 20,
     "food_cooldown": 8,
     "food_in_combat": false,
+    "recall_reusable_below_level": 3,
+    "recall_disabled_from_level": 30,
     "recall_failure_consumes": false,
     "corpse_seconds": 300,
     "player_bodies": true,
@@ -6349,12 +6359,31 @@
       "room": "brass_badger_bank",
       "appearance": "A narrow man in a violet waistcoat wears three pairs of spectacles and keeps a brass spoon tucked behind each ear.",
       "description": "Osric addresses every coin as 'Professor' and insists the vault is shy. He counts flawlessly while wearing his ledger upside down on a stand.",
-      "interactions": ["look", "talk"],
+      "interactions": [
+        "look",
+        "talk"
+      ],
       "dialogue": [
-        { "phrase": "hello", "response": "Welcome, welcome! Wipe your boots and introduce your gold. The vault dislikes strangers, but remembers its depositors perfectly." },
-        { "phrase": "bank", "response": "BALANCE, DEPOSIT 20, WITHDRAW 20! ALL works too. Your account follows your identity, not your name or your face. Especially not your face." },
-        { "phrase": "death", "response": "Death is a dreadful accountant. Your purse stays with your body, but gold deposited here remains yours. Come back in whatever state you find yourself." },
-        { "phrase": "clock", "response": "Thirteen hands, and not one has stolen a penny. An exemplary employee." }
+        {
+          "phrase": "hello",
+          "response": "Welcome, welcome! Wipe your boots and introduce your gold. The vault dislikes strangers, but remembers its depositors perfectly."
+        },
+        {
+          "phrase": "bank",
+          "response": "BALANCE, DEPOSIT 20, WITHDRAW 20! ALL works too. Your account follows your identity, not your name or your face. Especially not your face."
+        },
+        {
+          "phrase": "death",
+          "response": "Death is a dreadful accountant. Your purse stays with your body, but gold deposited here remains yours. Come back in whatever state you find yourself."
+        },
+        {
+          "phrase": "clock",
+          "response": "Thirteen hands, and not one has stolen a penny. An exemplary employee."
+        },
+        {
+          "phrase": "Why are you wearing spoons?",
+          "response": "... Why not... "
+        }
       ],
       "default_response": "Ask me about the bank, death, or that suspiciously punctual clock."
     },

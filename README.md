@@ -1,4 +1,4 @@
-# Relic Frontier v0.9.0
+# Relic Frontier v0.9.1
 
 A local, editable, keyboard-driven fantasy RPG with relic technology.
 Python 3.11+ and the standard library are the only game requirements.
@@ -19,7 +19,8 @@ Stop any old game with **Ctrl+C** in its launcher. On Windows, open
 Play at http://127.0.0.1:8765 and edit at http://127.0.0.1:8765/admin.
 Check the displayed version; refresh with Ctrl+F5 if the browser is stale.
 
-Read **UPDATE_v0.9.0.txt** for the full update guide, editable balance values,
+Read **UPDATE_v0.9.1.txt** for the wider layout and screen controls.
+Read **UPDATE_v0.9.0.txt** for the full mechanics guide, editable balance values,
 new commands and intentional limitations. **CHANGELOG.md** records the release
 and verification. Older UPDATE files in docs/history describe earlier releases.
 
@@ -36,9 +37,11 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   spends earned points to learn or improve it. One point is earned at levels 5, 10,
   15 and every fifth level through 100. SKILLS lists learned abilities; CAST [skill] uses one.
   Existing learned abilities remain; available points use the new allowance minus points spent.
-  Orcs start with +5 HP and cannot use magic, including spells, enchanting, magical
-  equipment or recall scrolls. They can choose Warrior or Rogue; their HP bonus and
-  magic restriction are editable under Races. The point interval is editable under Learning.
+  Orcs start with +5 HP and cannot use spells, enchanting or magical equipment.
+  Recall scrolls are their one magic-item exception, usable at levels 1–29 outside
+  combat and rooms that block recall. They can choose Warrior or Rogue; their HP
+  bonus, magic restriction and recall exception are editable under Races.
+  The point interval is editable under Learning.
   Warriors can study ordinary magic at a strong penalty; enchanting is mage-only.
   Mages face strong penalties with martial techniques. Stronger skills unlock later.
 - Character, spell, magical-equipment and mana progression reach level 100.
@@ -60,7 +63,15 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
   (+bonus) with a glow cue. SKILLS shows the slowly trained enchanting level.
   Individual magical equipment also earns permanent XP: weapons through attacks
   and armor through hits received while protecting you. Inspect an item to see
-  its level and progress. Recall scrolls remain single-use.
+  its level and progress.
+- New characters start with one recall scroll. At levels 1–2 it can be reused
+  without being consumed. From level 3 through 29, each successful recall uses
+  one scroll, including the starter scroll; buy or find replacements. At level
+  30 and above, recall scrolls cannot be used and an attempt does not consume
+  one. These rules apply to every race, including Orcs. Combat and recall-disabled
+  rooms still block recall. Reusable scrolls survive all blocked attempts.
+  Both level thresholds and consumption on combat/room failure are adjustable
+  under Crafting & balance. Existing characters keep their current inventory.
 - LOOK [object], UNLOCK [container], PUT [item] IN CHEST [number],
   GET [item] FROM CHEST [number], PUT [creature] IN CAGE [number], RELEASE CAGE
   [number], and SAY [phrase] TO [creature/cage/NPC] retain exploration/storage.

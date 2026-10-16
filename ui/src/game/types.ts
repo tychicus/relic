@@ -137,10 +137,12 @@ export interface Choice {
   description?: string
   hp_bonus?: number
   magic_allowed?: boolean
+  recall_without_magic?: boolean
   available_classes?: string[]
 }
 
 export interface Snapshot {
+  recall_rules?: { reusable_below: number; disabled_from: number; starting_scroll: boolean }
   learning_enabled?: boolean
   learning_schedule?: string
   title: string

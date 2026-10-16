@@ -1,3 +1,39 @@
+# Unreleased — Starter recall scrolls and level limits
+
+- New characters receive one recall scroll. Scrolls are reusable at levels 1–2,
+  single-use at levels 3–29, and unusable from level 30. The starter scroll becomes
+  single-use at level 3; replacements must be bought or found. Existing characters
+  retain their inventory, with no extra scroll granted on load.
+- Orcs can use recall scrolls as their only magic-item exception, subject to the
+  same level limits. Spells, enchanting and other magic items remain blocked.
+- Combat and room restrictions remain. Reusable scrolls are never consumed by
+  a blocked attempt, even if failure consumption is enabled. Level-limit denials
+  also preserve the scroll. Regular scrolls follow the existing failure setting.
+- Added a separate race option in the owner editor for the recall exception and
+  editable recall level thresholds under Crafting & balance. Updated character
+  creation, inventory guidance, HELP and the scroll description; Use is disabled
+  once a character reaches the configured cutoff.
+- Validation: all 280 Python tests, both JavaScript helper suites and the UI
+  production build passed. Disposable browser characters verified repeated
+  level-1 recall, level-3 consumption, level-30 command rejection and disabled
+  Use, continued Orc magic-equipment restrictions, and the owner level fields.
+
+# Relic Frontier v0.9.1 — 2026-10-15
+
+- Widened the game view to a maximum of 1760 pixels, reduced outer spacing,
+  and made the character emblem more compact to leave more room for text.
+- Desktop command entry and action buttons stay visible while the adventure
+  log, long room/shop lists and character sidebar scroll independently.
+- Room panels return to the top on entering a different room. Narrow or short
+  windows retain ordinary page scrolling.
+- Updated game, editor, launcher and package version labels to v0.9.1.
+  Gameplay rules, authored content and the save format are unchanged.
+- Validation: all 268 Python tests (including copied-save migration), both
+  JavaScript helper suites and the production UI build passed. Browser checks
+  covered desktop and narrow layouts, command entry, learning expansion,
+  equipment actions, long shop lists and resetting the room panel on movement,
+  using a disposable preview character.
+
 # Mechanics follow-up — equipment, shared combat, death recovery and banking
 
 - LOOK SELF and EQUIPMENT show all six slots, including empty and two-handed slots.

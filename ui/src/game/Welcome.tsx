@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Callout, Heading, Rule, TerminalBox } from '@/components/Terminal'
 import { Emblem } from './HeaderPanel'
-import type { Choice } from './types'
+import type { Choice, Snapshot } from './types'
 
 interface Props {
   choices?: { races: Choice[]; classes: Choice[] }
+  recallRules?: Snapshot['recall_rules']
   onCreate: (name: string, race: string, cls: string) => void
 }
 
@@ -19,7 +20,7 @@ function pick(current: string, options: Choice[], preferred: string) {
   return options[0]?.id ?? ''
 }
 
-export function Welcome({ choices, onCreate }: Props) {
+export function Welcome({ choices, recallRules, onCreate }: Props) {
   const [name, setName] = useState('')
   const [race, setRace] = useState('human')
   const [cls, setCls] = useState('warrior')
@@ -35,7 +36,7 @@ export function Welcome({ choices, onCreate }: Props) {
 
   return (
     <div className="mx-auto grid max-w-4xl gap-5 py-6">
-      <TerminalBox title="Relic Frontier v0.9.0">
+      <TerminalBox title="Relic Frontier v0.9.1">
         <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="flex flex-col items-center justify-center text-center">
             <p className="font-bold">Welcome, traveler!</p>
@@ -67,7 +68,12 @@ export function Welcome({ choices, onCreate }: Props) {
               </div>
               {!!selectedRace?.hp_bonus && <p className="text-sm text-story">Starting health bonus: +{selectedRace.hp_bonus} HP.</p>}
               {selectedRace?.description && <p className="text-sm text-muted-foreground">{selectedRace.description}</p>}
-              {selectedRace?.magic_allowed === false && <p className="text-sm text-story">Cannot use spells, enchanting, magical equipment or scrolls. Choose a class that does not require magic.</p>}
+              {selectedRace?.magic_allowed === false && <p className="text-sm text-story">
+                {selectedRace.recall_without_magic
+                  ? 'Recall scrolls are the only magic item you can use. Spells, enchanting and magical equipment remain unavailable.'
+                  : 'Cannot use spells, enchanting, magical equipment or scrolls.'}
+                {' '}Choose a class that does not require magic.
+              </p>}
               {classes.find(c => c.id === selectedClass)?.description && <p className="text-sm text-muted-foreground">{classes.find(c => c.id === selectedClass)?.description}</p>}
               <Field>
                 <FieldLabel htmlFor="name">Character name</FieldLabel>
@@ -81,6 +87,7 @@ export function Welcome({ choices, onCreate }: Props) {
             <Heading>Tips for getting started</Heading>
             <p className="mt-1 text-sm">Move with N, S, E, W, UP and DOWN. LOOK around; descriptions hide clues.</p>
             <p className="text-sm">ATTACK starts automatic combat. Type HELP for every command.</p>
+            {recallRules?.starting_scroll && <p className="mt-2 text-sm text-story">You start with a recall scroll: reusable below level {recallRules.reusable_below}, then single-use. Recall scrolls stop working at level {recallRules.disabled_from}.</p>}
           </div>
         </div>
       </TerminalBox>

@@ -90,12 +90,11 @@ class OrcsPointsTests(unittest.TestCase):
                 self.assertIn('not available to your class and race',self.g.state['log'][-1]['text'],cmd)
             self.assertFalse(any(self.g.magical_skill(s) for s in self.g.snapshot()['player_skills']))
 
-    def test_orc_scroll_and_magic_gear_rejected_without_losing_items(self):
+    def test_orc_magic_gear_rejected_without_losing_items(self):
         self.g.create('Tester','orc','warrior')
-        scroll=next(i for i,s in self.g.w['items'].items() if s.get('recall'))
         magic=next(i for i,s in self.g.w['items'].items() if s.get('magic') and s['kind'] in ('weapon','armor'))
-        iid=self.g.grant(magic);self.g.p['inventory'].extend([scroll,iid])
-        for cmd in ('recall','use '+scroll,'quaff '+scroll,'equip '+iid,'hold '+iid):
+        iid=self.g.grant(magic);self.g.p['inventory'].append(iid)
+        for cmd in ('use '+iid,'quaff '+iid,'equip '+iid,'hold '+iid):
             before=copy.deepcopy(self.g.p);instances=copy.deepcopy(self.g.state['instances'])
             self.g.command(cmd)
             self.assertEqual(self.g.p,before,cmd);self.assertEqual(self.g.state['instances'],instances,cmd)
@@ -103,6 +102,70 @@ class OrcsPointsTests(unittest.TestCase):
         inst=self.g.new_instance(dict(kind='weapon',item='iron_sword',bonus=0,enchantment=dict(bonus=2,until=2000)))
         self.g.p['inventory'].append(inst)
         with self.assertRaisesRegex(ValueError,'cannot use magic'):self.g.equip_hand(inst)
+
+    def assert_level_one_recall(self,cls):
+        self.g.create('Tester','orc',cls)
+        self.reload()
+        self.assertEqual(self.g.p['level'],1)
+        self.assertFalse(self.g.can_use_magic())
+        self.assertTrue(self.g.magical_item(self.g.item('recall_scroll')))
+        for cmd in ('recall','use recall scroll','use recall_scroll','quaff recall_scroll','eat recall_scroll'):
+            with self.subTest(cls=cls,command=cmd):
+                self.g.p.update(room='shop',hp=10,gold=123)
+                before=copy.deepcopy(self.g.p)
+                self.g.command(cmd)
+                self.assertEqual(self.g.p['room'],self.g.w['starting']['room'])
+                self.assertEqual(self.g.p['inventory'],before['inventory'])
+                for key in ('hp','mana','gold','equipment','learned_skills','cooldowns','mana_xp'):
+                    self.assertEqual(self.g.p[key],before[key],key)
+
+    def test_level_one_orc_warrior_reusable_recall_and_unchanged_stats(self):
+        self.assert_level_one_recall('warrior')
+
+    def test_level_one_orc_rogue_reusable_recall_and_unchanged_stats(self):
+        self.assert_level_one_recall('rogue')
+
+    def test_orc_recall_still_obeys_room_combat_and_failure_consumption(self):
+        self.g.create('Tester','orc','warrior')
+        self.g.p['level']=3
+        self.g.w.pop('regions',None)
+        self.g.state['spawns']['meadow']=self.g.spawn_creature('beetle','meadow')
+        for reason in ('room','combat'):
+            for consumes in (False,True):
+                with self.subTest(reason=reason,consumes=consumes):
+                    self.g.p.update(room='shop',combat=None)
+                    self.g.w['rooms']['shop']['recall_disabled']=reason=='room'
+                    if reason=='combat':
+                        self.g.p['room']='meadow';self.g.start_combat()
+                        self.assertIsNotNone(self.g.p['combat'])
+                        self.g.p['combat']['next_at']=2000
+                    self.g.w['revision']['recall_failure_consumes']=consumes
+                    self.g.p['inventory'].append('recall_scroll')
+                    count=self.g.p['inventory'].count('recall_scroll');room=self.g.p['room']
+                    self.g.command('recall')
+                    self.assertEqual(self.g.p['room'],room)
+                    self.assertEqual(self.g.p['inventory'].count('recall_scroll'),count-int(consumes))
+                    self.assertIn('Recall is blocked',self.g.state['log'][-1]['text'])
+
+    def test_recall_exception_is_owner_configurable_and_not_inherited_by_other_races(self):
+        self.g.create('Tester','orc','warrior')
+        self.g.p.update(room='shop');self.g.p['inventory'].append('recall_scroll')
+        world=copy.deepcopy(self.g.w);world['races']['orc']['recall_without_magic']=False
+        self.g.update_world(world);before=copy.deepcopy(self.g.p);self.g.command('recall')
+        self.assertEqual(self.g.p,before)
+        self.assertIn('cannot use magic',self.g.state['log'][-1]['text'])
+        world['races']['orc']['recall_without_magic']=True;self.g.update_world(world)
+        self.g.command('recall');self.assertEqual(self.g.p['room'],self.g.w['starting']['room'])
+        self.assertEqual(self.g.p['inventory'],before['inventory'])
+        world['races']['human']['magic_allowed']=False;self.g.update_world(world)
+        other=Game(self.path,':memory:',clock=lambda:1000.)
+        try:
+            other.create('Tester','human','warrior');other.p['inventory'].append('recall_scroll')
+            before=copy.deepcopy(other.p);other.command('recall');self.assertEqual(other.p,before)
+            self.assertIn('cannot use magic',other.state['log'][-1]['text'])
+        finally:other.db.close()
+        world['races']['orc']['recall_without_magic']='yes'
+        with self.assertRaises(ValueError):validate(world)
 
     def test_ordinary_items_work_and_magic_consumables_are_configurable(self):
         self.g.create('Tester','orc','warrior')

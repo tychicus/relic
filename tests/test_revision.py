@@ -105,11 +105,11 @@ class RevisionTests(unittest.TestCase):
         self.g.command('equip iron sword right');self.assertEqual(self.g.p['equipment']['weapon'],'iron_sword')
         self.g.command('equip buckler');self.assertNotIn('left_hand',self.g.p['equipment'])
     def test_recall_blocked_and_success(self):
-        self.g.p['inventory'].append('recall_scroll');self.g.p['room']='road';self.g.w['rooms']['road']['recall_disabled']=True
+        self.g.p.update(level=3,room='road');self.g.p['inventory']=['recall_scroll'];self.g.w['rooms']['road']['recall_disabled']=True
         self.g.command('recall');self.assertEqual(self.g.p['room'],'road');self.assertIn('recall_scroll',self.g.p['inventory'])
         self.g.w['rooms']['road']['recall_disabled']=False;self.g.command('recall');self.assertEqual(self.g.p['room'],'square');self.assertNotIn('recall_scroll',self.g.p['inventory'])
     def test_recall_combat_and_optional_consumption(self):
-        self.g.p['room']='meadow';self.g.p['inventory'].append('recall_scroll');self.g.start_combat();self.g.command('recall');self.assertIn('recall_scroll',self.g.p['inventory'])
+        self.g.p.update(level=3,room='meadow');self.g.p['inventory']=['recall_scroll'];self.g.start_combat();self.g.command('recall');self.assertIn('recall_scroll',self.g.p['inventory'])
         self.g.w['revision']['recall_failure_consumes']=True;self.g.command('recall');self.assertNotIn('recall_scroll',self.g.p['inventory']);self.assertEqual(self.g.p['room'],'meadow')
     def test_perception_limits_fog_and_hidden_intermediate(self):
         self.g.w['revision']['perception_chance']=100;self.g.w['revision']['perception_distance_penalty']=0

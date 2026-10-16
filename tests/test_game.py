@@ -36,7 +36,7 @@ class GameTests(unittest.TestCase):
         self.g.command('look north'); self.assertEqual(self.g.p['room'], 'square')
         self.assertIn('North Gate', self.g.state['log'][-1]['text'])
         self.g.command('east'); self.assertEqual(self.g.p['room'], 'shop')
-    def test_02_trade_equipment_potion_and_full_bag(self):
+    def test_02_trade_equipment_potion_and_unlimited_bag(self):
         self.g.command('e'); self.g.p['gold'] = 100
         self.g.command('buy iron sword'); self.g.command('equip iron sword')
         self.assertEqual(self.g.p['equipment']['weapon'], 'iron_sword')
@@ -44,8 +44,9 @@ class GameTests(unittest.TestCase):
         self.g.command('sell rusted sword'); self.assertEqual(self.g.p['gold'], 69)
         self.g.p['hp'] = 10; self.g.command('use potion'); self.assertEqual(self.g.p['hp'], 45)
         self.g.w['settings']['bag_capacity'] = len(self.g.p['inventory'])
-        before = self.g.p['gold']; self.g.command('buy potion'); self.assertEqual(self.g.p['gold'], before)
-        self.assertIn('full', self.g.state['log'][-1]['text'])
+        before = self.g.p['gold']; count = self.g.p['inventory'].count('potion'); self.g.command('buy potion')
+        self.assertEqual(self.g.p['gold'], before-self.g.w['items']['potion']['price'])
+        self.assertEqual(self.g.p['inventory'].count('potion'), count+1)
     def test_03_darkness_and_carried_lantern(self):
         self.go_meadow(); self.g.command('e'); self.g.command('drop lantern'); self.g.command('look north')
         self.assertIn('Darkness blocks', self.g.state['log'][-1]['text'])
@@ -92,12 +93,12 @@ class GameTests(unittest.TestCase):
         self.g.command('flee'); self.g.command('flee'); self.assertIn('again in', self.g.state['log'][-1]['text'])
         self.clock.advance(2); self.g.w['settings']['flee_chance'] = 1; self.g.command('flee')
         self.assertIsNone(self.g.p['combat']); self.assertNotEqual(self.g.p['room'], 'meadow')
-    def test_09_full_bag_loot_is_recoverable(self):
+    def test_09_loot_ignores_legacy_bag_limit(self):
         self.go_meadow(); self.g.w['settings']['bag_capacity'] = len(self.g.p['inventory']); self.g.w['settings']['hit_chance'] = 1
         self.g.w['enemies']['beetle']['loot'] = [{'item':'scrap','weight':1}]
         self.g.enemy()['hp'] = 1; self.g.command('attack'); self.g.tick()
-        self.assertEqual(self.g.state['ground']['meadow'], ['scrap'])
-        self.g.command('drop potion'); self.g.command('get scrap'); self.assertIn('scrap', self.g.p['inventory'])
+        self.assertNotIn('scrap', self.g.state['ground'].get('meadow', []))
+        self.assertIn('scrap', self.g.p['inventory'])
     def test_10_owner_changes_hp_and_adds_room_and_item(self):
         new = copy.deepcopy(self.g.w); new['enemies']['goblin']['hp'] = 35
         new['rooms']['tower'] = {'name':'Watchtower','description':'Above the town.','exits':{'south':'square'}}

@@ -1,7 +1,11 @@
 """Player-selected abilities, earned learning points and class affinities."""
 
 
-class Learning:
+from skill_details import SkillDetails
+from character_balance import CharacterBalance
+
+
+class Learning(CharacterBalance, SkillDetails):
     def init_learning(self):
         if not self.p:return
         needs_starter=not self.p.get('learned_skills')
@@ -28,17 +32,23 @@ class Learning:
         return self.p.get('learned_skills',{}).get(sid,0)
 
     def affinity(self,sid):
-        if not self.rules()['learning_enabled']:return dict(power=1,mana=1,practice=1)
-        category=self.w['skills'][sid].get('category','martial')
-        row=next((r for r in self.w['classes'][self.p['class']].get('affinities',[]) if r['category']==category),{})
-        return dict(power=row.get('power',1),mana=row.get('mana',1),practice=row.get('practice',1))
+        skill=self.w['skills'][sid]
+        category=skill.get('category','martial')
+        row=next((r for r in self.w['classes'][self.p['class']].get('affinities',[]) if r['category']==category),{}) if self.rules()['learning_enabled'] else {}
+        result=dict(power=row.get('power',1),mana=row.get('mana',1),practice=row.get('practice',1))
+        if self.magical_skill(skill):
+            race=self.w['races'][self.p['race']]
+            result['power']*=race.get('magic_power',1)
+            result['practice']*=race.get('magic_practice',1)
+        return result
 
-    def ability_power(self,sid):
-        rank=max(1,self.ability_rank(sid))
+    def ability_power(self,sid,rank=None):
+        rank=max(1,self.ability_rank(sid) if rank is None else rank)
         return self.affinity(sid)['power']*(1+(rank-1)*self.rules()['learning_rank_bonus'])
 
-    def skill_power(self,sid,fallback):
-        power=super().skill_power(sid,fallback)*self.ability_power(sid)
+    def skill_power(self,sid,fallback,rank=None):
+        power=super().skill_power(sid,fallback)*self.ability_power(sid,rank)
+        if self.w['skills'][sid].get('effect')=='ward':return min(self.rules()['ward_cap'],max(0,round(power)))
         if self.w['skills'][sid].get('effect')=='knockout':return min(100,max(0,power))
         return max(1 if self.w['skills'][sid].get('effect')=='heal' else 0,round(power))
 
@@ -70,9 +80,10 @@ class Learning:
             self.log(f'Learning points: {self.ability_points()}. Earn {self.learning_schedule()} LEARN <ability> learns it or improves its rank.')
             for sid,s in sorted(self.w['skills'].items(),key=lambda row:(row[1].get('unlock_level',1),row[1]['name'])):
                 if not self.skill_eligible(sid):continue
-                rank=self.ability_rank(sid);cap=s.get('max_rank',5);cost=s.get('learn_cost',1)
-                affinity=self.affinity(sid)
-                self.log(f'{s["name"]}: learn at character level {s.get("unlock_level",1)}; rank {rank}/{cap}; {cost} point(s) per rank; {affinity["power"]*100:g}% class power, {affinity["mana"]:g}x mana cost. LEARN {sid}')
+                preview=self.next_skill_rank(sid)
+                if preview:
+                    self.log(f'{s["name"]} — next rank {preview["rank"]}: {preview["cost"]} point(s), character level {preview["required_level"]}.\n'+'\n'.join(preview['lines'])+f'\nHELP {sid}; LEARN {sid}')
+                else:self.log(s['name']+': maximum rank.')
             return
         if self.p['combat']:raise ValueError('Finish combat before choosing abilities.')
         sid=self.match_skill(target);s=self.w['skills'][sid]
@@ -95,13 +106,10 @@ class Learning:
         return super().extra_command(verb,target)
 
     def skill_command(self,verb,target):
-        if self.rules()['learning_enabled'] and verb in ('skills','abilities'):
-            self.log(f'Known abilities — {self.ability_points()} learning point(s) available. Use LEARN for choices.')
+        if verb in ('skills','abilities'):
+            self.log(f'Known abilities — {self.ability_points()} learning point(s) available. Use LEARN for choices.' if self.rules()['learning_enabled'] else 'Available abilities:')
             for sid in self.available_skill_ids():
-                s=self.w['skills'][sid];progress=self.spell_progress(sid)
-                action='Improves automatic attacks' if s.get('passive') else f'CAST {sid}; {self.mana_cost(sid)} mana'
-                power=f'; mastery {progress["level"]}, power {self.skill_power(sid,progress["power"])}' if progress else ''
-                self.log(f'{s["name"]}: rank {self.ability_rank(sid)}/{s.get("max_rank",5)}{power}. {action}.')
+                self.skill_help(sid)
             return True
         return super().skill_command(verb,target)
 
@@ -109,6 +117,7 @@ class Learning:
         result=super().extra_snapshot(result)
         if self.p:
             enabled=self.rules()['learning_enabled']
+            result['player']['ward']=self.active_ward()
             result['player']['ability_points']=self.ability_points()
             result['learning_enabled']=enabled
             result['learning_schedule']=self.learning_schedule()
@@ -120,6 +129,9 @@ class Learning:
                 if s.get('magic_progress'):
                     s['magic_progress']['power']=self.skill_power(s['id'],s['magic_progress']['power'])
                     if s['magic_progress']['effect_damage'] is not None:s['magic_progress']['effect_damage']=max(0,round(s['magic_progress']['effect_damage']*self.ability_power(s['id'])))
+                facts=self.skill_facts(s['id'])
+                s.update(description='\n'.join(facts['lines']), details=facts,
+                         next_rank=self.next_skill_rank(s['id']), recovery_lines=self.skill_recovery_lines(s['id']))
         return result
 
     def check_live_references(self,w):

@@ -220,7 +220,7 @@ class MagicProgressionTests(unittest.TestCase):
         self.assertEqual(self.g.p['spell_xp']['fireball'],252450)
         self.g.command('skills')
         text='\n'.join(row['text'] for row in self.g.state['log'])
-        self.assertIn('Fireball: Level 100',text)
+        self.assertIn('Spell mastery: 100/100; maximum level',text)
         progress=next(s for s in self.g.snapshot()['player_skills'] if s['id']=='fireball')['magic_progress']
         self.assertIsNone(progress['next_xp'])
         self.assertEqual(progress['power'],214)

@@ -33,7 +33,7 @@ def validate(w):
     for key in ('hit_chance', 'flee_chance', 'gold_loss', 'item_loss_chance'):
         require(number(s.get(key), 0, 1), f'{key} must be between 0 and 1.')
     require(number(s.get('attack_interval'), .25, 30), 'Attack interval must be 0.25–30 seconds.')
-    for key in ('bag_capacity', 'hp_per_level', 'damage_per_level'):
+    for key in ('hp_per_level', 'damage_per_level'):
         require(number(s.get(key), 1, 1000, True), f'{key} must be a positive integer.')
     xp = s.get('level_xp')
     require(isinstance(xp, list) and 1 <= len(xp) <= 100 and xp[0] == 0 and all(number(x, 0, 10000000, True) for x in xp) and all(a < b for a, b in zip(xp, xp[1:])), 'Level XP must start at 0 and increase strictly.')
@@ -87,7 +87,6 @@ def validate(w):
     require(a.get('room') in w['rooms'] and w['rooms'][a['room']].get('safe'), 'Starting room must be safe.')
     require(number(a.get('gold'), 0, 100000, True), 'Starting gold must be a nonnegative integer.')
     require(isinstance(a.get('inventory'), list) and all(i in w['items'] for i in a['inventory']), 'Invalid starting inventory.')
-    require(len(a['inventory']) <= s['bag_capacity'], 'Starting inventory exceeds bag capacity.')
     from equipment import BODY_SLOTS, SLOT_NAMES
     require(isinstance(a.get('equipment'), dict) and not set(a['equipment'])-set(SLOT_NAMES), 'Starting equipment has an unknown slot.')
     for slot,iid in a['equipment'].items():
@@ -144,6 +143,7 @@ class LegacyGame(PlayerHelp, Abilities):
             if not self.can_use_magic(race) and any(self.magical_item(self.w['items'][iid]) for iid in a['equipment'].values()):
                 raise ValueError('This race needs nonmagical starting equipment. Change the starting equipment in the owner editor.')
             self.p = self.state['player'] = {'id': 'player-'+uuid.uuid4().hex, 'name': name, 'race': race, 'class': character_class, 'level': 1, 'xp': 0, 'hp': self.w['classes'][character_class]['hp'] + self.w['races'][race]['hp_bonus'], 'gold': a['gold'], 'room': a['room'], 'inventory': a['inventory'][:], 'equipment': dict(a['equipment']), 'cooldowns': {}, 'combat': None, 'learned_skills': {}, 'ability_points_spent': 0}
+            self.p['hp'] = self.max_hp()
             self.init_adventure()
             self.log(f'Welcome, {name}. Your story begins in Center Square.', 'story')
             self.state['announced_skills']=[]
@@ -242,12 +242,8 @@ class LegacyGame(PlayerHelp, Abilities):
         if choice:
             item = self.w['items'][choice]
             choice = self.grant(choice)
-            if len(self.p['inventory']) < self.w['settings']['bag_capacity'] and self.can_carry(choice):
-                self.p['inventory'].append(choice)
-                self.log(f'Loot: {item["name"]}' + (' — uncommon!' if item.get('rarity') else '.'), 'reward')
-            else:
-                self.state['ground'].setdefault(self.p['room'], []).append(choice)
-                self.log(f'You cannot carry more. {item["name"]} remains on the ground. Use GET when you have room and weight capacity.', 'reward')
+            self.p['inventory'].append(choice)
+            self.log(f'Loot: {item["name"]}' + (' — uncommon!' if item.get('rarity') else '.'), 'reward')
         level = sum(self.p['xp'] >= x for x in self.w['settings']['level_xp'])
         if level > self.p['level']:
             self.p['level'] = level; self.p['hp'] = self.max_hp()
@@ -322,7 +318,10 @@ class LegacyGame(PlayerHelp, Abilities):
             try:
                 room = self.w['rooms'][self.p['room']]
                 if self.guide_command(verb, target) or self.skill_command(verb, target) or self.extra_command(verb, target):
-                    return self.finish()
+                    result = self.finish()
+                    if verb in ('show', 'display') and target == 'map':
+                        result['ui_action'] = 'show_map'  # Reply-only event; never persisted or replayed by polling.
+                    return result
                 if verb in ('north', 'south', 'east', 'west', 'up', 'down'):
                     if self.p['combat']:
                         raise ValueError('You are fighting. Use FLEE to attempt an escape.')
@@ -367,7 +366,6 @@ class LegacyGame(PlayerHelp, Abilities):
                         if item.get('enchantment_description'):
                             lines[-1] += '\n' + item['enchantment_description']
                     self.log(verb.title() + ':\n' + ('\n'.join(lines) or 'empty'))
-                    self.log(f'Carrying {self.carried_weight():g}/{self.carry_capacity():g} lb, including worn equipment and container contents.')
                 elif verb in ('buy', 'sell', 'equip', 'unequip', 'drop', 'get'):
                     if self.p['combat']:
                         raise ValueError('Finish the fight before trading or rearranging items.')
@@ -379,14 +377,9 @@ class LegacyGame(PlayerHelp, Abilities):
                     if verb == 'unequip':
                         if target not in self.p['equipment']:
                             raise ValueError('Use UNEQUIP WEAPON or UNEQUIP ARMOR.')
-                        if len(inv) >= self.w['settings']['bag_capacity']:
-                            raise ValueError('Your bag is full.')
                         inv.append(self.p['equipment'].pop(target)); self.log('Equipment returned to your bag.'); return self.finish()
                     candidates = room.get('shop', []) if verb == 'buy' else self.visible_ground() if verb == 'get' else inv
                     i = self.match(target, candidates); item = self.item(i)
-                    if verb in ('buy', 'get') and len(inv) >= self.w['settings']['bag_capacity']:
-                        raise ValueError('Your bag is full.')
-                    if verb in ('buy','get'):self.require_carry(i)
                     if verb == 'get' and not self.visible():
                         raise ValueError('It is too dark to find items on the ground.')
                     if verb == 'buy':
@@ -454,11 +447,11 @@ class LegacyGame(PlayerHelp, Abilities):
                 result['creation']={group:[{'id':i,**value} for i,value in sorted(self.w[group].items(),key=lambda x:x[1]['name'].casefold())] for group in ('races','classes')}
                 for race in result['creation']['races']:
                     race['available_classes']=[cid for cid in self.w['classes'] if self.class_eligible(race['id'],cid)]
+                    race['class_stats']={cid:self.character_stats(race['id'],cid) for cid in race['available_classes']}
                 return result
             p = copy.deepcopy(self.p); p['max_hp'] = self.max_hp()
             thresholds = self.w['settings']['level_xp']; p['next_xp'] = thresholds[p['level']] if p['level'] < len(thresholds) else None
             p['level_start_xp'] = thresholds[min(p['level'] - 1, len(thresholds) - 1)]
-            p['bag_capacity'] = self.w['settings']['bag_capacity']
             r = self.w['rooms'][p['room']]; light = self.visible(); e = self.enemy()
             result.update(player=p, room={'name': r['name'] if light else 'Darkness', 'description': r['description'] if light else 'You cannot see. Carry a lantern to light the way.', 'exits': list(r['exits']), 'objects': [], 'safe': r.get('safe', False), 'shop': r.get('shop', []), 'rest': r.get('rest', False)}, items=self.w['items'], ground=self.visible_ground() if light else [], enemy=({'name': self.w['enemies'][e['type']]['name'], 'hp': e['hp'], 'max_hp': self.w['enemies'][e['type']]['hp'], 'aggressive': self.w['enemies'][e['type']]['aggressive']} if e and light else None), skills=self.w['skills'])
             return self.extra_snapshot(result)
@@ -479,8 +472,6 @@ class LegacyGame(PlayerHelp, Abilities):
             raise ValueError('Cannot remove a room containing dropped items.')
         if len(w['settings']['level_xp']) < p['level']:
             raise ValueError('Cannot remove the saved character’s level.')
-        if len(p['inventory']) > w['settings']['bag_capacity']:
-            raise ValueError('Bag capacity is smaller than the saved inventory.')
 
     def update_world(self, new):
         with self.lock:

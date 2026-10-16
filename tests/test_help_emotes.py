@@ -87,7 +87,7 @@ class HelpEmoteTests(unittest.TestCase):
     def test_passive_help_and_syntax_do_not_suggest_casting(self):
         self.assertIn('is passive; it cannot be cast', self.command('SYNTAX SWORDPLAY'))
         self.assertIn('automatic-attack damage', self.command('HELP SWORDPLAY'))
-        self.assertNotIn('Mana:', self.command('HELP SWORDPLAY'))
+        self.assertIn('Passive: 0 mana; no cooldown or shared recovery.', self.command('HELP SWORDPLAY'))
 
     def test_skill_and_topic_help_aliases(self):
         self.assertEqual(self.command('HELP QUICK STRIKE'), self.command('HELP QUICKSTRIKE'))

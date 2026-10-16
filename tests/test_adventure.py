@@ -124,10 +124,11 @@ class AdventureTests(unittest.TestCase):
         e=self.weakened();self.g.w['enemies']['vampire']['capture_resistance']=100
         self.g.command('knockout');self.assertFalse(e.get('unconscious'));self.assertIsNotNone(self.g.p['combat'])
         self.g.command('knockout');self.assertIn('ready in',self.g.state['log'][-1]['text'])
-    def test_full_bag_keeps_unconscious_creature(self):
+    def test_legacy_bag_limit_does_not_prevent_capture(self):
         e=self.weakened();self.g.command('knockout');self.g.w['settings']['bag_capacity']=len(self.g.p['inventory'])
-        self.g.command('get vampire');self.assertTrue(e['unconscious']);self.assertGreater(e['hp'],0)
-        self.reload();self.assertIsNone(self.g.enemy());self.assertIsNotNone(self.g.snapshot()['unconscious'])
+        self.g.command('get vampire');self.assertFalse(e['unconscious']);self.assertEqual(e['hp'],0)
+        iid=self.g.p['inventory'][-1];self.assertEqual(self.g.state['instances'][iid]['enemy'],'vampire')
+        self.reload();self.assertIn(iid,self.g.p['inventory']);self.assertIsNone(self.g.enemy())
     def test_cages_stack_one_type_move_reload_and_sell_guards(self):
         cage=self.cage();other=self.cage();number=self.g.state['instances'][cage]['number']
         self.captive();self.captive();self.g.command(f'put vampire in cage {number}');self.g.command(f'put vampire in cage {number}')

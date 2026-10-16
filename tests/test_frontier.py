@@ -52,11 +52,11 @@ class FrontierTests(unittest.TestCase):
         chest=self.chest();cage=self.cage(3,'beetle');self.g.command('put '+cage+' in '+chest)
         self.g.command('drop '+chest);self.g.command('east');self.g.command('west');self.g.command('get '+chest);self.reload()
         self.g.command('get '+cage+' from '+chest);self.assertIn(cage,self.g.p['inventory']);self.assertEqual(self.g.state['instances'][cage]['count'],3)
-    def test_chest_capacity_full_bag_nesting_and_sale_guards(self):
+    def test_chest_capacity_unlimited_bag_nesting_and_sale_guards(self):
         chest=self.chest();other=self.chest();self.g.command('put '+other+' in '+chest);self.assertIn('cannot',self.log())
         self.g.state['instances'][chest]['contents']=['potion']*30
         self.g.command('put potion in '+chest);self.assertIn('full',self.log());self.assertEqual(len(self.g.state['instances'][chest]['contents']),30)
-        self.g.w['settings']['bag_capacity']=len(self.g.p['inventory']);self.g.command('get potion from '+chest);self.assertIn('full',self.log());self.assertEqual(len(self.g.state['instances'][chest]['contents']),30)
+        self.g.w['settings']['bag_capacity']=len(self.g.p['inventory']);self.g.command('get potion from '+chest);self.assertIn('Retrieved',self.log());self.assertEqual(len(self.g.state['instances'][chest]['contents']),29)
         self.g.p['room']='shop';self.g.command('sell '+chest);self.assertIn(chest,self.g.p['inventory'])
     def test_stored_items_are_protected_against_editor_removal(self):
         chest=self.chest();self.g.state['instances'][chest]['contents']=['rubber_boots']

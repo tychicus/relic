@@ -57,7 +57,7 @@ class MechanicsUpdateTests(unittest.TestCase):
         self.assertEqual(len(xp), 100)
         self.assertEqual(xp[:8], [0,30,100,250,550,1100,2200,4500])
         self.assertTrue(all(a<b for a,b in zip(xp,xp[1:])))
-        self.assertEqual(self.g.max_hp(),55)
+        self.assertEqual(self.g.max_hp(),50)
         self.assertIn('fireball',self.g.available_skill_ids())
         self.assertEqual(self.g.skill_power('fireball',0),16)
         self.g.p['level']=10

@@ -62,15 +62,15 @@ class OrcsPointsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'magic'):self.g.create('Tester','orc','mage')
         self.assertIsNone(self.g.p)
         self.g.create('Tester','orc','warrior')
-        self.assertEqual(self.g.p['hp'],70);self.assertEqual(self.g.max_hp(),70)
+        self.assertEqual(self.g.p['hp'],77);self.assertEqual(self.g.max_hp(),77)
         self.assertEqual(self.g.available_skill_ids(),['swordplay'])
         self.g.p.update(level=100,mana_xp=1000000);self.reload()
-        self.assertEqual(self.g.max_hp(),70+99*12)
+        self.assertEqual(self.g.max_hp(),round((70+99*12)*1.1))
         self.assertEqual(self.g.max_mana(),0);self.assertEqual(self.g.p['mana'],0)
 
     def test_orc_rogue_and_nonmagical_learning(self):
         self.g.create('Tester','orc','rogue')
-        self.assertEqual(self.g.max_hp(),self.g.w['classes']['rogue']['hp']+5)
+        self.assertEqual(self.g.max_hp(),round((self.g.w['classes']['rogue']['hp']+5)*1.1))
         self.assertEqual(self.g.available_skill_ids(),['backstab'])
         self.g.p['level']=5;self.g.learn_ability('quickstrike')
         self.assertEqual(self.g.ability_rank('quickstrike'),1)
@@ -180,7 +180,7 @@ class OrcsPointsTests(unittest.TestCase):
     def test_owner_can_enable_orc_magic_and_adjust_hp(self):
         w=copy.deepcopy(self.g.w);w['races']['orc'].update(magic_allowed=True,hp_bonus=7)
         self.g.update_world(w);self.g.create('Tester','orc','mage')
-        self.assertEqual(self.g.max_hp(),62);self.assertGreater(self.g.max_mana(),0)
+        self.assertEqual(self.g.max_hp(),63);self.assertGreater(self.g.max_mana(),0)
         self.assertEqual(self.g.available_skill_ids(),['fireball'])
 
     def test_owner_cannot_disable_magic_under_equipped_magical_gear(self):

@@ -278,7 +278,7 @@ class EnchantingTests(unittest.TestCase):
         self.g.command('skill enchant rusted sword')
         self.assertTrue(self.g.item(self.g.p['equipment']['weapon'])['enchanted'])
         self.g.command('skills')
-        self.assertIn('skill level 1',self.log())
+        self.assertIn('Crafting mastery: 1/',self.log())
         self.assertIn('2/100 XP',self.log())
         self.assertEqual(self.g.snapshot()['player']['enchanting']['enchanting']['level'],1)
 

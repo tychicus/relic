@@ -93,16 +93,12 @@ class PlayerBodies:
             self.p['gold'] += gold
             body['gold'] = 0
         for iid in items if item_name != 'gold' else []:
-            if len(self.p['inventory']) >= self.w['settings']['bag_capacity'] or not self.can_carry(iid):
-                if item_name != 'all':
-                    raise ValueError('Your bag or carrying capacity is full. The item stays in your body.')
-                continue
             body['items'].remove(iid)
             self.p['inventory'].append(iid)
             recovered += 1
         self.log(f'Recovered {recovered} item(s) and {gold} gold from body {body["number"]}.')
         if body['items']:
-            self.log('Items remain in your body. Equip, drop or store gear to make room, then GET ALL FROM BODY '+str(body['number'])+'.')
+            self.log('Items remain in your body. GET ALL FROM BODY '+str(body['number'])+'.')
         else:
             self.log('No items remain in the body.')
 

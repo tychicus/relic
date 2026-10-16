@@ -231,7 +231,6 @@ class Adventure:
                 name=self.w['enemies'][e['type']]['name']
                 if target and (target in name.lower() or target==e['type']):
                     if self.p['combat']:raise ValueError('Finish combat before picking up a creature.')
-                    if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full; the unconscious creature remains here.')
                     iid=self.new_instance({'kind':'captive','enemy':e['type']})
                     self.p['inventory'].append(iid);e['hp']=0;e['respawn_at']=self.clock()+self.respawn_delay(self.p['room'], e['type'])
                     e['unconscious']=False;self.log(f'You pick up {name}. No kill rewards are awarded.');return True

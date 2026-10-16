@@ -21,9 +21,9 @@ def validate_magic(w):
             if type(gain) is not int or not 1 <= gain <= 10000:
                 raise ValueError(label + ': XP per use must be a whole number from 1 to 10000.')
             if spec.get('magic'):
-                allowed = spec.get('effect', 'damage') in ('damage', 'heal', 'knockout') if group == 'skills' else spec['kind'] in ('weapon', 'armor')
+                allowed = spec.get('effect', 'damage') in ('damage', 'heal', 'knockout', 'ward') if group == 'skills' else spec['kind'] in ('weapon', 'armor')
                 if not allowed:
-                    raise ValueError(label + ': use magic progression for damage, healing or knockout spells, or weapons and armor. Enchanting has its own progression.')
+                    raise ValueError(label + ': use magic progression for damage, healing, ward or knockout spells, or weapons and armor. Enchanting has its own progression.')
             levels = spec.get('magic_levels')
             if levels is None and not spec.get('magic'):
                 continue
@@ -36,7 +36,7 @@ def validate_magic(w):
                 xp, power = row.get('xp'), row.get('power')
                 if type(xp) is not int or not 0 <= xp <= 1000000000 or xp <= previous or (index == 0 and xp != 0):
                     raise ValueError(label + ': total XP must start at 0 and increase at every level.')
-                limit = 100 if group == 'skills' and spec.get('effect') == 'knockout' else 10000
+                limit = (90 if spec.get('effect') == 'ward' else 100 if spec.get('effect') == 'knockout' else 10000) if group == 'skills' else 10000
                 minimum = 1 if group == 'skills' and spec.get('effect') == 'heal' else 0
                 if type(power) is not int or not minimum <= power <= limit:
                     raise ValueError(label + f': level power must be a whole number from {minimum} to {limit}.')

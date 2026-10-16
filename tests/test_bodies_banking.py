@@ -75,22 +75,17 @@ class BodiesBankingTests(unittest.TestCase):
         self.assertEqual(self.g.p['gold'], gold)
         self.assertEqual(body['items'], [])
 
-    def test_capacity_limited_recovery_leaves_items_safe(self):
+    def test_recovery_ignores_legacy_capacity_and_weight_limits(self):
         body = self.die(); original = Counter(body['items']); self.g.p['room'] = 'meadow'
         self.g.w['settings']['bag_capacity'] = 1
-        self.g.command('get all from body')
-        self.assertEqual(len(self.g.p['inventory']), 1)
-        self.assertEqual(Counter(body['items']+self.g.p['inventory']), original)
-        self.g.command('equip rusted sword')
-        self.g.command('get all from body')
-        self.assertEqual(len(self.g.p['inventory']), 1)
-        self.assertEqual(Counter(body['items']+self.g.p['inventory']+list(self.g.p['equipment'].values())), original)
-        self.g.p['inventory'] = []
         self.g.w['classes'][self.g.p['class']]['carry_capacity'] = 1
+        self.g.command('get all from body')
+        self.assertEqual(Counter(self.g.p['inventory']), original)
+        self.assertEqual(body['items'], [])
         body['items'] = ['greatsword']
         self.g.command('get greatsword from body')
-        self.assertEqual(body['items'], ['greatsword'])
-        self.assertFalse(self.g.p['inventory'])
+        self.assertEqual(body['items'], [])
+        self.assertIn('greatsword', self.g.p['inventory'])
 
     def test_enchanted_item_and_container_contents_survive_recovery(self):
         sword = self.g.new_instance(dict(kind='weapon', item='iron_sword', bonus=-1, magic_xp=100,

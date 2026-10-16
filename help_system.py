@@ -4,7 +4,6 @@ Help reads the same rules as gameplay. Suggestions never execute a command.
 Emotes produce narrative only; they do not invoke NPC dialogue or combat.
 """
 import difflib
-import math
 import re
 
 
@@ -34,6 +33,8 @@ COMMANDS = {
     'down': ('movement', 'DOWN (D)', 'D'),
     'go': ('movement', 'GO <direction> (also MOVE <direction>)', 'GO NORTH'),
     'move': ('movement', 'MOVE <direction>', 'MOVE N'),
+    'show': ('map', 'SHOW MAP', 'SHOW MAP'),
+    'display': ('map', 'DISPLAY MAP', 'DISPLAY MAP'),
     'look': ('exploration', 'LOOK [SELF | direction [distance] | object | item | creature | BODY [number]]', 'LOOK NORTH 2'),
     'attack': ('combat', 'ATTACK [creature name | description | ID]', 'ATTACK BEETLE'),
     'target': ('combat', 'TARGET <creature name | description | ID>', 'TARGET SCARRED COPPER BEETLE'),
@@ -78,12 +79,13 @@ COMMANDS = {
     'save': ('saving', 'SAVE', 'SAVE'),
 }
 
-TOPICS = ('help', 'movement', 'exploration', 'combat', 'capture', 'skills',
+TOPICS = ('help', 'movement', 'exploration', 'map', 'combat', 'capture', 'skills',
           'learning', 'mana', 'inventory', 'equipment', 'storage', 'shops',
           'items', 'rest', 'recall', 'crafting', 'cooking', 'bank', 'death',
           'talk', 'emotes', 'saving')
 TOPIC_ALIASES = {
     'start': 'help', 'getting started': 'help', 'navigation': 'movement',
+    'show map': 'map', 'display map': 'map',
     'explore': 'exploration', 'fight': 'combat', 'fighting': 'combat',
     'capturing': 'capture', 'cage': 'capture', 'cages': 'capture',
     'spells': 'skills', 'progression': 'learning', 'leveling': 'learning',
@@ -205,6 +207,11 @@ class PlayerHelp:
         return message
 
     def guide_command(self, verb, target):
+        if verb in ('show', 'display'):
+            if target != 'map': raise ValueError('Use SHOW MAP or DISPLAY MAP to open your explored map.')
+            self.remember_room()
+            self.log('Explored map opened. Only visited rooms are charted; enemies are never shown. Close the map or press Escape to return to play.')
+            return True
         if verb == 'help':
             self.show_help(target); return True
         if verb == 'syntax':
@@ -309,67 +316,39 @@ class PlayerHelp:
 
     def skill_syntax(self, sid):
         skill = self.w['skills'][sid]
-        if skill.get('passive'): return 'ATTACK [creature] — ' + skill['name'] + ' is passive; it cannot be cast.'
+        if skill.get('passive') and self.rules()['learning_enabled']: return 'ATTACK [creature] — ' + skill['name'] + ' is passive; it cannot be cast.'
         effect = skill.get('effect', 'damage')
-        suffix = ' <item>' if effect == 'enchant' else ' [right-hand weapon]' if effect == 'sharpen' else '' if effect == 'heal' else ' [creature]'
+        suffix = ' <item>' if effect == 'enchant' else ' [right-hand weapon]' if effect == 'sharpen' else '' if effect in ('heal', 'ward') else ' [creature]'
         text = 'CAST ' + skill['name'].upper() + suffix
         if normalized(skill['name']) != normalized(sid): text += '\nAlso: CAST ' + sid.upper() + suffix
         return text
 
     def skill_help(self, sid):
-        skill = self.w['skills'][sid]
-        rules = self.rules()
+        skill, rules = self.w['skills'][sid], self.rules()
         rank, cap = self.ability_rank(sid), skill.get('max_rank', 5)
         eligible = self.skill_eligible(sid)
         available = eligible and (rank > 0 if rules['learning_enabled'] else self.p['level'] >= skill.get('unlock_level', 1))
-        rows = [skill['name'].upper(), skill.get('description', ''), self.skill_syntax(sid)]
-        rows += [('Available now.' if available else 'Unavailable to your class or race.' if not eligible else 'Not learned yet.' if rules['learning_enabled'] else 'Locked by character level.')]
+        rows = [skill['name'].upper(), self.skill_syntax(sid)]
+        rows.append('Available now.' if available else 'Unavailable to your class or race.' if not eligible else 'Not learned yet.' if rules['learning_enabled'] else 'Locked by character level.')
         if rules['learning_enabled']:
             rows.append(f'Learned rank: {rank}/{cap}. Points available: {self.ability_points()}.')
-            if eligible and rank < cap:
-                required = skill.get('unlock_level', 1) + rank * rules['learning_rank_level_gap']
-                rows.append(f'Next rank: {skill.get("learn_cost", 1)} point(s), character level {required}. LEARN {sid.upper()}.')
-        affinity = self.affinity(sid)
-        if not skill.get('passive'):
-            rows.append(f'Mana: {self.mana_cost(sid)} per use. Cooldown: {skill["cooldown"]:g}s.')
-            remaining = max(0, math.ceil(self.p['cooldowns'].get(sid, 0) - self.clock()))
-            if remaining: rows.append(f'Currently recovering: {remaining}s remaining.')
-        effect = skill.get('effect', 'damage')
+        rows += self.skill_facts(sid)['lines'] + self.skill_recovery_lines(sid)
         progress = self.spell_progress(sid)
-        if skill.get('passive'):
-            bonus = max(0, rank - 1) * rules['learning_rank_bonus'] * affinity['power'] if rules['learning_enabled'] else 0
-            rows.append(f'Current contribution: +{bonus * 100:g}% to automatic-attack damage. Each additional learned rank adds {rules["learning_rank_bonus"] * affinity["power"] * 100:g}% while learning is enabled.')
-        elif effect == 'damage':
-            if progress: rows.append(f'Damage on a hit: {self.skill_power(sid, progress["power"])} before status effects. Attacks can miss or be dodged.')
-            else: rows.append(f'Weapon attack multiplier: {skill.get("multiplier", 1) * self.ability_power(sid):g}× after class and rank modifiers. Attacks can miss or be dodged.')
-            rows.append('Can start combat or strike your selected target.' if skill.get('initiates') else 'Requires an active fight. ATTACK first.')
-        elif effect == 'heal':
-            rows.append(f'Restores up to {self.skill_power(sid, skill.get("heal", 20))} HP to you. Cannot target others; full health does not spend the skill.')
-        elif effect == 'knockout':
-            rows.append(f'Base success after class/rank modifiers: {self.skill_power(sid, skill.get("chance", 70)):g}%. Creature capture resistance reduces this. Weaken a capturable creature first. HELP CAPTURE.')
-        elif effect == 'enchant':
-            p = self.enchant_progress(sid)
-            rows.append(f'Outside combat: {rules["enchant_cost"]} gold per attempt; {p["chance"]:g}% success; +{p["bonus"]} damage/armor for {p["duration"]:g}s. On weapon failure: {rules["enchant_destroy"]:g}% destruction chance; otherwise up to {rules["enchant_damage"]} damage penalty. HELP CRAFTING.')
-        elif effect == 'sharpen':
-            rows.append(f'Outside combat: +{rules["sharpen_bonus"]} right-hand weapon damage for {rules["sharpen_seconds"]:g}s. HELP CRAFTING.')
-        if not skill.get('passive') and effect in ('damage', 'heal', 'knockout'):
-            rows.append(f'Shared manual-skill recovery: {rules["action_recovery"]:g}s. Automatic attacks continue.')
         if progress:
-            rows.append(f'Spell mastery: {progress["level"]}/{progress["max_level"]}; {progress["level_xp"]:g} XP into this level. Valid uses train it; suitable challenges give extra practice.')
-        for attachment in skill.get('status_effects', []) if effect == 'damage' else []:
-            status = self.w['status_effects'][attachment['effect']]
-            chance = attachment.get('chance', 100) * min(1, affinity['power'])
-            duration = attachment.get('duration') or status.get('duration', 3)
-            effect_text = status.get('description', '')
-            if status['kind'] == 'damage':
-                damage = status.get('damage', 0)
-                if progress and progress['effect_damage'] is not None:
-                    damage = max(0, round(progress['effect_damage'] * self.ability_power(sid)))
-                effect_text = f'{damage:g} damage per pulse per stack'
-            elif status['kind'] == 'stun': effect_text = 'prevents attacks while active'
-            elif status['kind'] == 'slow': effect_text = f'{status.get("slow", 1.5):g}× basic-attack recovery'
-            rows.append(f'On a surviving target after a hit: {status["name"]}, {chance:g}% before resistance, {duration} pulses; {effect_text}.')
-        self.log('\n'.join(row for row in rows if row))
+            xp = 'maximum level' if progress['next_xp'] is None else f'{progress["level_xp"]:g}/{progress["next_xp"]:g} XP toward next level'
+            rows.append(f'Spell mastery: {progress["level"]}/{progress["max_level"]}; {xp}. Valid uses train it; suitable challenges give extra practice.')
+        if skill.get('effect') == 'enchant':
+            progress = self.enchant_progress(sid)
+            xp = 'maximum level' if progress['next_xp'] is None else f'{progress["level_xp"]:g}/{progress["next_xp"]:g} XP toward next level'
+            rows.append(f'Crafting mastery: {progress["level"]}/{progress["max_level"]}; {xp}. Practice improves success, bonus and duration.')
+        preview = self.next_skill_rank(sid)
+        if preview:
+            rows.append(f'Next rank: {preview["rank"]}; {preview["cost"]} point(s), character level {preview["required_level"]}.')
+            rows += preview['lines']
+            rows.append(f'LEARN {sid.upper()} to buy this rank.')
+        elif rules['learning_enabled'] and eligible:
+            rows.append('Maximum learned rank reached.')
+        self.log('\n'.join(rows))
 
     def emote_syntax(self, row):
         suffix = ' [target]' if row.get('target_message', '').strip() else ''
@@ -390,24 +369,25 @@ class PlayerHelp:
         r = self.rules()
         text = {
             'help': 'HELP — choose a topic\nGetting around: HELP MOVEMENT · HELP EXPLORATION\nFighting: HELP COMBAT · HELP CAPTURE · HELP DEATH\nYour character: HELP SKILLS · HELP LEARNING · HELP MANA\nBelongings: HELP INVENTORY · HELP EQUIPMENT · HELP STORAGE\nTown & supplies: HELP SHOPS · HELP BANK · HELP ITEMS · HELP REST · HELP RECALL\nMaking things: HELP CRAFTING · HELP COOKING\nConversation: HELP TALK · HELP EMOTES\nLeaving & progress: HELP SAVING\nDetails: HELP <skill or command>, such as HELP FIREBALL. Formats: SYNTAX <command>.',
+            'map': 'SHOW MAP or DISPLAY MAP opens your exploration map in a pop-up. It stays closed until you ask for it.\nOnly rooms you have entered and connections between those rooms appear. Enemy locations, NPCs, loot and hidden discoveries are never shown. Looking into the distance does not chart a room.\nYour current room is highlighted. Choose a visited elevation, zoom, or center on yourself. Click a room to read its known connections; this does not move you. Close or press Escape to return to the command box. Combat continues while the map is open.\nExploration saves with your character and survives death. Older saves start mapping from their current room; past travel cannot be reconstructed. Rooms entered in darkness remain unnamed until you see them.',
             'movement': 'MOVE: N, S, E, W, UP, DOWN (or GO NORTH / MOVE N).\nLOOK shows the room and its exits; LOOK NORTH scouts an exit.\nMovement is blocked during combat; use FLEE. HELP EXPLORATION explains visibility.',
             'exploration': f'LOOK [object | item | creature] examines something. LOOK SELF shows equipment.\nLOOK NORTH 2 scouts farther along a straight route, up to {r["perception_distance"]} rooms. Darkness, terrain and fog may block the view. Carry a lantern for dark rooms.\nRoom descriptions and inspectable objects contain clues. Discoveries may require a defeat, an inspection or a key; help does not reveal puzzle answers.',
             'combat': f'ATTACK [creature] starts automatic attacks. KILL is an alias.\nShared pulses occur every {self.w["settings"]["attack_interval"]:g}s; a basic attack recovers for {2 * self.w["settings"]["attack_interval"]:g}s, longer when slowed.\nCAST <skill> [creature] uses an ability. HELP <skill> shows its requirements. Manual combat skills share {r["action_recovery"]:g}s recovery; each also has its own cooldown.\nTARGET <description> changes opponents; targeting another creature during combat engages it. Aggressive creatures in the room join the fight.\nGeneric creature names retain a matching current target or choose a matching creature of the same type. Different matching types need clarification.\nQUAFF POTION heals, with {r["potion_recovery"]:g}s recovery between potions. FLEE attempts escape through a random exit.\nCombat continues while the server runs, even with the browser closed. HELP DEATH · HELP SAVING.',
-            'capture': 'LEARN KNOCKOUT when eligible, then HELP KNOCKOUT for your chance and requirements.\n1. Weaken a capturable creature to its capture-health threshold. KNOCKOUT explains the threshold if it is too healthy.\n2. CAST KNOCKOUT <creature>. Capture resistance reduces success. Failed attempts can start combat.\n3. After success, finish any other opponents, then GET <unconscious creature>.\n4. PUT <creature> IN CAGE <number>. LOOK CAGE <number> inspects it. Carrying weight and bag limits apply.\nSELL CAGE <number> at a creature buyer sells the cage and every occupant. RELEASE CAGE <number> frees them.\nCapturing gives no kill XP, kill gold or rare equipment; released creatures give no kill rewards. Automatic attacks can kill a weakened creature before you capture it.',
+            'capture': 'LEARN KNOCKOUT when eligible, then HELP KNOCKOUT for your chance and requirements.\n1. Weaken a capturable creature to its capture-health threshold. KNOCKOUT explains the threshold if it is too healthy.\n2. CAST KNOCKOUT <creature>. Capture resistance reduces success. Failed attempts can start combat.\n3. After success, finish any other opponents, then GET <unconscious creature>.\n4. PUT <creature> IN CAGE <number>. LOOK CAGE <number> inspects it. Cages retain their creature capacity; your bag has no carrying limit.\nSELL CAGE <number> at a creature buyer sells the cage and every occupant. RELEASE CAGE <number> frees them.\nCapturing gives no kill XP, kill gold or rare equipment; released creatures give no kill rewards. Automatic attacks can kill a weakened creature before you capture it.',
             'skills': 'SKILLS lists your learned abilities. LEARN lists choices and their costs.\nHELP <skill name or ID> shows current power, mana, cooldown, targets and learning requirements—even for locked skills. Example: HELP FIREBALL.\nCAST <skill> [target] uses an active ability; passive abilities modify automatic attacks. Full skill names and IDs also work directly.\nCharacter level, learned rank, spell mastery and mana mastery are separate. HELP LEARNING · HELP MANA.',
             'learning': ('Ability selection is enabled. Earn ' + self.learning_schedule() if r['learning_enabled'] else 'Ability selection is disabled; eligible skills unlock at their character level.') + '\nLEARN lists abilities; LEARN <ability> spends points to learn it or improve its rank. Finish combat first.\nHELP <ability> shows the next rank\'s level requirement, cost and your available points. Spell mastery grows separately through valid practice.\nThere is currently no refund command; inspect the ability before spending points.',
             'mana': f'MANA shows your current reserve and mastery. Spells spend the class-adjusted amount shown in HELP <spell>.\nBase recovery is {r["mana_regen"]:g}/second outside combat and {r["mana_combat_regen"]:g}/second in combat, multiplied by your class recovery rate. REST at an inn refills health and mana.\nValid paid casts train mana mastery. Races that cannot use magic have no mana reserve.' + ('\nMana costs are currently disabled by the owner.' if not r['mana_enabled'] else ''),
-            'inventory': f'INVENTORY (I / INV) lists your bag. Capacity: {self.w["settings"]["bag_capacity"]} individual items; grouped copies still use individual slots. WEIGHT includes worn gear and container contents.\nGET <item> picks it up; DROP <item> leaves it here. Trading and rearranging items require finishing combat.\nDropped ordinary items disappear after 10 minutes. Keys, cages and chests are exempt. There is no undo for dropping or selling.\nPUT <item> IN CHEST <number> stores it. HELP STORAGE · HELP EQUIPMENT.',
+            'inventory': 'INVENTORY (I / INV) lists your bag. Your bag has no item limit, and items have no carrying weight.\nGET <item> picks it up; DROP <item> leaves it here. Trading and rearranging items require finishing combat.\nDropped ordinary items disappear after 10 minutes. Keys, cages and chests are exempt. There is no undo for dropping or selling.\nPUT <item> IN CHEST <number> stores it. HELP STORAGE · HELP EQUIPMENT.',
             'equipment': f'EQUIPMENT, EQ or LOOK SELF shows every slot. EQUIP <item> wears armor in its slot or holds a weapon.\nEQUIP <weapon> LEFT / RIGHT chooses a hand. HOLD <armor> holds it in the left hand for enchanting; held ordinary armor is not worn protection.\nUNEQUIP <slot> returns gear to your bag. Slots: RIGHT, LEFT, HELMET, CHEST, PANTS, ARMS.\nTwo-handed weapons need both hands. Eligible classes can dual wield from level {r["dual_level"]}; a shield uses a hand.\nLOOK <item> shows its details. Worn armor and held shields add protection. Finish combat before changing equipment; removing gear needs bag space.',
-            'storage': 'LOOK CHEST <number> shows its contents.\nPUT <item> IN CHEST <number> stores an item; GET <item> FROM CHEST <number> retrieves one. The chest must be carried or visible here.\nOccupied chests cannot be sold, and chests cannot nest inside chests. Carried contents still weigh something.\nUNLOCK <container> uses its matching key. Keys can be consumed by the lock. HELP CAPTURE for creature cages.',
-            'shops': 'At a shop, BUY lists stock; BUY <item> purchases one; SELL <item> sells one for half its shop price, rounded down. LOOK <item> inspects it first.\nUse one item per command; quantity purchases and buyback are not implemented. Finish combat before trading. Bag space, weight and gold limits apply.\nKeys, loose captives and occupied containers cannot be sold at ordinary shops. Rare drop-only equipment cannot be bought.\nAt a creature buyer, SELL lists occupied-cage offers. SELL CAGE <number> sells all occupants and the cage. HELP BANK.',
+            'storage': 'LOOK CHEST <number> shows its contents.\nPUT <item> IN CHEST <number> stores an item; GET <item> FROM CHEST <number> retrieves one. The chest must be carried or visible here.\nChests retain their own item capacity. Occupied chests cannot be sold, and chests cannot nest inside chests.\nUNLOCK <container> uses its matching key. Keys can be consumed by the lock. HELP CAPTURE for creature cages.',
+            'shops': 'At a shop, BUY lists stock; BUY <item> purchases one; SELL <item> sells one for half its shop price, rounded down. LOOK <item> inspects it first.\nUse one item per command; quantity purchases and buyback are not implemented. Finish combat before trading. You must have enough gold for purchases.\nKeys, loose captives and occupied containers cannot be sold at ordinary shops. Rare drop-only equipment cannot be bought.\nAt a creature buyer, SELL lists occupied-cage offers. SELL CAGE <number> sells all occupants and the cage. HELP BANK.',
             'items': f'QUAFF POTION (or DRINK POTION) restores health. Healing potion recovery: {r["potion_recovery"]:g}s. Full health does not consume one.\nUSE <item> uses a compatible consumable; lanterns work simply by carrying them.\nEAT <food> eats a meal; HELP COOKING. RECALL uses a recall scroll; HELP RECALL. Race restrictions still apply to magical items.',
             'rest': 'REST at a rest location, such as The Quiet Coil, restores health and mana without a fee. It cannot be used during combat.\nUse HELP ITEMS for potions or HELP COOKING for food away from the inn.',
             'recall': f'RECALL or USE RECALL SCROLL returns you to the starting room. Carry a recall scroll.\nReusable below level {r["recall_reusable_below_level"]}; single-use from there until level {r["recall_disabled_from_level"]}. At level {r["recall_disabled_from_level"]} and above it cannot be used.\nCombat and recall-blocked rooms prevent recall. A blocked single-use attempt ' + ('consumes its scroll.' if r['recall_failure_consumes'] else 'preserves its scroll.') + '\nReusable scrolls and attempts above the level limit preserve the scroll. Race magic restrictions and the race\'s recall exception still apply.',
             'crafting': 'SHARPEN [weapon] temporarily improves your right-hand weapon outside combat; learn Sharpening first.\nENCHANT <item> temporarily enchants a held weapon or worn/held armor; learn Enchanting first. HOLD <armor> places it in your left hand.\nHELP SHARPENING and HELP ENCHANTING show current requirements, bonuses, costs and risks. Enchanting can damage or destroy weapons.\nREPAIR lists damaged equipment and prices at a repair service; REPAIR <item> repairs it. Individual magical-item mastery is separate from temporary enchantments. HELP COOKING.',
             'cooking': f'HARVEST <remains> collects configured ingredients after combat; not every creature yields food. Remains last {r["corpse_seconds"]:g}s.\nCOOK <recipe or ingredient> uses ingredients and any required fire, tool or skill. COOK by itself lists recipe names.\nEAT <food> restores some health, with {r["food_cooldown"]:g}s between meals. Eating in combat is ' + ('allowed.' if r['food_in_combat'] else 'blocked.') + '\nA full-health attempt preserves food. The inn has a cooking fire.',
             'bank': 'At a bank: BALANCE shows your account; DEPOSIT <amount or ALL> moves carried gold into it; WITHDRAW <amount or ALL> returns gold to your purse.\nExample: DEPOSIT 20. Use positive whole amounts. Finish combat first.\nBanked gold belongs to your character and survives death. Carried gold remains at risk. Banking does not store equipment.',
-            'death': (f'Death leaves all carried gold, inventory and worn gear in your body for {r["player_body_seconds"] / 60:g} real minutes, including time with the game closed. Banked gold stays safe.\nReturn and LOOK BODY, then GET ALL FROM BODY or LOOT BODY. GET GOLD FROM BODY or GET <item> FROM BODY recovers specific contents.\nUse BODY <number> if several remain. Bag and weight limits apply; recovered equipment goes into the bag and must be equipped again. Anything left when the body expires is lost.' if r['player_bodies'] else f'Recoverable bodies are disabled. Death loses {self.w["settings"]["gold_loss"] * 100:g}% of carried gold and has a {self.w["settings"]["item_loss_chance"] * 100:g}% chance to lose an unprotected bag item. You return to the starting room.'),
+            'death': (f'Death leaves all carried gold, inventory and worn gear in your body for {r["player_body_seconds"] / 60:g} real minutes, including time with the game closed. Banked gold stays safe.\nReturn and LOOK BODY, then GET ALL FROM BODY or LOOT BODY. GET GOLD FROM BODY or GET <item> FROM BODY recovers specific contents.\nUse BODY <number> if several remain. Recovered equipment goes into the bag and must be equipped again. Anything left when the body expires is lost.' if r['player_bodies'] else f'Recoverable bodies are disabled. Death loses {self.w["settings"]["gold_loss"] * 100:g}% of carried gold and has a {self.w["settings"]["item_loss_chance"] * 100:g}% chance to lose an unprotected bag item. You return to the starting room.'),
             'talk': 'TALK TAMSIN or TALK TO TAMSIN says hello.\nTALK TAMSIN ABOUT COOKING and ASK TAMSIN ABOUT COOKING say "cooking" to her.\nSAY <phrase> TO <NPC | creature | CAGE number> still works. Example: SAY HELLO TO TAMSIN.\nConversation phrases ignore capitalization and repeated spaces but otherwise need the complete phrase. Hidden creature phrases are not revealed in help.\nEmotes are separate cosmetic actions; HELP EMOTES.',
             'saving': 'Progress saves automatically. SAVE also saves. Reopening the browser reconnects to this local character.\nThere is currently no logout command. Return to safety before closing the browser: combat continues while the server runs.\nCtrl+C in the launcher stops the server and saves. Body deadlines still pass while the server is closed. HELP DEATH.',
         }

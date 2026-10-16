@@ -16,13 +16,8 @@ class RareDrops:
         template=self.rng.choices(pool,weights=[row['weight'] for row in pool],k=1)[0]['item']
         iid=self.grant(template);item=self.item(iid)
         self.log('RARE FIND! '+item['name']+' — '+self.gear_stats(item)+'. This equipment cannot be bought in shops.','reward')
-        if len(self.p['inventory'])<self.w['settings']['bag_capacity'] and self.can_carry(iid):
-            self.p['inventory'].append(iid)
-            self.log('Your rare find is safely in your bag.','reward')
-        else:
-            room=enemy.get('location',self.p['room'])
-            self.state['ground'].setdefault(room,[]).append(iid)
-            self.log('You cannot carry the rare find. '+item['name']+' remains on the ground. Make room, then GET it.','reward')
+        self.p['inventory'].append(iid)
+        self.log('Your rare find is safely in your bag.','reward')
         return iid
 
     def extra_snapshot(self,result):

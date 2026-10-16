@@ -18,12 +18,13 @@ from enemy_healing import EnemyHealing
 from player_bodies import PlayerBodies
 from banking import Banking
 from rare_drops import RareDrops
+from player_map import PlayerMap
 
 DIRECTIONS={'n':'north','s':'south','e':'east','w':'west','u':'up','d':'down'}
 TRAITS=['scarred','watchful','lean','broad-shouldered','dust-covered','restless','pale','dark-eyed','weathered','bristling','long-limbed','stout']
 MARKS=['notched-eared','gray-marked','white-marked','red-eyed','mud-spattered','amber-eyed','sharp-eyed','mottled','ragged','dark-backed','light-footed','heavy-browed']
 
-class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning, Mana, MagicProgression, Enchanting):
+class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning, Mana, MagicProgression, Enchanting):
     def rules(self):
         return {**DEFAULT_RULES,**self.w.get('revision',{})}
 
@@ -39,6 +40,8 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         self.init_magic_items()
         self.init_learning()
         self.init_mana()
+        if self.p:self.p['hp']=min(self.p['hp'],self.max_hp())
+        self.remember_room()
         self.prepare_residents()
         self.prepare_regions()
         self._enemy_heal_at={}
@@ -336,32 +339,21 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
     def resolve_strike(self,multiplier=1,attack_name=None):
         e=self.enemy()
         if not e:return
-        name=self.creature_name(e);eq=self.p['equipment'];right=eq.get('weapon');left=eq.get('left_hand')
-        main=self.item(right) if right else {};off=self.item(left) if left else {};dual=main.get('kind')=='weapon' and off.get('kind')=='weapon';rules=self.rules()
+        name=self.creature_name(e);_,_,dual=self.attack_weapons();rules=self.rules()
         sid=getattr(self,'_active_skill',None)
         progress=self.spell_progress(sid) if sid else None
         hit=self.w['settings']['hit_chance']-(rules['dual_hit_penalty'] if dual and not progress else 0)
         if self.rng.random()>max(0,hit):self.log(f'Your attack misses {name}.','combat');return
         dodge=self.w['enemies'][e['type']].get('dodge',0)
         if dodge and self.rng.random()<dodge/100:self.log(f'{name} dodges your {attack_name or ("Bash" if multiplier!=1 else "attack")}! No damage dealt.','combat');return
-        weapon=main if main.get('kind')=='weapon' else off if off.get('kind')=='weapon' else {}
-        if progress:damage=self.skill_power(sid,progress['power'])
-        else:
-            factor=self.ability_power(sid) if sid else 1
-            if not sid and rules['learning_enabled']:
-                for known in self.available_skill_ids():
-                    if self.w['skills'][known].get('passive'):
-                        factor+=max(0,self.ability_rank(known)-1)*rules['learning_rank_bonus']*self.affinity(known)['power']
-            damage=max(1,round((self.rng.randint(*self.w['classes'][self.p['class']]['damage'])+weapon.get('damage',0)+(off.get('damage',0)*rules['offhand_scale'] if dual else 0)+(self.p['level']-1)*self.w['settings']['damage_per_level'])*multiplier*factor))
+        # Keep the original RNG order: spells never roll physical base damage.
+        roll=0 if progress else self.rng.randint(*self.w['classes'][self.p['class']]['damage'])
+        damage=self.attack_damage(roll,multiplier,sid)
         self.reset_enemy_healing(e)
         e['hp']=max(0,e['hp']-damage);self.log((attack_name+'! ' if attack_name else 'Bash! ' if multiplier!=1 else '')+f'You hit {name} for {damage}.','combat')
         if e['hp']==0:self.victory(e)
         else:
-            attachments=[] if progress else weapon.get('status_effects',[])+(off.get('status_effects',[]) if dual else [])
-            if sid:attachments=attachments+[dict(a,chance=a.get('chance',100)*min(1,self.affinity(sid)['power'])) for a in self.w['skills'][sid].get('status_effects',[])]
-            effect_damage=progress['effect_damage'] if progress else None
-            if effect_damage is not None:effect_damage=max(0,round(effect_damage*self.ability_power(sid)))
-            self.apply_effects(attachments,e,damage_override=effect_damage)
+            self.apply_effects(self.attack_effects(sid),e,damage_override=self.skill_effect_damage(sid))
 
     def enemy_strike(self,e):
         spec=self.w['enemies'][e['type']];name=self.creature_name(e)
@@ -371,7 +363,7 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         if dodge and self.rng.random()<dodge/100:self.log('You dodge '+name+"'s attack.",'combat');return
         protection=[self.ensure_magic_slot(slot) for slot,i in self.p['equipment'].items() if slot in BODY_SLOTS or self.item(i).get('shield')]
         armor=sum(self.item(i).get('armor',0) for i in protection)
-        damage=max(1,self.rng.randint(*spec['damage'])-armor);self.p['hp']=max(0,self.p['hp']-damage)
+        damage=self.warded_damage(max(1,self.rng.randint(*spec['damage'])-armor));self.p['hp']=max(0,self.p['hp']-damage)
         self.log(f'{name} hits you for {damage}.','danger')
         self.train_magic_items(protection,self.practice_multiplier(e))
         if self.p['hp']==0:self.death()
@@ -389,6 +381,7 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         self.p['combat']=c;self.retarget()
 
     def death(self):
+        self.p.pop('ward',None)
         if self.rules()['player_bodies']:
             self.leave_player_body();return
         inventory=set(self.p['inventory']);self.p['effects']=[];self.p.pop('target',None)
@@ -414,7 +407,7 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         skill=self.require_skill(sid);kind=skill.get('effect','damage')
         cost=self.require_mana(sid)
         if kind in ('enchant','sharpen'):
-            self.work_weapon(sid,kind,target);self.spend_mana(cost,1);return
+            self.work_weapon(sid,kind,target);self.spend_mana(cost,self.affinity(sid)['practice']);return
         remaining=self.p['cooldowns'].get(sid,0)-self.clock()
         if remaining>0:raise ValueError(f'{skill["name"]} is ready in {math.ceil(remaining)} seconds.')
         remaining=self.p.get('action_ready',0)-self.clock()
@@ -489,6 +482,7 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         if right.get('kind')=='weapon' and left.get('kind')=='weapon' and (self.p['level']<rules['dual_level'] or self.p['class'] not in rules['dual_classes']):raise ValueError('Dual wielding requires two one-handed weapons, an eligible class and the configured unlock level.')
 
     def look(self,target):
+        self.remember_room()
         if target=='self':
             self.show_equipment();return
         if self.is_body_reference(target):
@@ -563,8 +557,6 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         if target:rows=[c for c in rows if target in (c['uid'],c['type']) or target in c['name'].casefold()]
         if len(rows)!=1:raise ValueError('Specify which remains to harvest: '+(', '.join(c['name'] for c in rows) or 'none here')+'.')
         corpse=rows[0];yields=[x['item'] for x in self.w['enemies'][corpse['type']].get('harvest',[]) for _ in range(x.get('count',1))]
-        if len(self.p['inventory'])+len(yields)>self.w['settings']['bag_capacity']:raise ValueError('Make room in your bag first. The remains are untouched.')
-        self.require_carry_weight(sum(self.item_weight(i) for i in yields))
         self.p['inventory'].extend(self.grant(i) for i in yields);corpse['harvested']=True
         self.log('Harvested: '+', '.join(self.w['items'][i]['name'] for i in yields)+'.','reward')
 
@@ -578,8 +570,6 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         if r.get('tool') and r['tool'] not in inv:raise ValueError('Carry the required cooking tool.')
         count=r.get('count',1);output_count=r.get('output_count',1)
         if inv.count(r['input'])<count:raise ValueError('You do not have enough ingredients.')
-        if len(inv)-count+output_count>self.w['settings']['bag_capacity']:raise ValueError('Make room for the cooked food first.')
-        self.require_carry_weight(output_count*self.item_weight(r['output'])-count*self.item_weight(r['input']))
         success=self.rng.random()<r.get('chance',100)/100
         if success or r.get('consume_failure'):
             for _ in range(count):inv.remove(r['input'])
@@ -605,7 +595,6 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
             eq=self.p['equipment']
             if slot not in eq:raise ValueError('That equipment slot is empty.')
             proposed=dict(eq);proposed.pop(slot);self.validate_hands(proposed,self.w)
-            if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full.')
             self.p['inventory'].append(eq.pop(slot));self.log('Equipment returned to your bag.');return True
         if verb in ('enchant','enchanting','sharpen','sharpening','charge','fireball','lightning','mend','backstab','quickstrike','hamstring','kick','frostbolt','power_strike','cutthroat','arcane_lance','shattering_strike','nerve_strike','meteor','executioner','assassinate'):
             sid={'enchant':'enchanting','sharpen':'sharpening'}.get(verb,verb);self.activate_skill(sid,target);return True
@@ -645,8 +634,6 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
             if matches:
                 e=self.find_creature(target,rows)
                 if self.p['combat']:raise ValueError('Finish combat before picking up a creature.')
-                if len(self.p['inventory'])>=self.w['settings']['bag_capacity']:raise ValueError('Your bag is full; the unconscious creature remains here.')
-                self.require_carry_weight(self.w['enemies'][e['type']].get('weight',10))
                 self.p['inventory'].append(self.new_instance(dict(kind='captive',enemy=e['type'])));e['hp']=0;e['unconscious']=False;e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60);self.log('You pick up the unconscious creature. No kill rewards are awarded.');return True
         return super().extra_command(verb,target)
 

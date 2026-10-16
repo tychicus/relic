@@ -51,29 +51,29 @@ const placementHelp: Record<string, string> = {
 
 const sectionHelp: Record<string, string> = {
   emotes: 'Create cosmetic actions players can type directly or use with EMOTE. HELP EMOTES lists enabled entries. Messages support {actor}; targeted messages also support {target}. Emotes do not trigger NPC dialogue or combat. Save world changes to apply your edits.',
-  rare_loot: 'Each eligible defeated enemy gets one independent bonus roll alongside normal loot. Default: 0.1% (about 1 in 1000 kills), enemy level 10 or higher. This is an average, not a guarantee. A successful roll chooses one eligible item by weight. Captured or released creatures give no special drop. All pool items must be drop-only weapons or armor; shops cannot stock them. Full bags or excess weight leave the item on the ground.',
+  rare_loot: 'Each eligible defeated enemy gets one independent bonus roll alongside normal loot. Default: 0.1% (about 1 in 1000 kills), enemy level 10 or higher. This is an average, not a guarantee. A successful roll chooses one eligible item by weight. Captured or released creatures give no special drop. All pool items must be drop-only weapons or armor; shops cannot stock them. Special drops are collected directly into your bag.',
   learning: 'Characters start with one ability and earn points at the configured level interval: by default, one point at levels 5, 10, 15 and so on. Existing learned abilities remain; available points use the allowance minus points already spent. Set starting abilities in Classes and learning costs in Skills & spells.',
   mana: 'Valid paid casts train mana capacity. Damage and healing spells and magical equipment also earn their own practice. Enemies at or above character level award extra practice, with a further bonus for harder enemies. Lower-level enemies still give base practice. Set starting mana and growth in Characters · Classes, spell costs in Skills & spells, and enemy levels in Creatures.',
   regions: 'Choose the squares in this region, then its enemy spawning squares. The regional bank replaces room spawn rules only in those spawning squares. Safe squares cannot spawn enemies. Several creatures can share a square; aggressive creatures join the fight. Population limits include unconscious creatures. Lower limits cannot discard living creatures. Weather is descriptive; the visibility penalty controls how fog and weather affect scouting.',
   dashboard: 'Choose a workshop below. Your draft stays intact as you move between categories.',
   rooms: 'Block looking in hides this room’s name and contents from adjacent rooms, even with a lantern. Exits remain visible and movement still works. Once inside, normal darkness rules apply. Exits are directional. To connect a new room both ways, edit the return exit in the neighboring room too.',
   enemies: 'Dodge chance is a percentage: 20 means a 20% chance to avoid a successful basic attack or Bash. A dodge prevents all damage. Missing values mean 0%. Loot weights are relative: a weight of 3 is three times as likely as a weight of 1. One entry is chosen per victory. Saving preserves current enemy health (capped to any lower maximum) and respawn times. Capture requires low health; resistance reduces the skill’s success chance.',
-  items: 'Weapon damage is added to a character’s base attack. Worn armor pieces and a held shield add protection against each incoming hit. Weight includes equipped gear and container contents; class carrying capacity grows by level. Shop purchase price is shown; resale pays half.',
+  items: 'Weapon damage is added to a character’s base attack. Worn armor pieces and a held shield add protection against each incoming hit. Player inventory has no carrying limits. Shop purchase price is shown; resale pays half.',
   settings: 'Probabilities run from 0 to 1: 0.10 means 10%. Attack interval sets the shared combat pulse. Every ready player and enemy can attack in the same pulse; each basic attack recovers for two pulses, longer when slowed.',
-  races: 'Race HP bonus is added to class health. Races without magic cannot choose classes that require it or use spells, enchanting or magical equipment. A separate recall-scroll exception is enabled for Orcs by default. Recall level limits, combat and room restrictions still apply.',
+  races: 'Race HP bonus is added to class health, then the race HP multiplier applies to the total, including level growth. Race mana, magic power and practice multipliers combine with class strengths. Races without magic cannot choose classes that require it or use spells, enchanting or magical equipment. A separate recall-scroll exception is enabled for Orcs by default. Recall level limits, combat and room restrictions still apply.',
   classes: 'Set base HP and damage; assign skills in the Skills section. Classes that require magic are unavailable to races without magic.',
-  skills: 'Create working damage, healing, or knockout skills. Eligibility requires the selected class and race. The unlock level is the earliest level when players can spend points to learn it. Any includes future choices. Empty restricted lists allow nobody.',
+  skills: 'Create damage, healing, self-defense ward, knockout or crafting skills. Player descriptions and next-rank benefits come from the live rules; description text is retained as author notes. Eligibility requires the selected class and race. The unlock level is the earliest level when players can spend points to learn it. Any includes future choices. Empty restricted lists allow nobody.',
   raw: 'Advanced editor for the complete world, including starting equipment and the working title. Prefer the forms for everyday changes.',
 }
 
 const schemaTitles: Record<string, string> = {
   rare_loot: 'Drop chance, enemy levels & reward pool',
-  classes: 'Starting ability, class strengths, mana & carrying capacity',
+  classes: 'Starting ability, class strengths, health growth & mana',
   rooms: 'Spawning, roaming, visibility & crafting',
   enemies: 'Status effects, resistance & harvesting',
-  items: 'Weight, equipment slots, hands & effects',
+  items: 'Equipment slots, hands & effects',
   skills: 'Learning costs, ranks, category & combat effects',
-    races: 'Race description, magic & resistances',
+  races: 'Race description, magic & resistances',
 }
 
 const createKinds: Option[] = [

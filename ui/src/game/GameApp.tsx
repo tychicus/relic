@@ -7,6 +7,7 @@ import { Console } from './Console'
 import { HeaderPanel } from './HeaderPanel'
 import { SidePanels } from './SidePanels'
 import { Welcome } from './Welcome'
+import { PlayerMap } from './PlayerMap'
 import type { LogLine, Snapshot } from './types'
 
 const POLL_MS = 750
@@ -16,6 +17,7 @@ export function GameApp() {
   const [data, setData] = useState<Snapshot | null>(null)
   const [connected, setConnected] = useState<boolean | null>(null)
   const [error, setError] = useState('')
+  const [mapOpen, setMapOpen] = useState(false)
   const [log, setLog] = useState<LogLine[]>([])
   const lastLog = useRef(0)
   // One request at a time: polling and commands share the server's game lock.
@@ -54,8 +56,10 @@ export function GameApp() {
       while (busy.current) await new Promise((resolve) => setTimeout(resolve, 60))
       busy.current = true
       try {
-        apply(await api<Snapshot>('/api/command', { command }))
-        commandRef.current?.focus({ preventScroll: true })
+        const next = await api<Snapshot>('/api/command', { command })
+        apply(next)
+        if (next.ui_action === 'show_map') setMapOpen(true)
+        else commandRef.current?.focus({ preventScroll: true })
       } catch (e) {
         setError((e as Error).message)
         setConnected(false)
@@ -137,6 +141,7 @@ export function GameApp() {
           </Callout>
         )}
       </main>
+      {mapOpen && data?.player && data.exploration_map && <PlayerMap map={data.exploration_map} inCombat={!!data.player.combat} onClose={() => setMapOpen(false)} returnFocus={() => commandRef.current?.focus({ preventScroll: true })} />}
       <footer className="game-footer px-4 pt-1 pb-3 text-sm text-muted-foreground sm:text-center">
         Progress saves automatically. Combat continues while the game server is running.
       </footer>

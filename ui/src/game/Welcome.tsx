@@ -28,6 +28,7 @@ export function Welcome({ choices, recallRules, onCreate }: Props) {
   const selectedRace = races.find(r => r.id === race)
   const classes = (choices?.classes ?? []).filter(c => !selectedRace?.available_classes || selectedRace.available_classes.includes(c.id))
   const selectedClass = pick(cls, classes, 'warrior')
+  const stats = selectedRace?.class_stats?.[selectedClass]
 
   useEffect(() => {
     setRace((current) => pick(current, races, 'human'))
@@ -66,7 +67,10 @@ export function Welcome({ choices, recallRules, onCreate }: Props) {
                   </NativeSelect>
                 </Field>
               </div>
-              {!!selectedRace?.hp_bonus && <p className="text-sm text-story">Starting health bonus: +{selectedRace.hp_bonus} HP.</p>}
+              {stats && <p className="text-sm text-story" aria-label="Starting character stats">
+                Start: {stats.hp} HP · {stats.mana} mana<br />
+                Per character level: +{Number(stats.hp_per_level.toFixed(2))} HP · +{Number(stats.mana_per_level.toFixed(2))} mana (totals rounded).
+              </p>}
               {selectedRace?.description && <p className="text-sm text-muted-foreground">{selectedRace.description}</p>}
               {selectedRace?.magic_allowed === false && <p className="text-sm text-story">
                 {selectedRace.recall_without_magic

@@ -11,7 +11,6 @@ export interface MagicProgress {
 }
 
 export interface Item {
-  weight?: number
   armor_slot?: string
   shield?: boolean
   name: string
@@ -47,9 +46,6 @@ export interface Effect {
 }
 
 export interface Player {
-  carried_weight?: number
-  carry_capacity?: number
-  weight_enabled?: boolean
   defense?: number
   name: string
   race_name: string
@@ -67,7 +63,6 @@ export interface Player {
   gold: number
   bank_gold?: number
   inventory: string[]
-  bag_capacity: number
   equipment: Record<string, string>
   combat: { turn: string; next_at: number } | null
   cooldowns: Record<string, number>
@@ -77,6 +72,7 @@ export interface Player {
   proficiency_limit?: number
   enchanting?: Record<string, { level: number; max_level: number; level_xp: number; next_xp: number | null; chance: number; bonus: number; duration: number }>
   effects?: Effect[]
+  ward?: { skill: string; power: number; remaining: number } | null
 }
 
 export interface Room {
@@ -96,6 +92,9 @@ export interface Room {
 }
 
 export interface Skill {
+  details?: { summary: string; lines: string[] }
+  next_rank?: { rank: number; cost: number; required_level: number; lines: string[] } | null
+  recovery_lines?: string[]
   passive?: boolean
   rank?: number
   max_rank?: number
@@ -139,9 +138,17 @@ export interface Choice {
   magic_allowed?: boolean
   recall_without_magic?: boolean
   available_classes?: string[]
+  class_stats?: Record<string, { hp: number; mana: number; hp_per_level: number; mana_per_level: number }>
+}
+
+export interface ExplorationMap {
+  current: string
+  rooms: { id: string; name: string; region: string; position: [number, number, number]; exits: Record<string, string> }[]
 }
 
 export interface Snapshot {
+  exploration_map?: ExplorationMap
+  ui_action?: 'show_map'
   recall_rules?: { reusable_below: number; disabled_from: number; starting_scroll: boolean }
   learning_enabled?: boolean
   learning_schedule?: string

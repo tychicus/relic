@@ -196,11 +196,10 @@ class RevisionTests(unittest.TestCase):
         r['encounter']['chance']=100;r['population']=[dict(id='wildlife',enemy='turkey',count=1,chance=100,trigger='timer')]
         self.g.p['room']=rid;self.g.creatures();self.g.roll_encounter(rid)
         self.assertEqual(len(self.g.creatures()),2)
-    def test_full_bag_harvest_failure_and_cooking_failure_preserve_inputs(self):
+    def test_harvest_ignores_bag_limit_and_failed_cooking_preserves_inputs(self):
         self.g.p['room']='meadow';e=self.g.enemy();self.g.victory(e);self.g.w['settings']['bag_capacity']=len(self.g.p['inventory'])
-        with self.assertRaises(ValueError):self.g.harvest(e['uid'])
-        self.assertFalse(self.g.state['corpses'][0].get('harvested'))
-        self.g.w['settings']['bag_capacity']=15;self.g.harvest(e['uid'])
+        self.g.harvest(e['uid'])
+        self.assertTrue(self.g.state['corpses'][0].get('harvested'))
         self.g.p['room']=next(rid for rid,r in self.g.w['rooms'].items() if r.get('cooking_fire'));self.g.w['recipes']['toast_beetle']['chance']=0
         self.g.cook('toast_beetle');self.assertIn('beetle_meat',self.g.p['inventory'])
     def test_partial_sight_reports_near_room_only(self):

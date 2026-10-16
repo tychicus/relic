@@ -23,7 +23,7 @@
     if(kind==='npc')entry={name,room:Object.keys(world.rooms)[0],appearance:'Describe their appearance.',description:'Describe this person.',interactions:['look','talk'],dialogue:[],default_response:'Hello, traveler.'};
     if(kind==='status_effect')entry={name,description:'Describe this effect.',kind:'damage',damage:2,duration:3,slow:1.5,stacking:'refresh',max_stacks:3,application:'{target} is affected by {effect}.',ongoing:'{effect} affects {target}.',expiration:'{effect} fades from {target}.',failure:'{target} resists {effect}.'};
     if(kind==='recipe')entry={name,input:Object.keys(world.items)[0],output:Object.keys(world.items)[0],count:1,output_count:1,fire:true,chance:100,consume_failure:false,message:'Your meal is ready.'};
-    if(group==='items') {entry={name,description:'Describe this item.',kind,price:5,weight:1};const stat={weapon:'damage',armor:'armor',consumable:'heal'}[kind];if(stat)entry[stat]=kind==='consumable'?20:1;if(kind==='cage'){entry.capacity=5;entry.price=45;entry.protected=true;}if(kind==='chest'){entry.capacity=30;entry.price=60;entry.protected=true;}if(kind==='key'){entry.price=0;entry.protected=true;}}
+    if(group==='items') {entry={name,description:'Describe this item.',kind,price:5};const stat={weapon:'damage',armor:'armor',consumable:'heal'}[kind];if(stat)entry[stat]=kind==='consumable'?20:1;if(kind==='cage'){entry.capacity=5;entry.price=45;entry.protected=true;}if(kind==='chest'){entry.capacity=30;entry.price=60;entry.protected=true;}if(kind==='key'){entry.price=0;entry.protected=true;}}
     world[group]??={};return {group,id:uniqueId(name,world[group]),entry};
   }
   const helpers={uniqueId,makeEntry};

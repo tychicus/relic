@@ -7,7 +7,7 @@ type Obj = Record<string, any>
 export function MagicProgressionEditor({ spec, equipment = false }: { spec: Obj; equipment?: boolean }) {
   const { world, touch } = useEditor()
   const effect = equipment ? spec.kind : spec.effect || 'damage'
-  const powerLabel = effect === 'armor' ? 'Armor' : effect === 'heal' ? 'Healing HP' : effect === 'knockout' ? 'Success chance (%)' : 'Damage'
+  const powerLabel = effect === 'ward' ? 'Attack reduction (%)' : effect === 'armor' ? 'Armor' : effect === 'heal' ? 'Healing HP' : effect === 'knockout' ? 'Success chance (%)' : 'Damage'
   const dot = !equipment && effect === 'damage' && (spec.status_effects || []).some((s: Obj) => world.status_effects?.[s.effect]?.kind === 'damage')
   const levels: Obj[] = spec.magic_levels || []
   return (
@@ -20,11 +20,11 @@ export function MagicProgressionEditor({ spec, equipment = false }: { spec: Obj;
           onChange={(value) => {
             spec.magic = value === 'on'
             if (spec.magic && !levels.length) {
-              const base = equipment ? Math.max(1, Math.round((spec[spec.kind === 'weapon' ? 'damage' : 'armor'] || 2) / 2)) : effect === 'heal' ? Math.max(1, Math.round((spec.heal || 20) / 2)) : effect === 'knockout' ? Math.round((spec.chance ?? 70) / 2) : 6
+              const base = equipment ? Math.max(1, Math.round((spec[spec.kind === 'weapon' ? 'damage' : 'armor'] || 2) / 2)) : effect === 'heal' ? Math.max(1, Math.round((spec.heal || 20) / 2)) : effect === 'ward' ? (spec.ward ?? 20) : effect === 'knockout' ? Math.round((spec.chance ?? 70) / 2) : 6
               const step = equipment ? 1 : 2
               let xp = 0
               spec.magic_levels = Array.from({ length: 100 }, (_, index) => {
-                const row: Obj = { xp, power: Math.min(effect === 'knockout' ? 100 : 10000, base + index * step) }
+                const row: Obj = { xp, power: Math.min(effect === 'ward' ? 90 : effect === 'knockout' ? 100 : 10000, base + index * step) }
                 if (dot) row.effect_damage = 1 + Math.floor(index / 5)
                 xp += 100 + index * 50
                 return row
@@ -38,7 +38,8 @@ export function MagicProgressionEditor({ spec, equipment = false }: { spec: Obj;
           <Note>
             {equipment ? 'Each copy keeps its own level when equipped, dropped or stored. Weapons practice on attacks, including misses; armor practices when worn or used as a shield and struck.' : 'Each spell starts at level 1 and learns separately. Valid casts earn XP even when the target dodges; blocked commands and cooldown retries earn none.'}
             {' '}Total XP is the lifetime threshold for reaching that level. Defaults require 100 practice XP for level 2 and 252,450 for level 100. Meaningful challenges award extra practice, controlled in Mana &amp; mastery.
-            {!equipment && effect === 'damage' && ' Damage below is the base spell damage before class penalties and chosen-rank bonuses; weapon damage is not added.'}
+            {!equipment && effect === 'ward' && ' Power is attack damage reduction before class, race and rank modifiers; the final value is limited by the world ward cap.'}
+            {!equipment && effect === 'damage' && ' Damage below is the base spell damage before class, race and chosen-rank modifiers; weapon damage is not added.'}
           </Note>
           <div className="max-h-[32rem] overflow-auto md:col-span-2">
             <table className="w-full min-w-[340px] text-left text-sm">
@@ -47,7 +48,7 @@ export function MagicProgressionEditor({ spec, equipment = false }: { spec: Obj;
                 <tr key={index} className="border-b">
                   <th className="p-2 font-medium">{index + 1}</th>
                   <td className="p-2"><NumberInput aria-label={`Level ${index + 1} total XP`} value={row.xp} min={0} max={1000000000} step={1} disabled={index === 0} onValue={(v) => { row.xp = v ?? 0; touch() }} /></td>
-                  <td className="p-2"><NumberInput aria-label={`Level ${index + 1} ${powerLabel}`} value={row.power} min={effect === 'heal' ? 1 : 0} max={effect === 'knockout' ? 100 : 10000} step={1} onValue={(v) => { row.power = v ?? 0; touch() }} /></td>
+                  <td className="p-2"><NumberInput aria-label={`Level ${index + 1} ${powerLabel}`} value={row.power} min={effect === 'heal' ? 1 : 0} max={effect === 'ward' ? 90 : effect === 'knockout' ? 100 : 10000} step={1} onValue={(v) => { row.power = v ?? 0; touch() }} /></td>
                   {!equipment && <td className="p-2"><NumberInput aria-label={`Level ${index + 1} mana cost`} value={row.mana_cost} fallback={spec.mana_cost || 0} min={0} max={10000} step={1} onValue={(v) => { row.mana_cost = v ?? 0; touch() }} /></td>}
                   {dot && <td className="p-2"><NumberInput aria-label={`Level ${index + 1} effect damage per pulse`} value={row.effect_damage} blank="delete" placeholder="Effect default" min={0} max={1000} step={1} onValue={(v) => { if (v === undefined) delete row.effect_damage; else row.effect_damage = v; touch() }} /></td>}
                 </tr>

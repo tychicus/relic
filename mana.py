@@ -15,8 +15,7 @@ class Mana:
 
     def max_mana(self):
         if not self.p or not self.can_use_magic():return 0
-        cls=self.w['classes'][self.p['class']]
-        return cls.get('mana',0)+(self.p['level']-1)*cls.get('mana_per_level',0)+(self.mana_progress()['level']-1)*self.rules()['mana_per_practice_level']
+        return self.character_stats(self.p['race'],self.p['class'],self.p['level'],self.mana_progress()['level'])['mana']
 
     def init_mana(self):
         self._mana_tick=self.clock()

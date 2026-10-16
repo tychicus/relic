@@ -118,7 +118,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
             disabled={
               s.remaining > 0 ||
               (s.mana_cost || 0) > (p.mana || 0) ||
-              (actionRecovery > 0 && ['damage', 'heal', 'knockout'].includes(s.effect || 'damage')) ||
+              (actionRecovery > 0 && ['damage', 'heal', 'knockout', 'ward'].includes(s.effect || 'damage')) ||
               (s.effect === 'damage' && !s.initiates && !p.combat) ||
               (s.effect === 'knockout' && !data.enemy) ||
               (s.effect === 'heal' && p.hp >= p.max_hp)

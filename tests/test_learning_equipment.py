@@ -1,4 +1,4 @@
-"""End-to-end learning, class penalties, slots and weight on the current world."""
+"""End-to-end learning, class penalties, slots and unlimited inventory on the current world."""
 import copy
 import json
 from pathlib import Path
@@ -145,7 +145,7 @@ class LearningEquipmentTests(unittest.TestCase):
 
     def test_all_body_slots_shield_and_two_hands(self):
         self.g.command('LoOk SeLf')
-        text=self.g.state['log'][-2]['text']
+        text=self.g.state['log'][-1]['text']
         for label in ('Left hand','Helmet','Pants','Arms'):
             self.assertIn(label+': '+('boxers' if label=='Pants' else 'nothing'),text)
         for iid in ('leather_cap','leather_pants','leather_bracers'):self.equip(iid)
@@ -153,24 +153,24 @@ class LearningEquipmentTests(unittest.TestCase):
         shield=next(i for i,s in self.g.w['items'].items() if s.get('shield') and not s.get('drop_only'));self.equip(shield)
         self.assertEqual(self.g.p['equipment']['left_hand'],shield)
         equipped=copy.deepcopy(self.g.p['equipment'])
-        self.g.command('look self');text=self.g.state['log'][-2]['text']
+        self.g.command('look self');text=self.g.state['log'][-1]['text']
         for slot,label in [('weapon','Right hand'),('left_hand','Left hand'),('helmet','Helmet'),('armor','Chest'),('pants','Pants'),('arms','Arms')]:
             self.assertIn(label+': '+self.g.item(equipped[slot])['name']+' — ',text)
         self.assertEqual(self.g.p['equipment'],equipped)
-        self.g.command('eq');self.assertEqual(self.g.state['log'][-2]['text'],text)
+        self.g.command('eq');self.assertEqual(self.g.state['log'][-1]['text'],text)
         self.g.p['inventory'].append('greatsword');before=copy.deepcopy(self.g.p)
         with self.assertRaisesRegex(ValueError,'Two-handed'):self.g.equip_hand('greatsword')
         self.assertEqual(self.g.p,before)
         self.g.extra_command('unequip','shield');self.g.equip_hand('greatsword')
         with self.assertRaisesRegex(ValueError,'Two-handed'):self.g.equip_hand(shield)
         self.assertEqual(self.g.item(self.g.p['equipment']['weapon'])['hands'],2)
-        self.g.command('look self');text=self.g.state['log'][-2]['text']
+        self.g.command('look self');text=self.g.state['log'][-1]['text']
         self.assertIn('Left hand: occupied by Iron Greatsword',text)
         self.assertIn('two-handed',text);self.assertNotIn('Left hand: nothing',text)
         self.g.extra_command('unequip','bracers');self.assertNotIn('arms',self.g.p['equipment'])
         self.g.p['equipment']={};self.g.p['inventory']=[]
         self.g.w['rooms'][self.g.p['room']]['dark']=True
-        self.g.command('look self');text=self.g.state['log'][-2]['text']
+        self.g.command('look self');text=self.g.state['log'][-1]['text']
         self.assertEqual(text.count(': nothing'),5)
         self.assertIn('Pants: boxers',text)
 
@@ -192,82 +192,85 @@ class LearningEquipmentTests(unittest.TestCase):
         self.g.repair_item('helmet');self.assertEqual(self.g.state['instances'][iid]['bonus'],0)
         self.assertTrue(self.g.item(iid)['enchanted']);self.reload();self.assertEqual(self.g.p['equipment']['helmet'],iid)
 
-    def test_capacity_grows_by_level_and_counts_equipped_gear(self):
-        self.assertEqual(self.g.carry_capacity(),70);self.level(10);self.assertEqual(self.g.carry_capacity(),97)
-        self.g.p['inventory'].append('leather_cap');before=self.g.carried_weight();self.g.equip_hand('leather_cap')
-        self.assertEqual(self.g.carried_weight(),before);self.g.extra_command('unequip','helmet')
-        self.assertEqual(self.g.carried_weight(),before)
+    def legacy_limits(self):
+        self.g.w['settings']['bag_capacity']=1
+        self.g.w['revision']['weight_enabled']=True
+        self.g.w['classes']['warrior'].update(carry_capacity=1,carry_per_level=0)
+        self.g.w['items']['greatsword']['weight']=10000
 
-    def test_overweight_buy_get_leave_gold_and_items_untouched(self):
-        self.g.p.update(room='shop',gold=10000);self.g.w['classes']['warrior']['carry_capacity']=self.g.carried_weight()
-        before=copy.deepcopy(self.g.p);self.g.command('buy greatsword');self.assertEqual(self.g.p,before)
+    def test_buy_get_and_unequip_ignore_legacy_limits(self):
+        self.legacy_limits();self.g.p.update(room='shop',gold=10000)
+        before=self.g.p['gold'];self.g.command('buy greatsword')
+        self.assertEqual(self.g.p['gold'],before-self.g.w['items']['greatsword']['price'])
         self.g.state['ground']['shop']=['greatsword'];self.g.command('get greatsword')
-        self.assertEqual(self.g.p,before);self.assertEqual(self.g.state['ground']['shop'],['greatsword'])
+        self.assertEqual(self.g.p['inventory'].count('greatsword'),2)
+        self.assertEqual(self.g.state['ground']['shop'],[])
+        self.g.p['inventory'].append('leather_cap');self.g.equip_hand('leather_cap')
+        self.g.extra_command('unequip','helmet');self.assertIn('leather_cap',self.g.p['inventory'])
+        self.g.command('unequip weapon');self.assertIn('rusted_sword',self.g.p['inventory'])
 
-    def test_chest_contents_and_captive_cage_weight_cannot_be_hidden(self):
-        chest_type=next(i for i,s in self.g.w['items'].items() if s['kind']=='chest')
-        cage_type=next(i for i,s in self.g.w['items'].items() if s['kind']=='cage')
-        chest=self.g.grant(chest_type);cage=self.g.grant(cage_type)
+    def test_ground_chest_withdrawal_preserves_occupied_cage(self):
+        self.legacy_limits();chest=self.g.grant('storage_chest');cage=self.g.grant('iron_cage')
         self.g.state['instances'][cage].update(enemy='beetle',count=2)
         self.g.state['instances'][chest]['contents']=[cage,'iron_sword']
-        expected=self.g.item_weight(chest_type)+self.g.item_weight(cage_type)+4+self.g.item_weight('iron_sword')
-        self.assertEqual(self.g.item_weight(chest),expected)
-        self.g.p['inventory'].append(chest);before=self.g.carried_weight()
-        self.g.w['classes']['warrior']['carry_capacity']=1
+        self.g.p['inventory'].append(chest)
         self.g.extra_command('get',f'iron_sword from {chest}')
-        self.assertEqual(self.g.carried_weight(),before)
-        self.g.drop_item(chest);before=self.g.carried_weight()
-        with self.assertRaisesRegex(ValueError,'weight'):self.g.extra_command('get',f'{cage} from {chest}')
-        self.assertEqual(self.g.carried_weight(),before);self.assertIn(cage,self.g.state['instances'][chest]['contents'])
+        self.g.drop_item(chest)
+        self.g.extra_command('get',f'{cage} from {chest}')
+        self.assertIn(cage,self.g.p['inventory'])
+        self.assertEqual(self.g.state['instances'][cage]['count'],2)
+        self.assertEqual(self.g.state['instances'][chest]['contents'],[])
 
-    def test_overweight_save_is_retained_and_can_drop_items(self):
-        self.g.p['inventory'].extend(['greatsword']*10);before=self.g.p['inventory'][:];self.reload()
-        self.assertEqual(self.g.p['inventory'],before);self.assertGreater(self.g.carried_weight(),self.g.carry_capacity())
-        self.g.drop_item('greatsword');self.assertEqual(len(self.g.p['inventory']),len(before)-1)
+    def test_large_inventory_persists_and_legacy_limits_never_reappear(self):
+        self.legacy_limits();self.g.update_world(copy.deepcopy(self.g.w))
+        self.g.p['inventory'].extend(['greatsword']*1000);before=self.g.p['inventory'][:];self.reload()
+        self.assertEqual(self.g.p['inventory'],before)
+        self.g.drop_item('greatsword');self.g.get_item('greatsword')
+        self.assertEqual(self.g.p['inventory'],before)
+        snapshot=self.g.snapshot()
+        for key in ('bag_capacity','carried_weight','carry_capacity','weight_enabled'):
+            self.assertNotIn(key,snapshot['player'])
+        self.assertNotIn('weight',snapshot['items']['greatsword'])
+        self.assertEqual(self.g.w['items']['greatsword']['weight'],10000)  # Snapshot must not mutate authored data.
+        self.g.command('weight');self.assertIn('no item limit',self.g.state['log'][-1]['text'])
 
-    def test_weight_loot_stays_on_ground_without_losing_reward(self):
-        self.g.w['classes']['warrior']['carry_capacity']=1;self.g.p.update(room='meadow')
+    def test_ordinary_loot_enters_bag_despite_legacy_limits(self):
+        self.legacy_limits();self.g.p.update(room='meadow')
         self.g.w['enemies']['beetle']['loot']=[{'item':'greatsword','weight':1}]
-        self.g.victory(self.g.enemy());self.assertNotIn('greatsword',self.g.p['inventory'])
-        self.assertIn('greatsword',self.g.state['ground']['meadow']);self.assertGreater(self.g.p['xp'],0)
+        self.g.victory(self.g.enemy());self.assertIn('greatsword',self.g.p['inventory'])
+        self.assertNotIn('greatsword',self.g.state['ground'].get('meadow',[]));self.assertGreater(self.g.p['xp'],0)
 
-    def test_weight_and_slots_owner_validation(self):
-        for change in [lambda w:w['items']['iron_sword'].update(weight=-1),lambda w:w['items']['leather_cap'].update(armor_slot='feet')]:
-            w=copy.deepcopy(self.g.w);change(w)
-            with self.assertRaises(ValueError):validate(w)
+    def test_equipment_slots_still_validate(self):
+        w=copy.deepcopy(self.g.w);w['items']['leather_cap']['armor_slot']='feet'
+        with self.assertRaises(ValueError):validate(w)
         self.equip('leather_cap');w=copy.deepcopy(self.g.w);w['items']['leather_cap']['armor_slot']='arms'
         with self.assertRaisesRegex(ValueError,'slot'):self.g.update_world(w)
 
-    def test_overweight_capture_preserves_creature(self):
-        e=self.arena();e['unconscious']=True;self.g.w['classes']['warrior']['carry_capacity']=1
-        before=copy.deepcopy(e);inventory=self.g.p['inventory'][:]
-        with self.assertRaisesRegex(ValueError,'weight'):self.g.extra_command('get',e['uid'])
-        self.assertEqual(e,before);self.assertEqual(self.g.p['inventory'],inventory)
+    def test_capture_ignores_legacy_limits_without_losing_creature(self):
+        self.legacy_limits();e=self.arena();e['unconscious']=True
+        before=len(self.g.p['inventory']);self.g.extra_command('get',e['uid'])
+        self.assertEqual(len(self.g.p['inventory']),before+1)
+        captive=self.g.state['instances'][self.g.p['inventory'][-1]]
+        self.assertEqual((captive['kind'],captive['enemy']),('captive',e['type']))
+        self.assertEqual(e['hp'],0);self.assertFalse(e['unconscious'])
 
-    def test_harvest_weight_failure_preserves_remains(self):
-        self.g.p['room']='meadow';self.g.w['classes']['warrior']['carry_capacity']=1
+    def test_harvest_ignores_legacy_limits_and_cannot_duplicate_yields(self):
+        self.legacy_limits();self.g.p['room']='meadow'
         self.g.w['enemies']['beetle']['harvest']=[{'item':'iron_sword','count':2}]
         corpse=dict(uid='corpse-test',type='beetle',name='Test beetle',room='meadow',expires=self.now+300)
         self.g.state['corpses'].append(corpse)
-        before=self.g.p['inventory'][:]
-        with self.assertRaisesRegex(ValueError,'weight'):self.g.harvest('corpse-test')
-        self.assertFalse(corpse.get('harvested'));self.assertEqual(self.g.p['inventory'],before)
+        self.g.harvest('corpse-test');self.assertTrue(corpse['harvested'])
+        self.assertEqual(self.g.p['inventory'].count('iron_sword'),2)
+        with self.assertRaises(ValueError):self.g.harvest('corpse-test')
+        self.assertEqual(self.g.p['inventory'].count('iron_sword'),2)
 
-    def test_cooking_weight_failure_does_not_consume_ingredients(self):
-        self.g.w['recipes']['test_meal']=dict(name='Test Meal',input='potion',output='greatsword',count=1,output_count=1,fire=False,chance=100)
-        self.g.p['inventory'].append('potion');self.g.w['classes']['warrior']['carry_capacity']=self.g.carried_weight()
-        before=self.g.p['inventory'][:]
-        with self.assertRaisesRegex(ValueError,'weight'):self.g.cook('test_meal')
-        self.assertEqual(self.g.p['inventory'],before)
-
-    def test_owner_capacity_changes_and_weight_toggle(self):
-        w=copy.deepcopy(self.g.w);w['classes']['warrior'].update(carry_capacity=10,carry_per_level=4)
-        w['items']['greatsword']['weight']=500;self.g.update_world(w)
-        self.assertEqual(self.g.carry_capacity(),10);self.assertFalse(self.g.can_carry('greatsword'))
-        self.level(3);self.assertEqual(self.g.carry_capacity(),18)
-        w=copy.deepcopy(self.g.w);w['revision']['weight_enabled']=False;self.g.update_world(w)
-        self.assertTrue(self.g.can_carry('greatsword'));self.reload()
-        self.assertEqual(self.g.item_weight('greatsword'),500);self.assertFalse(self.g.rules()['weight_enabled'])
+    def test_cooking_ignores_legacy_limits_and_consumes_exact_ingredients(self):
+        self.legacy_limits()
+        self.g.w['recipes']['test_meal']=dict(name='Test Meal',input='potion',output='greatsword',count=1,output_count=2,fire=False,chance=100)
+        self.g.p['inventory'].append('potion');before=self.g.p['inventory'].count('potion')
+        self.g.cook('test_meal')
+        self.assertEqual(self.g.p['inventory'].count('potion'),before-1)
+        self.assertEqual(self.g.p['inventory'].count('greatsword'),2)
 
     def test_armor_magic_practice_in_each_worn_slot(self):
         e=self.arena()

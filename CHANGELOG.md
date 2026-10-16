@@ -1,3 +1,51 @@
+# Unreleased — Exploration map and unlimited carrying
+
+- SHOW MAP and DISPLAY MAP open a responsive exploration-map dialog. Visited
+  rooms use the creator layout, with zoom, floor selection, centering, keyboard
+  controls, current-location highlighting and known connections. Closing returns
+  focus to commands. Polling, travel, HELP and reloading never open it.
+- Per-character exploration is saved and survives death. Distant LOOK does not
+  reveal map squares; darkness withholds room names until seen. The server sends
+  only visited rooms and connections between them, never enemy/NPC locations,
+  loot, hidden room details, unvisited floors or full-world bounds.
+- Old saves begin charting from their current room. Existing exploration handles
+  later room additions/removals without exposing undiscovered areas.
+- Removed physical item/creature weights, carrying limits and bag item limits
+  from gameplay, player displays and owner controls. Old authored weight/capacity
+  fields are ignored. Purchases, pickup, unequipping, capture, harvesting, cooking,
+  ordinary/rare loot and body recovery all use unlimited player inventory.
+- Chest/cage storage capacities, equipment slots, purchase prices and combat
+  restrictions remain in effect. Loot/spawn selection weights are unchanged.
+- Validation: 328 Python tests passed; one optional personal-save test skipped.
+  Both JavaScript helper suites and the TypeScript/Vite production build passed.
+  Disposable desktop/mobile browser checks covered command-only opening, privacy,
+  visited floors, zoom/fit/center, combat notice, close/Escape focus, persistence,
+  inventory displays and removed owner controls. No browser errors occurred.
+
+# Unreleased — Rule-based skill details and race/class balance
+
+- Skill help, cards, command output and tooltips now share live calculated facts:
+  damage/healing, class/race-adjusted mana, cooldown, shared recovery, targeting,
+  combat-start behavior and actual effects. Physical ranges include current gear.
+- Learning choices, HELP and LEARN show the next rank's exact rounded benefit,
+  point cost and level requirement before spending. Practice mastery is separate;
+  unchanged stats and ranks with no current numeric benefit are identified.
+- Added editable racial HP, mana, magic power and practice modifiers, plus class
+  HP growth. Elves trade health for magic; humans remain balanced; Orcs gain
+  durability while retaining their existing magic restriction and recall exception.
+- Added Cleric: lowest HP/growth, highest mana/growth/recovery, strong divine
+  healing and defense, weak weapons and offensive spells. Added Healing Light
+  and Holy Ward, an expiring self-defense spell that cannot stack or grant immunity.
+- Character creation shows calculated starting HP/mana and growth for the selected
+  combination. Owner controls cover the new values, divine affinities and wards.
+- Saved levels, learned ranks, points, practice and possessions are preserved;
+  current HP/mana clamp to changed maxima. Authored rooms, enemies and XP rewards
+  are unchanged. Old worlds use neutral race modifiers and global HP growth.
+- Validation: 319 Python tests passed; one optional personal-save test skipped.
+  Both JavaScript helper suites and the TypeScript/Vite production build passed.
+  Disposable browser checks covered race/class creation, skill facts, rank buying,
+  Cleric healing/ward, live owner edits and reload, and desktop/mobile layouts.
+
 # Unreleased — Specific help and editable emotes
 
 - HELP is a short topic index. Added focused combat, capture, bank, inventory,

@@ -26,7 +26,6 @@ ATTACHMENT = dict(effect=reference('Status effect', 'status_effects'), chance=nu
 SPAWN = dict(id=text('Permanent spawn rule ID','group'), enemy=reference('Fixed / initial creature','enemies',True), count=number('Number of spawn slots',1,1,12,True), pool=rows('Weighted random alternatives',dict(enemy=reference('Creature','enemies'),weight=number('Weight',1,.001,100000))), chance=number('Chance per attempt (%; failure spawns nothing)',100,0,100), trigger=choice('Attempt trigger',['timer','entry'],'timer'), respawn=boolean('Respawn after defeat or capture',True), delay=number('Respawn / retry delay (seconds)',60,1,86400), roam=boolean('Allow roaming'), roam_seconds=number('Seconds between moves',30,2,86400), roam_rooms=selections('Permitted roaming destinations (empty stays home)','rooms'))
 SCHEMA = {
  'revision': {
-  'weight_enabled':boolean('Enforce carrying weight limits',True),
   'rare_drops_enabled':boolean('Enable very rare bonus equipment drops',True),
   'rare_drop_chance':number('Special drop chance per eligible kill (%) — 0.1 means 1 in 1000',.1,0,100),
   'rare_drop_min_level':number('Minimum enemy level for special drops',10,1,100,True),
@@ -110,20 +109,16 @@ SCHEMA['races']['magic_allowed']=boolean('Race can use magic (spells, enchanting
 SCHEMA['races']['recall_without_magic']=boolean('Allow recall scrolls even when this race cannot use magic')
 SCHEMA['items']['requires_magic']=boolean('Requires magic use (also applies to consumables)')
 SCHEMA['items']['drop_only']=boolean('Enemy-drop equipment only — cannot be sold by shops')
-SCHEMA['classes']['carry_capacity']=number('Carrying capacity at character level 1 (lb)',60,1,10000)
-SCHEMA['classes']['carry_per_level']=number('Extra carrying capacity per character level (lb)',2,0,1000)
-SCHEMA['items']['weight']=number('Item weight (lb; containers exclude contents)',0,0,10000)
 SCHEMA['items']['armor_slot']=choice('Worn slot (armor = chest; shields use a hand)',['helmet','armor','pants','arms'],'armor')
-SCHEMA['enemies']['weight']=number('Creature carrying weight (lb)',10,0,10000)
 SCHEMA['enemies']['healing_override']=boolean('Use creature-specific recovery settings below')
 SCHEMA['enemies']['heal_delay']=number('Creature recovery delay (seconds; requires override)',20,0,86400)
 SCHEMA['enemies']['heal_interval']=number('Creature recovery interval (seconds; requires override)',5,1,3600)
 SCHEMA['enemies']['heal_percent']=number('Creature recovery HP percent (0 disables; requires override)',2,0,100)
 SCHEMA['classes']['starting_ability']=reference('One starting ability','skills',True)
 SCHEMA['classes']['mana_recovery_scale']=number('Mana recovery multiplier',1,0,3)
-SCHEMA['classes']['affinities']=rows('Ability strengths and disadvantages',dict(category=choice('Ability category',['martial','arcane','subtle','craft'],'martial'),power=number('Power multiplier',1,.05,3),mana=number('Mana cost multiplier',1,.1,5),practice=number('Practice XP multiplier',1,.1,5)))
+SCHEMA['classes']['affinities']=rows('Ability strengths and disadvantages',dict(category=choice('Ability category',['martial','arcane','divine','subtle','craft'],'martial'),power=number('Power multiplier',1,.05,3),mana=number('Mana cost multiplier',1,.1,5),practice=number('Spell/mana XP multiplier',1,.1,5)))
 SCHEMA['skills']['mana_cost']=number('Mana cost per valid use (0 means no cost)',0,0,10000,True)
-SCHEMA['skills']['category']=choice('Ability category',['martial','arcane','subtle','craft'],'martial')
+SCHEMA['skills']['category']=choice('Ability category',['martial','arcane','divine','subtle','craft'],'martial')
 SCHEMA['skills']['learn_cost']=number('Learning points per rank',1,1,20,True)
 SCHEMA['skills']['max_rank']=number('Maximum chosen rank',5,1,10,True)
 SCHEMA['skills']['passive']=boolean('Passive basic-attack training (no CAST command)')
@@ -140,6 +135,14 @@ SCHEMA['regions']=dict(
     roam_seconds=number('Seconds between wandering attempts',30,2,86400),
     weather=choice('Weather',['clear','mist','fog','rain','storm','snow'],'clear'),
     fog=number('Fog / weather visibility penalty (%)',0,0,100))
+SCHEMA['classes']['hp_per_level']=number('HP gained per character level',12,1,1000,True)
+SCHEMA['races']['hp_scale']=number('Maximum HP multiplier',1,.1,3)
+SCHEMA['races']['mana_scale']=number('Maximum mana multiplier',1,0,3)
+SCHEMA['races']['magic_power']=number('Magic power multiplier',1,0,3)
+SCHEMA['races']['magic_practice']=number('Spell and mana practice XP multiplier',1,0,5)
+SCHEMA['skills']['ward']=number('Base incoming attack damage reduction (%) for wards',20,0,90)
+SCHEMA['skills']['duration']=number('Ward duration (seconds)',12,1,3600)
+SCHEMA['revision']['ward_cap']=number('Maximum ward damage reduction after all bonuses (%)',60,1,90)
 DEFAULT_RULES={k:v['default'] for k,v in SCHEMA['revision'].items()}
 DEFAULT_RULES['dual_classes']=['warrior']
 

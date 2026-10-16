@@ -87,26 +87,27 @@ class RareDropTests(unittest.TestCase):
             self.assertIsNone(self.g.award_rare_drop(e));self.assertIsNone(self.g.award_rare_drop(e))
             self.assertEqual(roll.call_count,1)
 
-    def test_full_inventory_leaves_drop_on_ground_for_recovery(self):
-        self.pool();self.g.p['inventory']=['potion']*self.g.w['settings']['bag_capacity']
+    def test_large_inventory_collects_rare_drop_and_preserves_it_on_reload(self):
+        self.pool();self.g.p['inventory']=['potion']*1000
+        self.g.w['settings']['bag_capacity']=1
         iid=self.g.award_rare_drop(self.corpse())
-        self.assertNotIn(iid,self.g.p['inventory']);self.assertIn(iid,self.g.state['ground']['meadow'])
-        self.reload();self.g.p['inventory'].pop();self.g.command('get '+iid)
-        self.assertIn(iid,self.g.p['inventory']);self.assertNotIn(iid,self.g.state['ground']['meadow'])
+        self.assertIn(iid,self.g.p['inventory']);self.assertNotIn(iid,self.g.state['ground'].get('meadow',[]))
+        self.reload();self.assertIn(iid,self.g.p['inventory']);self.assertIn(iid,self.g.state['instances'])
 
-    def test_excess_weight_leaves_drop_on_ground_without_losing_instance(self):
+    def test_legacy_weight_limit_does_not_block_rare_drop(self):
         self.pool();self.g.p['inventory']=[]
         self.g.w['classes']['warrior'].update(carry_capacity=1,carry_per_level=0)
         iid=self.g.award_rare_drop(self.corpse())
-        self.assertIn(iid,self.g.state['ground']['meadow']);self.assertIn(iid,self.g.state['instances'])
+        self.assertIn(iid,self.g.p['inventory']);self.assertIn(iid,self.g.state['instances'])
 
-    def test_normal_loot_can_fill_last_slot_without_destroying_rare_drop(self):
-        self.pool();self.g.p['inventory']=['potion']*(self.g.w['settings']['bag_capacity']-1)
+    def test_normal_and_rare_loot_are_both_collected(self):
+        self.pool();self.g.p['inventory']=['potion']*15;self.g.w['settings']['bag_capacity']=15
         self.g.w['enemies']['vampire']['loot']=[dict(item='potion',weight=1)]
         self.g.victory(self.g.spawn_creature('vampire','meadow'))
-        self.assertEqual(len(self.g.p['inventory']),self.g.w['settings']['bag_capacity'])
-        self.assertEqual(len(self.g.state['ground']['meadow']),1)
-        self.assertTrue(self.g.item(self.g.state['ground']['meadow'][0])['drop_only'])
+        self.assertEqual(len(self.g.p['inventory']),17)
+        self.assertEqual(self.g.p['inventory'].count('potion'),16)
+        self.assertTrue(self.g.item(self.g.p['inventory'][-1])['drop_only'])
+        self.assertFalse(self.g.state['ground'].get('meadow'))
 
     def test_two_copies_keep_identity_through_repair_death_and_recovery(self):
         self.pool('starwake');first=self.g.award_rare_drop(self.corpse());second=self.g.award_rare_drop(self.corpse())

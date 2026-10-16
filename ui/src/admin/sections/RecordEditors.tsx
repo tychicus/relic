@@ -135,8 +135,7 @@ const settingNames: Record<string, string> = {
   flee_chance: 'Chance to flee',
   gold_loss: 'Legacy gold loss (only when recoverable player bodies are disabled)',
   item_loss_chance: 'Legacy bag item loss chance (only when recoverable player bodies are disabled)',
-  bag_capacity: 'Bag capacity',
-  hp_per_level: 'HP gained per level',
+  hp_per_level: 'Default HP gained per level (classes can override)',
   damage_per_level: 'Damage gained per level',
 }
 
@@ -226,15 +225,17 @@ export function SkillEditor({ skill, id }: { skill: Obj; id: string }) {
   const effect = skill.effect || 'damage'
   return (
     <>
-      <TextField obj={skill} k="description" label="Description" multiline />
+      <TextField obj={skill} k="description" label="Author notes (not shown as player rules)" multiline />
+      <Note>Player skill descriptions and next-rank benefits are calculated from these rules, class modifiers, equipment and mastery. Save changes, then use HELP {id} to see the current character’s values.</Note>
       <SelectField
         label="Effect type"
         value={effect}
-        options={[['damage', 'Damage attack'], ['heal', 'Healing'], ['knockout', 'Knockout / capture'], ['enchant', 'Enchanting (trainable)'], ['sharpen', 'Sharpening']]}
+        options={[['damage', 'Damage attack'], ['heal', 'Healing'], ['ward', 'Self-defense ward'], ['knockout', 'Knockout / capture'], ['enchant', 'Enchanting (trainable)'], ['sharpen', 'Sharpening']]}
         onChange={(v) => {
           skill.effect = v
           if (v !== effect) { skill.magic = false; delete skill.magic_levels }
           if (v === 'heal') skill.heal = skill.heal || 20
+          if (v === 'ward') { skill.ward = skill.ward ?? 20; skill.duration = skill.duration ?? 12 }
           if (v === 'knockout') skill.chance = skill.chance ?? 70
         }}
       />
@@ -244,13 +245,13 @@ export function SkillEditor({ skill, id }: { skill: Obj; id: string }) {
       {!skill.magic && effect === 'heal' && <NumberField obj={skill} k="heal" label="HP restored" />}
       {!skill.magic && effect === 'knockout' && <NumberField obj={skill} k="chance" label="Base success chance (%)" />}
       {!skill.magic && effect === 'damage' && <NumberField obj={skill} k="multiplier" label="Damage multiplier" />}
-      {['damage', 'heal', 'knockout'].includes(effect) && <MagicProgressionEditor spec={skill} />}
+      {['damage', 'heal', 'knockout', 'ward'].includes(effect) && <MagicProgressionEditor spec={skill} />}
       <Eligibility skill={skill} k="allowed_classes" label="Classes allowed to unlock this skill" group="classes" />
       <Eligibility skill={skill} k="allowed_races" label="Races allowed to unlock this skill" group="races" />
       <Note>
         <strong className="text-foreground">Player command:</strong> CAST {skill.name} [creature] (or CAST {id} [creature]). Damage skills need a fight
         unless May initiate combat is enabled. Enchanting targets held weapons or worn/held armor; Sharpening uses the right-hand
-        weapon. Their balance controls are in Crafting &amp; balance. Healing also works outside combat.
+        weapon. Their balance controls are in Crafting &amp; balance. Healing and self-defense wards also work outside combat. Wards reduce attack damage after armor, do not stack, and do not reduce status damage.
       </Note>
     </>
   )

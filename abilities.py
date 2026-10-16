@@ -8,7 +8,7 @@ def validate_abilities(w):
         if not ok:raise ValueError(message)
     for sid,skill in w['skills'].items():
         effect=skill.get('effect','knockout' if sid=='knockout' else 'damage')
-        require(effect in ('damage','heal','knockout','enchant','sharpen'),'Choose a supported skill effect.')
+        require(effect in ('damage','heal','knockout','enchant','sharpen','ward'),'Choose a supported skill effect.')
         level=skill.get('unlock_level',1)
         require(type(level) is int and 1<=level<=100,'Skill unlock level must be a whole number from 1 to 100.')
         require(level<=len(w['settings']['level_xp']),f'{skill["name"]} unlocks at level {level}, but character progression ends at level {len(w["settings"]["level_xp"])}. Add XP thresholds or lower the unlock level.')
@@ -34,7 +34,7 @@ class Abilities(Frontier):
 
     @staticmethod
     def magical_skill(skill):
-        return bool(skill.get('magic') or skill.get('category')=='arcane' or skill.get('effect')=='enchant' or skill.get('mana_cost',0)>0)
+        return bool(skill.get('magic') or skill.get('category') in ('arcane','divine') or skill.get('effect')=='enchant' or skill.get('mana_cost',0)>0)
 
     @staticmethod
     def magical_item(item):
@@ -93,6 +93,7 @@ class Abilities(Frontier):
     def activate_skill(self,sid,target=''):
         skill=self.require_skill(sid);effect=skill.get('effect','knockout' if sid=='knockout' else 'damage')
         if effect=='knockout':self.knockout(target,sid);return
+        if effect=='ward':self.cast_ward(sid,target);return
         if effect=='damage':
             if not self.visible():raise ValueError('It is too dark to choose a target. Carry a light.')
             if not self.p['combat'] or not self.enemy():raise ValueError(skill['name']+' needs an active fight. ATTACK first.')

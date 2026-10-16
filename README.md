@@ -28,7 +28,7 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
 
 HELP is a short topic index. HELP COMBAT, HELP CAPTURE and HELP BANK explain
 those systems; HELP FIREBALL (or any skill name/ID) shows live mana costs,
-cooldowns, power, targets and learning requirements. SYNTAX CAST, SYNTAX GET
+cooldowns, shared recovery, damage/healing, status effects, targets and combat-start rules. Values include class, race, equipped gear, learned rank and mastery. SYNTAX CAST, SYNTAX GET
 and SYNTAX TALK give command formats and examples. Skill cards include a Help
 button. Mistakes suggest useful commands; suggestions never execute actions.
 
@@ -51,6 +51,60 @@ Disable an entry to remove it from player commands and help, then save world
 changes. Existing game commands, skill names and help topics cannot be reused.
 Older world files without an emotes section still load; ME remains available.
 
+## Skill rules and rank comparisons
+
+Skill cards, HELP <skill>, SKILLS and cast-button tooltips use calculated rules.
+Physical attacks show a damage range with current gear; spells show their current
+power and actual mana cost. Effects include class/race-adjusted chances, duration,
+stacking and per-pulse damage. Authored skill descriptions remain owner notes;
+they cannot override the player-facing rules. Skill notes are edited under Skills & spells.
+
+Before buying a rank, open the learning choices, HELP <skill>, or LEARN without an
+argument. They show the next rank's point cost, required character level and exact
+rounded improvement at the **current** level, gear and mastery. Unchanged costs
+and timing are stated explicitly. A rank that currently adds no numeric benefit
+says so. LEARN <skill> still purchases directly; no additional confirmation is added.
+Spell/crafting mastery is earned through practice, separately from purchased ranks.
+
+## Race and class balance
+
+Human class baselines at level 1 (before race modifiers or mana mastery):
+
+| Class | HP | HP per level | Mana | Mana per level | Role |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Warrior | 65 | 12 | 12 | 1 | Health and weapon techniques |
+| Rogue | 60 | 10 | 18 | 1 | Physical damage, dodge and escape |
+| Mage | 50 | 8 | 40 | 3 | Offensive spells and enchanting |
+| Cleric | 40 | 6 | 55 | 4 | Healing and defensive wards |
+
+- Humans use the class baselines without racial bonuses or penalties.
+- Elves have 15% less total HP, 15% more mana and magic power, and 25% faster
+  spell/mana practice. Character XP and learning-point schedules do not change.
+- Orcs gain +5 base HP and 10% more total HP. Their existing no-magic restriction
+  remains, with recall scrolls as the exception; they choose Warrior or Rogue.
+  If the owner enables magic, their default magic power/mana multipliers are 0.25,
+  and magic practice is 0.5. These penalties are editable.
+
+Clerics start with Healing Light (human: up to 21 HP for 4 mana, 8s cooldown).
+At level 5 they can learn Holy Ward (human: 26% incoming attack reduction for
+12s, 8 mana, 20s cooldown). Both use the shared manual-skill recovery and are
+self-only for now. Wards reduce attack damage after armor, leave at least 1 HP
+damage per hit, do not reduce status damage, do not stack, and end on death.
+An equal or stronger active ward blocks recasting without spending resources.
+The default final ward cap is 60%, adjustable under Crafting & balance.
+
+Divine abilities use a separate class affinity: Clerics get 1.3× power, 0.8× mana
+cost and 1.25× practice; Mages retain stronger offensive magic. Mana recovery
+multipliers are Cleric 1.2, Mage 1, Rogue 0.5, Warrior 0.35. Race modifiers combine
+with the class, and final HP/mana totals are rounded. Class health growth and race
+multipliers are editable under Characters. Old worlds lacking these fields keep
+their previous defaults. Existing saves keep their levels, learned ranks, practice,
+inventory and points; health/mana are capped to the new maximum when loaded.
+
+The class ordering is checked through level 100. This is an initial balance pass;
+encounter difficulty still depends on enemy damage, defenses, groups and rewards.
+New rooms and enemy XP remain owner-authored and are unchanged by this update.
+
 ## Play
 
 - Move with N, S, E, W, UP, DOWN. LOOK inspects the current room; LOOK NORTH 2
@@ -68,7 +122,7 @@ Older world files without an emotes section still load; ME remains available.
   spends earned points to learn or improve it. One point is earned at levels 5, 10,
   15 and every fifth level through 100. SKILLS lists learned abilities; CAST [skill] uses one.
   Existing learned abilities remain; available points use the new allowance minus points spent.
-  Orcs start with +5 HP and cannot use spells, enchanting or magical equipment.
+  Orcs have +5 base HP and a 1.1× total HP multiplier; they cannot use spells, enchanting or magical equipment.
   Recall scrolls are their one magic-item exception, usable at levels 1–29 outside
   combat and rooms that block recall. They can choose Warrior or Rogue; their HP
   bonus, magic restriction and recall exception are editable under Races.
@@ -78,14 +132,23 @@ Older world files without an emotes section still load; ME remains available.
 - Character, spell, magical-equipment and mana progression reach level 100.
   Every valid use trains slow mastery; suitable challenges award extra practice.
   MANA shows your reserve. Spells spend mana, which recovers between fights.
+- SHOW MAP or DISPLAY MAP opens a map pop-up only when requested. It charts only
+  rooms your character has entered and connections between visited rooms, using
+  the creator map layout. It never shows enemies, NPCs, loot, unknown rooms, or
+  connections to unvisited rooms. Your location is highlighted; select a visited
+  elevation, zoom, fit the floor, or center on yourself. Selecting a room does not
+  move you. Close or Escape returns to commands; combat continues while open.
+  Exploration saves per character and survives death. Older saves start with their
+  current room because previous travel was not recorded. Dark rooms remain unnamed
+  until seen with light. HELP MAP explains the controls.
 - INVENTORY, EQUIPMENT, BUY, SELL, GET, DROP, EQUIP and UNEQUIP manage items.
   LOOK SELF (or EQUIPMENT) lists every hand and armor slot, including empty slots.
   Enchanted item names appear violet, with their glow description and separate bonus.
   EQUIP [weapon] LEFT/RIGHT and UNEQUIP LEFT/RIGHT manage hands. A two-handed
   weapon reserves both hands; a one-handed weapon permits a shield. Helmet,
   chest, pants and arms have separate armor slots. Worn armor and shields add defense.
-  WEIGHT shows total carried weight including worn gear and container contents.
-  Carrying capacity grows with character level. REPAIR [item] repairs damaged gear
+  Items have no carrying weight, and your bag has no item-count limit. Chests and
+  cages retain their own storage capacities. REPAIR [item] repairs damaged gear
   at a repair service; Anthony's shop offers repairs.
 - QUAFF POTION retains the old healing behavior. EAT [food], HARVEST [remains],
   COOK [recipe], SHARPEN, ENCHANT [item] and RECALL access the new systems.
@@ -113,7 +176,7 @@ Older world files without an emotes section still load; ME remains available.
 - Death returns you to the fountain. Your body keeps all carried gold, inventory and
   worn gear for 15 minutes, including time with the game closed. Return and LOOK BODY,
   GET ALL FROM BODY, or GET <item> FROM BODY. If several bodies remain, use BODY <number>.
-  Recovered gear goes into your bag; equip it again. Bag and weight limits still apply.
+  Recovered gear goes into your bag; equip it again. All belongings can be recovered at once.
 - From the fountain, go SOUTH then WEST to the Brass Badger Bank. Osric Tallywick
   handles BALANCE, DEPOSIT <amount or ALL> and WITHDRAW <amount or ALL>. Accounts belong
   to the character's permanent identity. Banked gold remains safe after death.
@@ -132,8 +195,8 @@ is checked once; reloading cannot reroll a checked corpse.
 
 These items cannot be purchased. Weapons and armor exceed ordinary gear in their
 matching slots; Starwake's damage exceeds the Elven sword at every equal mastery
-level. Seven rewards are nonmagical and usable by Orcs. Full bags or excess weight
-leave the reward on the ground. Each copy has its own identity, so storage, repairs,
+level. Seven rewards are nonmagical and usable by Orcs. Both ordinary and rare
+loot go straight into your bag. Each copy has its own identity, so storage, repairs,
 enchantments, saving and death recovery preserve the individual item.
 
 Use **Rare equipment drops** in the owner editor to change the chance, enemy-level
@@ -165,8 +228,8 @@ handles temporary item enchantments and slow crafting progression.
 validates their per-level power tables. `revision_rules.py` provides the other
 validation/authoring schemas used by the editor. `adventure.py`,
 `frontier.py`, and `abilities.py` retain discoveries, containers and eligibility.
-`learning.py`, `mana.py` and `equipment.py` handle learning, reserves and carrying
-weight. `regions.py` manages regional populations; `encounters.py` tracks multiple
+`learning.py`, `mana.py` and `equipment.py` handle learning, reserves and equipment
+slots. `player_map.py` tracks per-character exploration and filters map data. `regions.py` manages regional populations; `encounters.py` tracks multiple
 participants and individual targets. `server.py` is the existing loopback-only transport. The browser interface is
 a React + shadcn/ui app in `ui/`; its built files live in `static/` and are
 all the game needs, so playing never requires Node. New state separates

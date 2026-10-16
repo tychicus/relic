@@ -1,8 +1,22 @@
 import { TerminalBox } from '@/components/Terminal'
 import { ActionButton, ItemRow, countItems, type Send } from './ItemRow'
-import type { Snapshot } from './types'
+import type { Skill, Snapshot } from './types'
 
 const slotNames: Record<string, string> = { helmet: 'Helmet', armor: 'Chest', pants: 'Pants', arms: 'Arms', weapon: 'Right hand', left_hand: 'Left hand / shield' }
+
+
+function SkillFacts({ skill, expanded = false }: { skill: Skill; expanded?: boolean }) {
+  if (!skill.details) return null
+  return <div className="my-1 text-xs text-muted-foreground">
+    <p className="text-story">{skill.details.summary}</p>
+    <p>{skill.details.lines[1]}</p>
+    <details open={expanded || undefined}>
+      <summary className="cursor-pointer text-gold">Timing, targets &amp; effects</summary>
+      <div className="mt-1 grid gap-1">{skill.details.lines.slice(2).map((line, i) => <p key={i}>{line}</p>)}</div>
+    </details>
+    {skill.recovery_lines?.map(line => <p key={line}>{line}</p>)}
+  </div>
+}
 
 export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
   const p = data.player!
@@ -10,24 +24,22 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
   return (
     <div className="grid min-w-0 content-start gap-6">
       <TerminalBox title="Skills" muted>
+        {p.ward && <p className="mb-2 text-sm text-story" role="status">Ward active: {p.ward.power}% less incoming attack damage · {p.ward.remaining}s remaining. Status damage is unaffected.</p>}
         {!!p.max_mana && <p className="mb-3 text-sm text-story">Mana mastery {p.mana_progress?.level || 1} · {p.mana_progress?.next_xp === null ? 'Maximum level' : `${p.mana_progress?.level_xp || 0}/${p.mana_progress?.next_xp || 100} XP to next level`}<br />Recover mana between fights; rest at an inn to refill it.</p>}
         {skills.filter(s => !data.learning_enabled || s.unlocked).map((s) => (
-          <p key={s.id} className="my-0.5 text-sm" title={s.description || ''}>
+          <div key={s.id} className="my-2 border-b border-border pb-2 text-sm">
             <span className={s.unlocked ? 'text-foreground' : 'text-muted-foreground'}>{s.unlocked ? '✓' : '·'} {s.name}</span>
             {data.learning_enabled && <span className="text-muted-foreground"> · rank {s.rank}/{s.max_rank}{s.passive ? ' · automatic attacks' : ''}</span>}
-            {!!s.mana_cost && <span className="text-muted-foreground"> · {s.mana_cost} mana</span>}
+            <SkillFacts skill={s} />
             {s.magic_progress && <span className="block text-xs text-muted-foreground">
-              Spell level {s.magic_progress.level} · {s.magic_progress.next_xp === null ? 'Maximum level' : `${s.magic_progress.level_xp}/${s.magic_progress.next_xp} XP to next level`}
-              <br />{s.magic_progress.power} {s.effect === 'heal' ? 'healing HP' : s.effect === 'knockout' ? '% success chance' : 'damage'}
-              {s.magic_progress.effect_damage !== null && ` · ${s.magic_progress.effect_damage} effect damage/pulse`}
+              Spell mastery {s.magic_progress.level} · {s.magic_progress.next_xp === null ? 'Maximum level' : `${s.magic_progress.level_xp}/${s.magic_progress.next_xp} XP to next level`}
             </span>}
             {s.effect === 'enchant' && p.enchanting?.[s.id] && <span className="block text-xs text-muted-foreground">
-              Skill level {p.enchanting[s.id].level} · {p.enchanting[s.id].next_xp === null ? 'Maximum level' : `${p.enchanting[s.id].level_xp}/${p.enchanting[s.id].next_xp} XP to next level`}
-              <br />{p.enchanting[s.id].chance}% success · +{p.enchanting[s.id].bonus} damage/armor · {Math.round(p.enchanting[s.id].duration / 60 * 10) / 10} minutes
+              Crafting mastery {p.enchanting[s.id].level} · {p.enchanting[s.id].next_xp === null ? 'Maximum level' : `${p.enchanting[s.id].level_xp}/${p.enchanting[s.id].next_xp} XP to next level`}
             </span>}
             <ActionButton send={send} command={`help ${s.id}`} aria-label={`Help for ${s.name}`} className="ml-1">Help</ActionButton>
             {!s.unlocked && <span className="text-muted-foreground"> (level {s.unlock_level ?? 1})</span>}
-          </p>
+          </div>
         ))}
         {!skills.length && <p className="text-sm text-muted-foreground">No skills assigned.</p>}
       </TerminalBox>
@@ -40,10 +52,14 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
             {[...skills].sort((a,b) => (a.learn_level || 1) - (b.learn_level || 1)).map(s => {
               const capped = (s.rank || 0) >= (s.max_rank || 5)
               const locked = p.level < (s.learn_level || 1)
-              return <div key={s.id} className="border-t border-border pt-2 text-sm">
+              return <div key={s.id} data-skill={s.id} className="border-t border-border pt-2 text-sm">
                 <p>{s.name} · rank {s.rank || 0}/{s.max_rank || 5}</p>
-                <p className="text-xs text-muted-foreground">{s.description}</p>
-                <p className="my-1 text-xs text-muted-foreground">Class power {Math.round((s.affinity?.power || 1) * 100)}% · mana cost ×{s.affinity?.mana || 1} · practice ×{s.affinity?.practice || 1}</p>
+                <SkillFacts skill={s} />
+                <p className="my-1 text-xs text-muted-foreground">Class/race power {Math.round((s.affinity?.power ?? 1) * 100)}% · mana cost ×{s.affinity?.mana ?? 1} · spell/mana XP ×{s.affinity?.practice ?? 1}</p>
+                {s.next_rank && <div className="my-2 grid gap-1 border-l-2 border-gold pl-2 text-xs" aria-label={`Next rank for ${s.name}`}>
+                  <p className="text-gold">Rank {s.next_rank.rank} · {s.next_rank.cost} point(s) · character level {s.next_rank.required_level}</p>
+                  {s.next_rank.lines.map((line, i) => <p key={i}>{line}</p>)}
+                </div>}
                 <ActionButton send={send} command={`help ${s.id}`} aria-label={`Learn about ${s.name}`} className="mr-1">Help</ActionButton>
                 <ActionButton send={send} command={`learn ${s.id}`} disabled={!!p.combat || capped || locked || (p.ability_points || 0) < (s.learn_cost || 1)}>
                   {capped ? 'Maximum rank' : `${s.rank ? 'Improve' : 'Learn'} · ${s.learn_cost || 1} point(s)${locked ? ` · level ${s.learn_level}` : ''}`}
@@ -69,8 +85,7 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
           ))}
       </TerminalBox>
 
-      <TerminalBox title={`Inventory ${p.inventory.length}/${p.bag_capacity}`} muted>
-        <p className="mb-2 text-sm text-story">Weight: {(p.carried_weight || 0).toFixed(1)} / {p.carry_capacity || 0} lb{p.weight_enabled ? '' : ' · limit disabled'}<br /><span className="text-xs">Includes worn equipment and container contents. Capacity grows with character level.</span></p>
+      <TerminalBox title={`Inventory · ${p.inventory.length} items`} muted>
         {countItems(p.inventory).map(([id, n]) => (
           <ItemRow key={id} id={id} count={n} mode="bag" data={data} send={send} />
         ))}

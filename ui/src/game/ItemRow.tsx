@@ -5,12 +5,19 @@ import type { Item, Snapshot } from './types'
 
 export type Send = (command: string) => void
 
-function detail(i: Item) {
+function detail(i: Item, data: Snapshot) {
   if (i.kind === 'weapon' || i.kind === 'armor') {
     const base = i.kind === 'weapon' ? `Damage ${i.base_damage ?? i.damage}` : `Armor ${i.base_armor ?? i.armor}`
     return base + (i.enchanted ? ` (+${i.enchantment_bonus})` : '') + (i.sharpen_bonus ? ` · Sharpened +${i.sharpen_bonus}` : '')
   }
-  if (i.recall) return 'Returns to town outside combat'
+  if (i.recall) {
+    const rules = data.recall_rules
+    const level = data.player?.level ?? 1
+    if (!rules) return 'Returns to town outside combat'
+    if (level >= rules.disabled_from) return `Unusable at level ${rules.disabled_from} or above`
+    const usage = level < rules.reusable_below ? `Reusable until level ${rules.reusable_below}` : 'Single-use'
+    return `${usage} · Returns to town · Stops at level ${rules.disabled_from}`
+  }
   if (i.kind === 'consumable') return `Restores ${i.heal} HP`
   if (i.kind === 'light') return 'Lights dark rooms'
   if (i.kind === 'chest') return `Storage ${i.stored_count ?? 0} / ${i.capacity ?? 30}`
@@ -65,7 +72,7 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
     const sell = !sellCage && data.room.shop.length > 0 && !['key', 'captive'].includes(i.kind) && !i.occupied
     actions = (
       <>
-        <ActionButton send={send} command={`${action.toLowerCase()} ${id}`} disabled={action === 'Quaff' && (data.player?.potion_ready || 0) > data.time}>{action}</ActionButton>
+        <ActionButton send={send} command={`${action.toLowerCase()} ${id}`} disabled={(action === 'Quaff' && (data.player?.potion_ready || 0) > data.time) || (!!i.recall && !!data.recall_rules && (data.player?.level ?? 1) >= data.recall_rules.disabled_from)}>{action}</ActionButton>
         {(i.kind === 'armor' || (i.kind === 'weapon' && (i.hands ?? 1) === 1)) && (
           <ActionButton send={send} command={`equip ${id} left`}>{i.kind === 'armor' ? 'Hold left' : 'Equip left'}</ActionButton>
         )}
@@ -83,7 +90,7 @@ export function ItemRow({ id, count, mode, data, send, slot, children }: Props) 
       <div className={cn('min-w-0 break-words', i.rarity && 'text-gold')}>
         <span className={i.enchanted ? 'text-enchanted' : i.drop_only ? 'text-gold' : undefined}>{label}</span>
         {i.drop_only && <small className="block text-xs text-gold">{i.rarity === 'legendary' ? 'Legendary find' : 'Rare find'} · Enemy drop only</small>}
-        <small className="block text-xs text-muted-foreground">{detail(i)} · {i.weight ?? 0} lb{ i.kind === 'weapon' ? ` · ${i.hands || 1}-handed` : i.shield ? ' · shield' : i.kind === 'armor' ? ` · ${i.armor_slot === 'armor' || !i.armor_slot ? 'chest' : i.armor_slot}` : ''}</small>
+        <small className="block text-xs text-muted-foreground">{detail(i, data)} · {i.weight ?? 0} lb{ i.kind === 'weapon' ? ` · ${i.hands || 1}-handed` : i.shield ? ' · shield' : i.kind === 'armor' ? ` · ${i.armor_slot === 'armor' || !i.armor_slot ? 'chest' : i.armor_slot}` : ''}</small>
         {!!i.damage_penalty && <small className="block text-xs text-destructive">Damage penalty −{i.damage_penalty} · Repair {i.repair_cost} gold</small>}
         {i.magic_progress && <small className="block text-xs text-gold">
           Magic level {i.magic_progress.level} · {i.magic_progress.next_xp === null ? 'Maximum level' : `${i.magic_progress.level_xp}/${i.magic_progress.next_xp} XP to next level`}

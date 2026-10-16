@@ -75,11 +75,11 @@ class GameTests(unittest.TestCase):
         self.assertEqual(self.g.enemy()['hp'], 18)
     def test_06_death_penalties_protect_equipment_and_light(self):
         self.g.p['gold'] = 100; self.g.w['settings']['item_loss_chance'] = 1
-        old_eq = dict(self.g.p['equipment']); self.g.p['room'] = 'vault'; self.g.death()
+        old_eq = dict(self.g.p['equipment']); old_count = len(self.g.p['inventory']); self.g.p['room'] = 'vault'; self.g.death()
         self.assertEqual(self.g.p['gold'], 90); self.assertEqual(self.g.p['room'], 'square')
         self.assertIn('You blink awake from death feeling strange and disoriented.', [line['text'] for line in self.g.state['log']])
         self.assertEqual(old_eq, self.g.p['equipment']); self.assertIn('lantern', self.g.p['inventory'])
-        self.assertEqual(len(self.g.p['inventory']), 2)
+        self.assertEqual(len(self.g.p['inventory']), old_count - 1)
     def test_07_progress_and_combat_resume_without_offline_burst(self):
         self.go_meadow(); self.g.command('attack'); self.g.tick(); self.g.save()
         saved = copy.deepcopy(self.g.p); self.g.db.close(); self.clock.advance(10000)
@@ -93,7 +93,7 @@ class GameTests(unittest.TestCase):
         self.clock.advance(2); self.g.w['settings']['flee_chance'] = 1; self.g.command('flee')
         self.assertIsNone(self.g.p['combat']); self.assertNotEqual(self.g.p['room'], 'meadow')
     def test_09_full_bag_loot_is_recoverable(self):
-        self.go_meadow(); self.g.w['settings']['bag_capacity'] = 3; self.g.w['settings']['hit_chance'] = 1
+        self.go_meadow(); self.g.w['settings']['bag_capacity'] = len(self.g.p['inventory']); self.g.w['settings']['hit_chance'] = 1
         self.g.w['enemies']['beetle']['loot'] = [{'item':'scrap','weight':1}]
         self.g.enemy()['hp'] = 1; self.g.command('attack'); self.g.tick()
         self.assertEqual(self.g.state['ground']['meadow'], ['scrap'])

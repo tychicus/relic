@@ -42,7 +42,10 @@ class Abilities(Frontier):
 
     def require_item_use(self,item):
         if not self.can_use_magic() and self.magical_item(item):
-            raise ValueError(self.w['races'][self.p['race']]['name']+' characters cannot use magic, including magical equipment and scrolls.')
+            race=self.w['races'][self.p['race']]
+            if item.get('recall') and item.get('kind')=='consumable' and race.get('recall_without_magic',False):
+                return
+            raise ValueError(race['name']+' characters cannot use magical equipment or this magic item.')
 
     def class_eligible(self,race,cid,w=None):
         world=self.w if w is None else w

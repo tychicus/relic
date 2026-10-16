@@ -67,7 +67,9 @@ SCHEMA = {
   'perception_distance_penalty':number('Chance penalty for each extra room',20,0,100),
   'food_cooldown':number('Seconds between meals',8,.25,3600),
   'food_in_combat':boolean('Allow eating during combat'),
-  'recall_failure_consumes':boolean('Consume recall scroll on a blocked attempt'),
+  'recall_reusable_below_level':number('Recall scrolls are reusable below character level',3,1,101,True),
+  'recall_disabled_from_level':number('Recall scrolls stop working at character level (101 allows all levels)',30,1,101,True),
+  'recall_failure_consumes':boolean('Consume single-use recall scroll on a combat / room block'),
   'corpse_seconds':number('Harvest remains lifetime (seconds)',300,1,86400),
   'player_bodies':boolean('Leave recoverable player bodies instead of immediate death losses',True),
   'player_body_seconds':number('Player body and belongings lifetime (seconds; 900 = 15 minutes)',900,1,86400),
@@ -105,6 +107,7 @@ SCHEMA['classes']['description']=text('Class description shown at character crea
 SCHEMA['classes']['requires_magic']=boolean('Class requires a race that can use magic')
 SCHEMA['races']['description']=text('Race description shown at character creation')
 SCHEMA['races']['magic_allowed']=boolean('Race can use magic (spells, enchanting, magical equipment and scrolls)',True)
+SCHEMA['races']['recall_without_magic']=boolean('Allow recall scrolls even when this race cannot use magic')
 SCHEMA['items']['requires_magic']=boolean('Requires magic use (also applies to consumables)')
 SCHEMA['items']['drop_only']=boolean('Enemy-drop equipment only — cannot be sold by shops')
 SCHEMA['classes']['carry_capacity']=number('Carrying capacity at character level 1 (lb)',60,1,10000)
@@ -162,6 +165,9 @@ def validate_revision(w):
                     for row in v:check(row,s['fields'],label)
             if not ok:raise ValueError(label+' has an invalid value.')
     check(w.get('revision',{}),SCHEMA['revision'],'Balance')
+    rules={**DEFAULT_RULES,**w.get('revision',{})}
+    if rules['recall_reusable_below_level']>rules['recall_disabled_from_level']:
+        raise ValueError('Recall reusable level cannot exceed the level at which recall stops working.')
     for group,fields in SCHEMA.items():
         if group=='revision':continue
         records=w.get(group,{})

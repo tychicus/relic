@@ -21,7 +21,7 @@ class AbilityTests(unittest.TestCase):
         self.g.w['skills'][id]={'name':id.title(),'description':'Test ability.','cooldown':12,'multiplier':2,'heal':20,'chance':100,'effect':effect,'unlock_level':level,'allowed_classes':classes,'allowed_races':races}
     def log(self):return self.g.state['log'][-1]['text']
     def test_new_starts_without_lantern_and_keeps_equipment(self):
-        self.create();self.assertEqual(self.g.p['inventory'],['potion','potion']);self.assertEqual(self.g.p['gold'],30);self.assertEqual(self.g.p['equipment'],self.g.w['starting']['equipment'])
+        self.create();self.assertEqual(self.g.p['inventory'],['potion','potion','recall_scroll']);self.assertEqual(self.g.p['gold'],30);self.assertEqual(self.g.p['equipment'],self.g.w['starting']['equipment'])
     def test_race_class_selection_and_snapshot(self):
         self.add_options();s=self.g.snapshot();self.assertEqual([r['name'] for r in s['creation']['races']],['Elf','Human','Orc'])
         self.create('elf','mage');self.assertEqual(self.g.max_hp(),48);self.assertEqual(self.g.p['hp'],48);self.assertEqual(self.g.snapshot()['player']['class_name'],'Mage')

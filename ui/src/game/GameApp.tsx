@@ -117,7 +117,7 @@ export function GameApp() {
         </a>
       </Masthead>
       <main className="game-main mx-auto w-full max-w-[1760px] px-4 pt-4 pb-3 sm:px-6">
-        {data && !data.player && <Welcome choices={data.creation} onCreate={create} />}
+        {data && !data.player && <Welcome choices={data.creation} recallRules={data.recall_rules} onCreate={create} />}
         {data?.player && (
           <div className="game-layout grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_clamp(320px,25%,400px)]">
             <div className="game-play grid min-w-0 gap-3">

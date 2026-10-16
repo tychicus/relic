@@ -617,11 +617,19 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
             item=self.item(iid)
             self.require_item_use(item)
             if item.get('recall'):
+                rules=self.rules();level=self.p['level']
+                if level>=rules['recall_disabled_from_level']:
+                    raise ValueError(f'Recall scrolls cannot be used at level {rules["recall_disabled_from_level"]} or above. The scroll is preserved.')
+                reusable=level<rules['recall_reusable_below_level']
                 blocked=self.p['combat'] or self.w['rooms'][self.p['room']].get('recall_disabled')
                 if blocked:
-                    if self.rules()['recall_failure_consumes']:self.p['inventory'].remove(iid)
-                    raise ValueError('Recall is blocked during combat or in this room. '+('The scroll is consumed.' if self.rules()['recall_failure_consumes'] else 'The scroll is preserved.'))
-                self.p['inventory'].remove(iid);self.p['room']=self.w['starting']['room'];self.p.pop('target',None);self.log('The scroll dissolves. You return to the center of town.','story');self.look('');return True
+                    consumes=rules['recall_failure_consumes'] and not reusable
+                    if consumes:self.p['inventory'].remove(iid)
+                    raise ValueError('Recall is blocked during combat or in this room. '+('The scroll is consumed.' if consumes else 'The scroll is preserved.'))
+                if not reusable:self.p['inventory'].remove(iid)
+                self.p['room']=self.w['starting']['room'];self.p.pop('target',None)
+                self.log(('The scroll remains ready to use again.' if reusable else 'The scroll dissolves.')+' You return to the center of town.','story')
+                self.look('');return True
             if item.get('food'):
                 if self.p['combat'] and not self.rules()['food_in_combat']:raise ValueError('Finish combat before eating.')
                 if self.p['cooldowns'].get('food',0)>self.clock():raise ValueError('Wait before eating another meal.')
@@ -638,6 +646,7 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
                 self.require_carry_weight(self.w['enemies'][e['type']].get('weight',10))
                 self.p['inventory'].append(self.new_instance(dict(kind='captive',enemy=e['type'])));e['hp']=0;e['unconscious']=False;e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60);self.log('You pick up the unconscious creature. No kill rewards are awarded.');return True
         if verb in ('help','?'):
+            self.log(f'Recall scrolls return you to town outside combat and rooms that block recall. They are reusable below level {self.rules()["recall_reusable_below_level"]}, then single-use, and cannot be used at level {self.rules()["recall_disabled_from_level"]} or above.')
             self.log('At a bank: BALANCE, DEPOSIT <amount or ALL>, WITHDRAW <amount or ALL>. Banked gold belongs to your character and stays safe on death.')
             self.log('Death leaves your belongings in a body. LOOK BODY, GET ALL FROM BODY, GET <item> FROM BODY, or LOOT BODY. Use the body number if there are several. Recover gear before the body expires.')
             self.log('LOOK SELF or EQUIPMENT lists every hand and armor slot, including empty slots. Enchanted item names appear violet with a glow description and separate stat bonus.')
@@ -652,6 +661,8 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
 
     def revision_snapshot(self):
         result=super().snapshot()
+        rules=self.rules()
+        result['recall_rules']=dict(reusable_below=rules['recall_reusable_below_level'],disabled_from=rules['recall_disabled_from_level'],starting_scroll=any(self.w['items'][iid].get('recall') for iid in self.w['starting']['inventory']))
         if not self.p:return result
         rows=self.creatures();light=self.visible()
         result['enemies']=[dict(id=e['uid'],name=self.creature_name(e),hp=e['hp'],max_hp=self.w['enemies'][e['type']]['hp'],aggressive=self.w['enemies'][e['type']]['aggressive'],level=self.w['enemies'][e['type']].get('level',1),target=e['uid']==self.p.get('target'),engaged=e['uid'] in (self.p.get('combat') or {}).get('engaged',[]),effects=copy.deepcopy(e['effects'])) for e in rows] if light else []

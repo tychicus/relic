@@ -1,3 +1,16 @@
+# Unreleased — Generic creature targeting
+
+- Commands such as KILL BEETLE now accept several matching individuals of the
+  same creature type. A matching current target is retained; otherwise the first
+  matching creature is chosen. Descriptions and exact creature IDs still select
+  individuals. Different matching creature types still require clarification.
+- The shared matching rule also applies to ATTACK, TARGET, targeted spells and
+  other commands that select a creature. Visibility and target eligibility remain.
+- Validation: 285 Python tests passed; the optional personal-save migration test
+  was skipped because the owner's game was running. Both JavaScript helper suites
+  passed. Disposable browser checks verified KILL BEETLE with two Copper beetles,
+  clarification when an Iron beetle is also present, and a spell aimed at that type.
+
 # Unreleased — Starter recall scrolls and level limits
 
 - New characters receive one recall scroll. Scrolls are reusable at levels 1–2,

@@ -27,10 +27,10 @@ class RevisionTests(unittest.TestCase):
         self.g.w['enemies']['beetle']['aggressive']=aggressive
         self.g.w['rooms']['meadow']['population']=[dict(id='test',enemy='beetle',count=2,chance=100,respawn=True,delay=10)]
         self.g.p['room']='meadow';return self.g.creatures()
-    def test_duplicate_descriptors_and_ambiguous_command(self):
+    def test_duplicate_descriptors_and_generic_command(self):
         rows=self.crowd(False);names=[self.g.creature_name(e) for e in rows]
         self.assertEqual(len(set(names)),3);self.assertTrue(all('beetle' in x.lower() for x in names))
-        self.g.command('target beetle');self.assertIn('distinct',self.log())
+        self.g.command('target beetle');self.assertEqual(self.g.p['target'],rows[0]['uid'])
         self.g.command('target '+names[1]);self.assertEqual(self.g.p['target'],rows[1]['uid'])
         self.assertIsNone(self.g.p['combat'])
     def test_all_engaged_enemies_attack_and_retarget(self):

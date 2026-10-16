@@ -54,7 +54,7 @@ class RegionTests(unittest.TestCase):
         self.assertEqual(len(rows),2)
         names=[self.g.creature_name(e) for e in rows]
         self.assertEqual(len(set(names)),2)
-        with self.assertRaisesRegex(ValueError,'distinct'):self.g.find_creature('beetle')
+        self.assertIs(self.g.find_creature('beetle'),rows[0])
         for e,name in zip(rows,names):
             self.assertIs(self.g.find_creature(name),e)
             self.assertIs(self.g.find_creature(e['uid']),e)

@@ -145,8 +145,11 @@ class Revision(RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipmen
         target=target.casefold().removeprefix('the ')
         matches=[e for e in rows if target in (e['uid'],self.creature_name(e).casefold())]
         if not matches:matches=[e for e in rows if target and (target==e['type'] or target in self.creature_name(e).casefold())]
-        if len(matches)!=1:raise ValueError('Use a distinct creature description: '+', '.join(self.creature_name(e) for e in (matches or rows))+'.')
-        return matches[0]
+        if not matches or len({e['type'] for e in matches})>1:
+            raise ValueError('Use a distinct creature description: '+', '.join(self.creature_name(e) for e in (matches or rows))+'.')
+        # Descriptors distinguish individuals, not species. Keep a matching target
+        # so repeating a generic command does not provoke another bystander.
+        return next((e for e in matches if e['uid']==self.p.get('target')),matches[0])
 
     def enemy(self,room_id=None):
         rows=self.creatures(room_id)

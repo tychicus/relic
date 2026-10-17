@@ -43,7 +43,7 @@ class PlayerBodies:
                 result.add(iid)
                 pending.extend(self.state['instances'].get(iid, {}).get('contents', []))
             return result
-        kept = self.p['inventory'] + list(self.p['equipment'].values()) if self.p else []
+        kept = [i for p in self.all_players() for i in p['inventory'] + list(p['equipment'].values())]
         kept += [i for pile in self.state.get('ground', {}).values() for i in pile]
         kept += [i for body in self.state['player_bodies'] for i in body['items']]
         retained = descendants(kept)

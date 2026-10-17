@@ -97,11 +97,14 @@ function Here({ data, send }: { data: Snapshot; send: Send }) {
   for (const [index, n] of (data.npcs ?? []).entries()) {
     rows.push(<p key={`npc-${index}`} className="my-1.5">· <span className="text-story">{n.name}</span> <span className="text-muted-foreground">— {n.appearance}</span></p>)
   }
+  for (const player of data.players_here ?? []) {
+    rows.push(<p key={`player-${player.name}`} className="my-1.5">· <span className="text-primary">{player.name}</span> <span className="text-muted-foreground">· Level {player.level} · player</span></p>)
+  }
   for (const c of data.corpses ?? []) {
     rows.push(
       <Line key={`corpse-${c.id}`}>
-        <span className="flex-1">· remains of {c.name}</span>
-        <ActionButton send={send} command={`harvest ${c.id}`}>harvest</ActionButton>
+        <span className="flex-1">· {c.description}</span>
+        {c.harvestable && <ActionButton send={send} command={`harvest ${c.id}`}>harvest</ActionButton>}
       </Line>,
     )
   }

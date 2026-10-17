@@ -7430,6 +7430,35 @@
     }
   },
   "npcs": {
+    "anthony": {
+      "name": "Anthony",
+      "room": "shop",
+      "appearance": "Anthony stands behind the counter, sorting supplies.",
+      "description": "The shopkeeper checks his stock of potions, lanterns, and ironwork, keeping everything within easy reach of the counter.",
+      "interactions": [
+        "look",
+        "talk"
+      ],
+      "dialogue": [
+        {
+          "phrase": "hello",
+          "response": "Welcome to my general store. A potion before trouble is cheaper than a funeral. Ask me about the shop, buying, or selling."
+        },
+        {
+          "phrase": "shop",
+          "response": "Potions, lanterns, equipment, and supplies for the road. Type BUY to see my stock and prices."
+        },
+        {
+          "phrase": "buying",
+          "response": "Type BUY to browse, then BUY followed by an item's name to purchase it. BUY POTION is a good place to start."
+        },
+        {
+          "phrase": "selling",
+          "response": "I buy spare equipment and ancient scrap. Type SELL followed by the item's name to sell it."
+        }
+      ],
+      "default_response": "Ask me about the shop, buying, or selling."
+    },
     "osric_tallywick": {
       "name": "Osric Tallywick",
       "room": "brass_badger_bank",

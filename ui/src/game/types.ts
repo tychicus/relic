@@ -46,6 +46,7 @@ export interface Effect {
 }
 
 export interface Player {
+  id: string
   defense?: number
   name: string
   race_name: string
@@ -147,6 +148,10 @@ export interface ExplorationMap {
 }
 
 export interface Snapshot {
+  multiplayer?: boolean
+  session?: { owner: boolean }
+  characters?: { id: string; name: string; level: number }[]
+  players_here?: { name: string; level: number }[]
   exploration_map?: ExplorationMap
   ui_action?: 'show_map'
   recall_rules?: { reusable_below: number; disabled_from: number; starting_scroll: boolean }
@@ -167,7 +172,7 @@ export interface Snapshot {
   enemies?: Creature[]
   unconscious_creatures?: { id: string; name: string }[]
   npcs?: { name: string; appearance: string }[]
-  corpses?: { id: string; name: string }[]
+  corpses?: { id: string; name: string; description: string; harvestable: boolean }[]
   player_bodies?: { id: string; name: string; expires: number; items: number; gold: number; owned: boolean }[]
   status_effects: Record<string, { name: string }>
 }

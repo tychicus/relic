@@ -1,12 +1,12 @@
 # Relic Frontier v0.9.1
 
-A local, editable, keyboard-driven fantasy RPG with relic technology.
+An editable, keyboard-driven fantasy RPG with relic technology and shared-world LAN play.
 Python 3.11+ and the standard library are the only game requirements.
 
 This repository contains the game source, current authored world, and built
 browser interface. Personal character saves, local content backups, and
 downloaded development dependencies are excluded. A fresh copy starts with
-no saved character; each developer keeps their own local progress.
+no saved characters; each host keeps its own saved world and characters.
 
 Download this repository with **Code > Download ZIP** and extract it, or clone
 `https://github.com/tychicus/relic.git`. See [CONTRIBUTING.md](CONTRIBUTING.md)
@@ -18,6 +18,51 @@ Stop any old game with **Ctrl+C** in its launcher. On Windows, open
 `Start_Game.cmd` in this folder. On Mac/Linux, run `python3 server.py`.
 Play at http://127.0.0.1:8765 and edit at http://127.0.0.1:8765/admin.
 Check the displayed version; refresh with Ctrl+F5 if the browser is stale.
+
+## Multiplayer and live chat
+
+`Start_Game.cmd` keeps access on this computer. To play together on your local
+network, stop the old launcher and open **Start_Multiplayer.cmd**, or run
+`python server.py --host 0.0.0.0`. Share the play address printed in the launcher.
+Everyone connects to that one host and chooses or creates a character.
+The world, creatures, dropped items and corpses are shared; character progress,
+inventory, explored maps and message histories remain separate. Use **Choose
+character**, **New character**, or **switch character** to play. Use separate
+browser profiles to play different characters on the same computer; tabs in
+one profile share a character selection. Refreshing the page keeps your selection;
+after a server restart, choose the character again.
+
+Login and passwords are deferred. This is an open character picker for testing
+on this computer or a trusted local network: anyone connected can choose any
+saved character, including its progress and message history. TELL messages are
+routed only to the selected recipient and sender, but character access is not
+protected yet. Internet accounts and hosting are future work.
+
+The launcher's browser link continues the original local character with its
+progress intact and enables the owner editor. If you use `--no-browser`, open
+the **Host link** printed in the launcher. Keep this link for yourself; share
+the ordinary play address. Choosing the original character through the public
+picker does not grant permission to edit the world.
+
+- `SAY Hello everyone!` reaches you and online players in your current square.
+  Players elsewhere, offline players and later arrivals do not receive it.
+- `TELL Bob Hello!` reaches Bob and gives you a sent-message echo. Nobody else
+  receives either the message or the command. Bob can be anywhere in the world,
+  but must be online. `WHO` lists online players; disconnected players disappear
+  from presence after 30 seconds. Messages arrive through the normal live game log.
+- `TELL Anthony hi` privately uses Anthony's existing NPC dialogue when you are
+  in his store. `SAY hello` can get a public greeting from NPCs in the room.
+  `TALK ANTHONY`, `ASK ANTHONY ABOUT BUYING`, and `SAY BUYING TO ANTHONY` remain
+  available. NPC conversations use authored phrases, not generated responses.
+- Full names with spaces work: `TELL Sam Green Hello!`. If a player and NPC
+  share a name, use `TELL PLAYER <name> <message>` or `TELL NPC <name> <message>`.
+
+Combat resolves once per shared room pulse. Players may attack the same enemy;
+the character landing the killing blow receives the existing kill rewards once.
+There is no player-versus-player combat or party reward splitting. Switching characters
+does not stop a character's combat; return to safety first. All characters and
+their private logs persist in the host's `saves/game.sqlite3`; never replace it
+with a different host's save.
 
 Read **UPDATE_v0.9.1.txt** for the wider layout and screen controls.
 Read **UPDATE_v0.9.0.txt** for the full mechanics guide, editable balance values,
@@ -52,6 +97,9 @@ changes. Existing game commands, skill names and help topics cannot be reused.
 Older world files without an emotes section still load; ME remains available.
 
 ## Skill rules and rank comparisons
+
+The Skills box below Inventory starts collapsed. Select Skills to expand or
+collapse it; the heading also works with Enter or Space when focused.
 
 Skill cards, HELP <skill>, SKILLS and cast-button tooltips use calculated rules.
 Physical attacks show a damage range with current gear; spells show their current
@@ -132,7 +180,7 @@ New rooms and enemy XP remain owner-authored and are unchanged by this update.
 - Character, spell, magical-equipment and mana progression reach level 100.
   Every valid use trains slow mastery; suitable challenges award extra practice.
   MANA shows your reserve. Spells spend mana, which recovers between fights.
-- SHOW MAP or DISPLAY MAP opens a map pop-up only when requested. It charts only
+- LOOK MAP, SHOW MAP or DISPLAY MAP opens a map pop-up only when requested. It charts only
   rooms your character has entered and connections between visited rooms, using
   the creator map layout. It never shows enemies, NPCs, loot, unknown rooms, or
   connections to unvisited rooms. Your location is highlighted; select a visited
@@ -173,6 +221,11 @@ New rooms and enemy XP remain owner-authored and are unchanged by this update.
   enemies may share a square and participate in a fight. Wounded enemies gradually
   recover outside combat; rates and delays are editable.
 - REST at the inn restores health and mana. SAVE is optional: progress saves automatically.
+- Defeated enemies leave visible corpses. LOOK and the room panel show a varied
+  description chosen when the enemy dies, preserved across looks and reloads.
+  Corpses decay after five minutes (editable under Crafting & balance), or disappear
+  when harvested. Only creatures with harvest yields offer HARVEST; released
+  creatures leave a body but still give no loot, XP, gold, or harvest rewards.
 - Death returns you to the fountain. Your body keeps all carried gold, inventory and
   worn gear for 15 minutes, including time with the game closed. Return and LOOK BODY,
   GET ALL FROM BODY, or GET <item> FROM BODY. If several bodies remain, use BODY <number>.
@@ -182,7 +235,8 @@ New rooms and enemy XP remain owner-authored and are unchanged by this update.
   to the character's permanent identity. Banked gold remains safe after death.
 
 Combat continues while the server runs, including with the browser closed.
-Ctrl+C in the launcher stops and saves. No account or external service is used.
+Ctrl+C in the launcher stops and saves. Characters stay on the host;
+no external service is used.
 
 ## Edit and preserve
 
@@ -216,8 +270,8 @@ not a full character backup. Keep backups of your own working game folder
 outside this repository. The owner's original release folders and saves are
 not part of this download.
 
-An updated save must stay with the updated code. To start a separate character,
-copy the full folder and remove `saves` only inside the separate stopped copy.
+An updated save must stay with the updated code. To start another character in
+the same world, choose **switch character**, then **New character**.
 
 ## Development and checks
 
@@ -230,11 +284,13 @@ validation/authoring schemas used by the editor. `adventure.py`,
 `frontier.py`, and `abilities.py` retain discoveries, containers and eligibility.
 `learning.py`, `mana.py` and `equipment.py` handle learning, reserves and equipment
 slots. `player_map.py` tracks per-character exploration and filters map data. `regions.py` manages regional populations; `encounters.py` tracks multiple
-participants and individual targets. `server.py` is the existing loopback-only transport. The browser interface is
+participants and individual targets. `multiplayer.py` supplies player contexts,
+shared combat and character persistence; `social.py` routes room/private messages.
+`server.py` provides browser sessions, character selection and opt-in LAN access. The browser interface is
 a React + shadcn/ui app in `ui/`; its built files live in `static/` and are
 all the game needs, so playing never requires Node. New state separates
 player effects/proficiency/targets from world creatures/home slots/remains;
-there is no networked multiplayer or account system.
+the original character is preserved as the owner's character when the server starts.
 
 Run `Run_Tests.cmd` on Windows, or:
 

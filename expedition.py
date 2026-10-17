@@ -23,10 +23,22 @@ from player_map import PlayerMap
 DIRECTIONS={'n':'north','s':'south','e':'east','w':'west','u':'up','d':'down'}
 TRAITS=['scarred','watchful','lean','broad-shouldered','dust-covered','restless','pale','dark-eyed','weathered','bristling','long-limbed','stout']
 MARKS=['notched-eared','gray-marked','white-marked','red-eyed','mud-spattered','amber-eyed','sharp-eyed','mottled','ragged','dark-backed','light-footed','heavy-browed']
+CORPSE_DESCRIPTIONS=[
+    'The corpse of {name} lies here.',
+    'The decaying corpse of {name} lies on the ground.',
+    'The lifeless body of {name} lies here.',
+    'The remains of {name} lie motionless here.',
+]
 
 class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodies, Equipment, Learning, Mana, MagicProgression, Enchanting):
     def rules(self):
         return {**DEFAULT_RULES,**self.w.get('revision',{})}
+
+    def all_players(self):
+        return [self.p] if self.p else []
+
+    def engaged_creature_ids(self):
+        return set((self.p.get('combat') or {}).get('engaged',[])) if self.p else set()
 
     def init_adventure(self):
         super().init_adventure()
@@ -194,7 +206,7 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
             if rid==self.p['room'] or rid in self.state['spawns'] or r.get('roaming'):self.ensure_legacy(rid)
             if rid==self.p['room'] or rid in self.state['populations'] or any(g.get('roam') for g in r.get('population',[])):self.ensure_groups(rid)
         for rid in self.w['rooms']:all_rows.extend(self.creatures(rid,True,False))
-        engaged=set((self.p.get('combat') or {}).get('engaged',[]))
+        engaged=self.engaged_creature_ids()
         for e in all_rows:
             rule=self.spawn_rule(e)
             if e.get('released') or e.get('unconscious') or e['uid'] in engaged or not rule.get('roam') or self.clock()<e['roam_at']:continue
@@ -376,9 +388,20 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
         e['effects']=[]
         if not e.get('released'):
             e['respawn_at']=self.clock()+self.spawn_rule(e).get('delay',60)
-            if self.w['enemies'][e['type']].get('harvest'):
-                self.state['corpses'].append(dict(uid=e['uid'],type=e['type'],name=name,room=self.p['room'],expires=self.clock()+self.rules()['corpse_seconds']))
+        self.state['corpses'].append(dict(uid=e['uid'],type=e['type'],name=name,room=e['location'],
+            description=self.rng.choice(CORPSE_DESCRIPTIONS).format(name=name),released=e.get('released',False),
+            expires=self.clock()+self.rules()['corpse_seconds']))
         self.p['combat']=c;self.retarget()
+
+    def enemy_corpses_here(self):
+        return [c for c in self.state['corpses'] if c['room']==self.p['room'] and c['expires']>self.clock() and not c.get('harvested')]
+
+    def corpse_description(self,corpse):
+        # Old saves have remains without a description; keep LOOK read-only.
+        return corpse.get('description') or CORPSE_DESCRIPTIONS[0].format(name=corpse['name'])
+
+    def corpse_harvestable(self,corpse):
+        return not corpse.get('released') and bool(self.w['enemies'][corpse['type']].get('harvest'))
 
     def death(self):
         self.p.pop('ward',None)
@@ -529,6 +552,7 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
         if not target and self.visible():
             rows=self.creatures(self.p['room'],True)
             if rows:self.log('Creatures here: '+', '.join(self.creature_name(e)+(' (unconscious)' if e.get('unconscious') else f' ({e["hp"]} HP)') for e in rows)+'.')
+            for corpse in self.enemy_corpses_here():self.log(self.corpse_description(corpse),'story')
             for n in self.w.get('npcs',{}).values():
                 if n['room']==self.p['room']:self.log(n['name']+' is here. '+n.get('appearance',''))
             if self.w['rooms'][self.p['room']].get('cooking_fire'):self.log('A cooking fire is ready. COOK <recipe or ingredient>.')
@@ -553,7 +577,7 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
     def harvest(self,target):
         if self.p['combat']:raise ValueError('Finish combat before harvesting.')
         if not self.visible():raise ValueError('It is too dark to harvest.')
-        rows=[c for c in self.state['corpses'] if c['room']==self.p['room'] and c['expires']>self.clock() and not c.get('harvested')]
+        rows=[c for c in self.enemy_corpses_here() if self.corpse_harvestable(c)]
         if target:rows=[c for c in rows if target in (c['uid'],c['type']) or target in c['name'].casefold()]
         if len(rows)!=1:raise ValueError('Specify which remains to harvest: '+(', '.join(c['name'] for c in rows) or 'none here')+'.')
         corpse=rows[0];yields=[x['item'] for x in self.w['enemies'][corpse['type']].get('harvest',[]) for _ in range(x.get('count',1))]
@@ -652,7 +676,7 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
         if chosen and light:result['enemy']['name']=self.creature_name(chosen)
         result['unconscious_creatures']=[dict(id=e['uid'],name=self.creature_name(e)) for e in self.creatures(unconscious=True) if e.get('unconscious')] if light else []
         result['npcs']=[dict(name=n['name'],appearance=n.get('appearance','')) for n in self.w.get('npcs',{}).values() if n['room']==self.p['room']] if light else []
-        result['corpses']=[dict(id=c['uid'],name=c['name']) for c in self.state['corpses'] if c['room']==self.p['room'] and c['expires']>self.clock() and not c.get('harvested')] if light else []
+        result['corpses']=[dict(id=c['uid'],name=c['name'],description=self.corpse_description(c),harvestable=self.corpse_harvestable(c)) for c in self.enemy_corpses_here()] if light else []
         result['player_bodies']=[dict(id=b['id'],name=b['name'],expires=b['expires'],items=len(b['items']),gold=b['gold'],owned=b['owner']==self.p['id']) for b in self.bodies_here()]
         result['status_effects']=self.w.get('status_effects',{})
         region=self.region_for(self.p['room'])[1]
@@ -683,4 +707,4 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
                 e=slot['creature'];group,index=key.rsplit(':',1)
                 if e and e['hp']>0 and (group not in new_rules or int(index)>=new_rules[group].get('count',1)):raise ValueError('Cannot remove an occupied spawn slot. Defeat or capture its creature first.')
         for c in self.state.get('corpses',[]):
-            if c['expires']>self.clock() and not c.get('harvested') and (c['type'] not in w['enemies'] or c['room'] not in w['rooms']):raise ValueError('Cannot remove creature types or rooms with harvestable remains.')
+            if c['expires']>self.clock() and not c.get('harvested') and (c['type'] not in w['enemies'] or c['room'] not in w['rooms']):raise ValueError('Cannot remove creature types or rooms with enemy corpses.')

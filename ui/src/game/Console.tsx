@@ -13,6 +13,8 @@ const lineStyles: Record<string, string> = {
   story: 'text-story',
   emote: 'text-story italic',
   combat: 'text-combat',
+  say: 'text-primary',
+  tell: 'border-l-2 border-primary pl-3 text-primary',
 }
 
 interface Props {
@@ -93,7 +95,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
           value={command}
           onChange={(event) => setCommand(event.target.value)}
           onKeyDown={browseHistory}
-          placeholder='Try "look north" or "help"'
+          placeholder={data.multiplayer ? 'Try "say hello", "tell Anthony hi" or "help"' : 'Try "look north" or "help"'}
           aria-label="Game command"
           maxLength={160}
           autoComplete="off"

@@ -15,7 +15,7 @@ class EnemyHealing:
         rules=self.rules();now=self.clock()
         if not rules['enemy_heal_enabled']:
             self._enemy_heal_at.clear();return
-        engaged=set((self.p.get('combat') or {}).get('engaged',[]))
+        engaged=self.engaged_creature_ids()
         creatures={e['uid']:e for rid in self.w['rooms'] for e in self.creatures(rid,True,False)}
         for uid in list(self._enemy_heal_at):
             if uid not in creatures:self._enemy_heal_at.pop(uid)

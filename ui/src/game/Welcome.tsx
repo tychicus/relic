@@ -10,7 +10,10 @@ import type { Choice, Snapshot } from './types'
 interface Props {
   choices?: { races: Choice[]; classes: Choice[] }
   recallRules?: Snapshot['recall_rules']
+  multiplayer?: boolean
+  characters?: Snapshot['characters']
   onCreate: (name: string, race: string, cls: string) => void
+  onJoin?: (id: string) => void
 }
 
 // Keep the player's pick while it is still offered; otherwise prefer the classic default.
@@ -20,8 +23,12 @@ function pick(current: string, options: Choice[], preferred: string) {
   return options[0]?.id ?? ''
 }
 
-export function Welcome({ choices, recallRules, onCreate }: Props) {
+export function Welcome({ choices, recallRules, onCreate, multiplayer, characters = [], onJoin }: Props) {
   const [name, setName] = useState('')
+  const [creating, setCreating] = useState(!characters.length)
+  const [character, setCharacter] = useState(characters[0]?.id ?? '')
+  const choosing = !!multiplayer && characters.length > 0 && !creating
+  const selectedCharacter = characters.some(c => c.id === character) ? character : characters[0]?.id ?? ''
   const [race, setRace] = useState('human')
   const [cls, setCls] = useState('warrior')
   const races = choices?.races ?? []
@@ -45,15 +52,27 @@ export function Welcome({ choices, recallRules, onCreate }: Props) {
             <p className="text-sm text-muted-foreground">A frontier of steel, spellwork &amp; forgotten machines</p>
           </div>
           <div className="min-w-0 border-t border-primary pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-4">
-            <Heading>Create your character</Heading>
+            <Heading>{choosing ? 'Choose your character' : 'Create your character'}</Heading>
+            {multiplayer && <div className="mt-3 flex gap-2">
+              <Button type="button" variant={choosing ? 'default' : 'outline'} disabled={!characters.length} onClick={() => setCreating(false)}>Choose character</Button>
+              <Button type="button" variant={!choosing ? 'default' : 'outline'} onClick={() => setCreating(true)}>New character</Button>
+            </div>}
+            {multiplayer && <p className="mt-3 text-sm text-muted-foreground">No password needed for now. Anyone connected to this test game can choose a saved character.</p>}
             <form
               className="mt-3 grid gap-3"
               onSubmit={(event) => {
                 event.preventDefault()
-                onCreate(name, race, selectedClass)
+                if (choosing) onJoin?.(selectedCharacter)
+                else onCreate(name, race, selectedClass)
               }}
             >
-              <div className="grid gap-3 sm:grid-cols-2">
+              {choosing ? <Field>
+                <FieldLabel htmlFor="character-choice">Saved character</FieldLabel>
+                <NativeSelect id="character-choice" className="w-full" value={selectedCharacter} onChange={(e) => setCharacter(e.target.value)}>
+                  {characters.map(c => <NativeSelectOption key={c.id} value={c.id}>{c.name} · Level {c.level}</NativeSelectOption>)}
+                </NativeSelect>
+                <Button type="submit" disabled={!selectedCharacter}>Continue playing</Button>
+              </Field> : <><div className="grid gap-3 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="race-choice">Race</FieldLabel>
                   <NativeSelect id="race-choice" className="w-full" value={race} onChange={(e) => setRace(e.target.value)}>
@@ -86,6 +105,7 @@ export function Welcome({ choices, recallRules, onCreate }: Props) {
                   <Button type="submit" disabled={!selectedClass || !race}>Enter the square</Button>
                 </div>
               </Field>
+              </>}
             </form>
             <Rule className="my-4" />
             <Heading>Tips for getting started</Heading>
@@ -97,7 +117,7 @@ export function Welcome({ choices, recallRules, onCreate }: Props) {
       </TerminalBox>
       <Callout>
         <p className="font-bold">Your story starts at the fountain.</p>
-        <p className="text-sm text-muted-foreground">One local character · keyboard-first · no account needed. Progress saves on this computer automatically.</p>
+        <p className="text-sm text-muted-foreground">{multiplayer ? 'A shared world with separate characters. SAY reaches your room; TELL reaches only its recipient and you. Progress saves on the host computer.' : 'One local character · keyboard-first · no account needed. Progress saves on this computer automatically.'}</p>
       </Callout>
     </div>
   )

@@ -69,7 +69,7 @@ SCHEMA = {
   'recall_reusable_below_level':number('Recall scrolls are reusable below character level',3,1,101,True),
   'recall_disabled_from_level':number('Recall scrolls stop working at character level (101 allows all levels)',30,1,101,True),
   'recall_failure_consumes':boolean('Consume single-use recall scroll on a combat / room block'),
-  'corpse_seconds':number('Harvest remains lifetime (seconds)',300,1,86400),
+  'corpse_seconds':number('Enemy corpse lifetime (seconds)',300,1,86400),
   'player_bodies':boolean('Leave recoverable player bodies instead of immediate death losses',True),
   'player_body_seconds':number('Player body and belongings lifetime (seconds; 900 = 15 minutes)',900,1,86400),
   'enchant_base':number('Enchant success at enchanting level 1 (%)',50,0,100),

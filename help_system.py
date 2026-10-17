@@ -35,7 +35,7 @@ COMMANDS = {
     'move': ('movement', 'MOVE <direction>', 'MOVE N'),
     'show': ('map', 'SHOW MAP', 'SHOW MAP'),
     'display': ('map', 'DISPLAY MAP', 'DISPLAY MAP'),
-    'look': ('exploration', 'LOOK [SELF | direction [distance] | object | item | creature | BODY [number]]', 'LOOK NORTH 2'),
+    'look': ('exploration', 'LOOK [MAP | SELF | direction [distance] | object | item | creature | BODY [number]]', 'LOOK NORTH 2'),
     'attack': ('combat', 'ATTACK [creature name | description | ID]', 'ATTACK BEETLE'),
     'target': ('combat', 'TARGET <creature name | description | ID>', 'TARGET SCARRED COPPER BEETLE'),
     'flee': ('combat', 'FLEE', 'FLEE'),
@@ -73,6 +73,8 @@ COMMANDS = {
     'talk': ('talk', 'TALK [TO] <NPC or creature> [ABOUT <phrase>]', 'TALK TAMSIN ABOUT COOKING'),
     'ask': ('talk', 'ASK <NPC or creature> ABOUT <phrase>', 'ASK TAMSIN ABOUT COOKING'),
     'say': ('talk', 'SAY <phrase> TO <NPC | creature | CAGE number>', 'SAY HELLO TO TAMSIN'),
+    'tell': ('talk', 'TELL <full player or NPC name> <message>', 'TELL ANTHONY Hi!'),
+    'who': ('talk', 'WHO', 'WHO'),
     'emotes': ('emotes', 'EMOTES', 'HELP EMOTES'),
     'emote': ('emotes', 'EMOTE <emote name or command> [target]', 'EMOTE WAVE TAMSIN'),
     'me': ('emotes', 'ME <your character\'s action>', 'ME brushes dust from a weathered coat.'),
@@ -85,7 +87,7 @@ TOPICS = ('help', 'movement', 'exploration', 'map', 'combat', 'capture', 'skills
           'talk', 'emotes', 'saving')
 TOPIC_ALIASES = {
     'start': 'help', 'getting started': 'help', 'navigation': 'movement',
-    'show map': 'map', 'display map': 'map',
+    'show map': 'map', 'display map': 'map', 'look map': 'map',
     'explore': 'exploration', 'fight': 'combat', 'fighting': 'combat',
     'capturing': 'capture', 'cage': 'capture', 'cages': 'capture',
     'spells': 'skills', 'progression': 'learning', 'leveling': 'learning',
@@ -173,9 +175,11 @@ class PlayerHelp:
     def normalize_command(self, raw):
         verb, _, target = raw.partition(' ')
         verb = ALIASES.get(verb.casefold(), verb.casefold())
-        if verb == 'me':
+        if verb in ('me', 'say', 'tell') and (verb == 'me' or getattr(self, 'multiplayer', False)):
             return verb, target  # Keep the player's capitalization in free-form actions.
         target = target.casefold()
+        if verb == 'look' and target == 'map':
+            return 'show', 'map'
         if verb in ('go', 'move') and ALIASES.get(target, target) in ('north', 'south', 'east', 'west', 'up', 'down'):
             return ALIASES.get(target, target), ''
         # Owner-created skills also work by their full name or ID. Core commands
@@ -369,7 +373,7 @@ class PlayerHelp:
         r = self.rules()
         text = {
             'help': 'HELP — choose a topic\nGetting around: HELP MOVEMENT · HELP EXPLORATION\nFighting: HELP COMBAT · HELP CAPTURE · HELP DEATH\nYour character: HELP SKILLS · HELP LEARNING · HELP MANA\nBelongings: HELP INVENTORY · HELP EQUIPMENT · HELP STORAGE\nTown & supplies: HELP SHOPS · HELP BANK · HELP ITEMS · HELP REST · HELP RECALL\nMaking things: HELP CRAFTING · HELP COOKING\nConversation: HELP TALK · HELP EMOTES\nLeaving & progress: HELP SAVING\nDetails: HELP <skill or command>, such as HELP FIREBALL. Formats: SYNTAX <command>.',
-            'map': 'SHOW MAP or DISPLAY MAP opens your exploration map in a pop-up. It stays closed until you ask for it.\nOnly rooms you have entered and connections between those rooms appear. Enemy locations, NPCs, loot and hidden discoveries are never shown. Looking into the distance does not chart a room.\nYour current room is highlighted. Choose a visited elevation, zoom, or center on yourself. Click a room to read its known connections; this does not move you. Close or press Escape to return to the command box. Combat continues while the map is open.\nExploration saves with your character and survives death. Older saves start mapping from their current room; past travel cannot be reconstructed. Rooms entered in darkness remain unnamed until you see them.',
+            'map': 'LOOK MAP, SHOW MAP or DISPLAY MAP opens your exploration map in a pop-up. It stays closed until you ask for it.\nOnly rooms you have entered and connections between those rooms appear. Enemy locations, NPCs, loot and hidden discoveries are never shown. Looking into the distance does not chart a room.\nYour current room is highlighted. Choose a visited elevation, zoom, or center on yourself. Click a room to read its known connections; this does not move you. Close or press Escape to return to the command box. Combat continues while the map is open.\nExploration saves with your character and survives death. Older saves start mapping from their current room; past travel cannot be reconstructed. Rooms entered in darkness remain unnamed until you see them.',
             'movement': 'MOVE: N, S, E, W, UP, DOWN (or GO NORTH / MOVE N).\nLOOK shows the room and its exits; LOOK NORTH scouts an exit.\nMovement is blocked during combat; use FLEE. HELP EXPLORATION explains visibility.',
             'exploration': f'LOOK [object | item | creature] examines something. LOOK SELF shows equipment.\nLOOK NORTH 2 scouts farther along a straight route, up to {r["perception_distance"]} rooms. Darkness, terrain and fog may block the view. Carry a lantern for dark rooms.\nRoom descriptions and inspectable objects contain clues. Discoveries may require a defeat, an inspection or a key; help does not reveal puzzle answers.',
             'combat': f'ATTACK [creature] starts automatic attacks. KILL is an alias.\nShared pulses occur every {self.w["settings"]["attack_interval"]:g}s; a basic attack recovers for {2 * self.w["settings"]["attack_interval"]:g}s, longer when slowed.\nCAST <skill> [creature] uses an ability. HELP <skill> shows its requirements. Manual combat skills share {r["action_recovery"]:g}s recovery; each also has its own cooldown.\nTARGET <description> changes opponents; targeting another creature during combat engages it. Aggressive creatures in the room join the fight.\nGeneric creature names retain a matching current target or choose a matching creature of the same type. Different matching types need clarification.\nQUAFF POTION heals, with {r["potion_recovery"]:g}s recovery between potions. FLEE attempts escape through a random exit.\nCombat continues while the server runs, even with the browser closed. HELP DEATH · HELP SAVING.',

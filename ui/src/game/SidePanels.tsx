@@ -44,25 +44,28 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
         {!p.inventory.length && <p className="text-sm text-muted-foreground">Your bag is empty.</p>}
       </TerminalBox>
 
-      <TerminalBox title="Skills" muted>
-        {p.ward && <p className="mb-2 text-sm text-story" role="status">Ward active: {p.ward.power}% less incoming attack damage · {p.ward.remaining}s remaining. Status damage is unaffected.</p>}
-        {!!p.max_mana && <p className="mb-3 text-sm text-story">Mana mastery {p.mana_progress?.level || 1} · {p.mana_progress?.next_xp === null ? 'Maximum level' : `${p.mana_progress?.level_xp || 0}/${p.mana_progress?.next_xp || 100} XP to next level`}<br />Recover mana between fights; rest at an inn to refill it.</p>}
-        {skills.filter(s => !data.learning_enabled || s.unlocked).map((s) => (
-          <div key={s.id} className="my-2 border-b border-border pb-2 text-sm">
-            <span className={s.unlocked ? 'text-foreground' : 'text-muted-foreground'}>{s.unlocked ? '✓' : '·'} {s.name}</span>
-            {data.learning_enabled && <span className="text-muted-foreground"> · rank {s.rank}/{s.max_rank}{s.passive ? ' · automatic attacks' : ''}</span>}
-            <SkillFacts skill={s} />
-            {s.magic_progress && <span className="block text-xs text-muted-foreground">
-              Spell mastery {s.magic_progress.level} · {s.magic_progress.next_xp === null ? 'Maximum level' : `${s.magic_progress.level_xp}/${s.magic_progress.next_xp} XP to next level`}
-            </span>}
-            {s.effect === 'enchant' && p.enchanting?.[s.id] && <span className="block text-xs text-muted-foreground">
-              Crafting mastery {p.enchanting[s.id].level} · {p.enchanting[s.id].next_xp === null ? 'Maximum level' : `${p.enchanting[s.id].level_xp}/${p.enchanting[s.id].next_xp} XP to next level`}
-            </span>}
-            {!s.unlocked && <span className="text-muted-foreground"> (level {s.unlock_level ?? 1})</span>}
-          </div>
-        ))}
-        {!skills.length && <p className="text-sm text-muted-foreground">No skills assigned.</p>}
-      </TerminalBox>
+      <details className="min-w-0 rounded-md border border-border">
+        <summary className="cursor-pointer rounded-md px-4 py-3 text-sm text-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary">Skills</summary>
+        <div className="px-4 pb-4">
+          {p.ward && <p className="mb-2 text-sm text-story" role="status">Ward active: {p.ward.power}% less incoming attack damage · {p.ward.remaining}s remaining. Status damage is unaffected.</p>}
+          {!!p.max_mana && <p className="mb-3 text-sm text-story">Mana mastery {p.mana_progress?.level || 1} · {p.mana_progress?.next_xp === null ? 'Maximum level' : `${p.mana_progress?.level_xp || 0}/${p.mana_progress?.next_xp || 100} XP to next level`}<br />Recover mana between fights; rest at an inn to refill it.</p>}
+          {skills.filter(s => !data.learning_enabled || s.unlocked).map((s) => (
+            <div key={s.id} className="my-2 border-b border-border pb-2 text-sm">
+              <span className={s.unlocked ? 'text-foreground' : 'text-muted-foreground'}>{s.unlocked ? '✓' : '·'} {s.name}</span>
+              {data.learning_enabled && <span className="text-muted-foreground"> · rank {s.rank}/{s.max_rank}{s.passive ? ' · automatic attacks' : ''}</span>}
+              <SkillFacts skill={s} />
+              {s.magic_progress && <span className="block text-xs text-muted-foreground">
+                Spell mastery {s.magic_progress.level} · {s.magic_progress.next_xp === null ? 'Maximum level' : `${s.magic_progress.level_xp}/${s.magic_progress.next_xp} XP to next level`}
+              </span>}
+              {s.effect === 'enchant' && p.enchanting?.[s.id] && <span className="block text-xs text-muted-foreground">
+                Crafting mastery {p.enchanting[s.id].level} · {p.enchanting[s.id].next_xp === null ? 'Maximum level' : `${p.enchanting[s.id].level_xp}/${p.enchanting[s.id].next_xp} XP to next level`}
+              </span>}
+              {!s.unlocked && <span className="text-muted-foreground"> (level {s.unlock_level ?? 1})</span>}
+            </div>
+          ))}
+          {!skills.length && <p className="text-sm text-muted-foreground">No skills assigned.</p>}
+        </div>
+      </details>
 
       {data.learning_enabled && <TerminalBox title={`Learn abilities · ${p.ability_points || 0} points`} muted>
         <p className="mb-3 text-sm text-story">Choose new abilities or improve their ranks. Earn {data.learning_schedule || 'points by gaining character levels.'} Save them for later unlocks. Spell mastery also grows through practice.</p>

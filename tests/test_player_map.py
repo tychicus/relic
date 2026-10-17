@@ -67,10 +67,11 @@ class PlayerMapTests(unittest.TestCase):
         self.assertEqual(self.g.player_map()['current'], 'shop')
 
     def test_map_action_is_exact_reply_only_and_not_replayed_after_reload(self):
-        for command in ('SHOW MAP', ' display   MAP '):
+        for command in ('SHOW MAP', ' display   MAP ', 'LOOK MAP', ' look   MaP ', 'L MAP'):
             self.assertEqual(self.g.command(command)['ui_action'], 'show_map')
             self.assertNotIn('ui_action', self.g.snapshot())
-        for command in ('MAP', 'SHOW', 'SHOW ENEMIES', 'DISPLAY MAP ALL', 'HELP MAP', 'LOOK'):
+        for command in ('MAP', 'SHOW', 'SHOW ENEMIES', 'DISPLAY MAP ALL', 'HELP MAP',
+                        'HELP LOOK MAP', 'SYNTAX LOOK', 'LOOK', 'LOOK NORTH', 'LOOK SELF', 'LOOK MAP ALL'):
             self.assertNotIn('ui_action', self.g.command(command))
         self.reload()
         self.assertNotIn('ui_action', self.g.snapshot())
@@ -127,7 +128,8 @@ class PlayerMapTests(unittest.TestCase):
         self.g.p['attack_ready'] = self.now + 1000
         self.g.command('attack')
         self.assertIsNotNone(self.g.p['combat'])
-        self.assertEqual(self.g.command('SHOW MAP')['ui_action'], 'show_map')
+        for command in ('SHOW MAP', 'LOOK MAP'):
+            self.assertEqual(self.g.command(command)['ui_action'], 'show_map')
         before = set(self.rooms())
         self.g.w['settings']['flee_chance'] = 1
         # Only one possible escape, to a previously unvisited room.

@@ -1,8 +1,8 @@
 """Actor-independent encounter targeting and scheduling for one or many players.
 
-The local game supplies one player today. A future server supplies its room roster
-to the same functions, resolves actions once under its world lock, and distributes
-results. Network sessions, parties and shared rewards are outside this module.
+The local engine supplies one player; the multiplayer server supplies its room
+roster and resolves each shared pulse once under the world lock. Network sessions,
+parties and shared rewards are outside this module.
 """
 import random
 

@@ -1,10 +1,14 @@
-"""Local-only browser transport. Keep this server bound to loopback."""
+"""Browser transport: local by default, with explicitly enabled LAN play."""
 import argparse
 import hmac
 import json
 import re
 import secrets
 import threading
+import time
+import ipaddress
+import socket
+from http.cookies import SimpleCookie
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,15 +23,76 @@ ASSET_TYPES = {'.js': 'text/javascript; charset=utf-8', '.css': 'text/css; chars
 ASSET_NAME = re.compile(r'[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*')
 
 
-def make_server(game, port=8765):
+def make_server(game, port=8765, host='127.0.0.1'):
     token = secrets.token_urlsafe(32)
+    owner_key = secrets.token_urlsafe(24)
+    multiplayer = getattr(game, 'multiplayer', False)
+    sessions = {}
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *args):
             pass
 
         def allowed_host(self):
-            return self.headers.get('Host') in {f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
+            value = self.headers.get('Host', '')
+            if value in {f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}:
+                return True
+            if host != '0.0.0.0' or not multiplayer:
+                return False
+            try:
+                parsed = urlparse('//'+value)
+                if parsed.port != self.server.server_port or parsed.username or parsed.password:
+                    return False
+                if parsed.hostname == socket.gethostname().lower():
+                    return True
+                address = ipaddress.ip_address(parsed.hostname or '')
+                return address.version == 4 and (address.is_private or address.is_loopback)
+            except ValueError:
+                return False
+
+        def session(self):
+            cookie = SimpleCookie()
+            try:
+                cookie.load(self.headers.get('Cookie', ''))
+                ident = cookie.get(f'relic_session_{self.server.server_port}')
+                session = sessions.get(ident.value if ident else '')
+            except Exception:
+                return None
+            if session and session['expires'] > time.time():
+                return session
+            if ident:
+                sessions.pop(ident.value, None)
+            return None
+
+        def select_character(self, ident, owner=False):
+            key = secrets.token_urlsafe(32)
+            previous = self.session()
+            # Prune expired sessions instead of accumulating them indefinitely.
+            for old, session in list(sessions.items()):
+                if session['expires'] <= time.time() or session is previous:
+                    sessions.pop(old, None)
+            # Picking the owner's character does not grant world-editor access.
+            sessions[key] = dict(player_id=ident, owner=owner, expires=time.time()+86400)
+            if previous and not any(s['player_id'] == previous['player_id'] for s in sessions.values()):
+                game._presence.pop(previous['player_id'], None)
+            self.session_cookie = f'relic_session_{self.server.server_port}={key}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400'
+            return sessions[key]
+
+        def player_state(self, session):
+            ident = session['player_id'] if session else None
+            game.touch(ident)
+            with game.as_player(ident):
+                result = game.snapshot()
+            result['session'] = dict(owner=bool(session and session['owner']))
+            if not ident:
+                result['characters'] = game.character_choices()
+            return dict(result, token=token)
+
+        def require_owner(self):
+            if multiplayer and not (self.session() or {}).get('owner'):
+                self.reply(403, {'error': 'Open the host link from the game launcher to use the owner editor.'})
+                return False
+            return True
 
         def reply(self, status, body, content_type='application/json; charset=utf-8', cache='no-store'):
             if not isinstance(body, bytes):
@@ -38,6 +103,9 @@ def make_server(game, port=8765):
             self.send_header('Cache-Control', cache)
             self.send_header('X-Content-Type-Options', 'nosniff')
             self.send_header('X-Frame-Options', 'DENY')
+            self.send_header('Referrer-Policy', 'same-origin')
+            if getattr(self, 'session_cookie', None):
+                self.send_header('Set-Cookie', self.session_cookie)
             # Inline styles are allowed for the UI library's dialog scroll lock; scripts stay same-origin only.
             self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
             self.end_headers()
@@ -51,11 +119,16 @@ def make_server(game, port=8765):
                 return self.reply(403, {'error': 'Local access only.'})
             route = urlparse(self.path).path
             if route == '/api/state':
+                if multiplayer:
+                    with game.lock:
+                        return self.reply(200, self.player_state(self.session()))
                 return self.reply(200, dict(game.snapshot(), token=token))
             if route == '/api/world':
+                if not self.require_owner(): return
                 with game.lock:
                     return self.reply(200, game.w)
             if route == '/api/editor-schema':
+                if not self.require_owner(): return
                 from revision_rules import SCHEMA
                 return self.reply(200, SCHEMA)
             if route in PAGES:
@@ -75,7 +148,7 @@ def make_server(game, port=8765):
             if not self.allowed_host() or not hmac.compare_digest(self.headers.get('X-Game-Token', ''), token):
                 return self.reply(403, {'error': 'Reload the game page to reconnect.'})
             origin = self.headers.get('Origin')
-            if origin and origin not in {f'http://127.0.0.1:{self.server.server_port}', f'http://localhost:{self.server.server_port}'}:
+            if origin and origin != 'http://'+self.headers.get('Host', ''):
                 return self.reply(403, {'error': 'Local access only.'})
             try:
                 size = int(self.headers.get('Content-Length', '0'))
@@ -85,6 +158,9 @@ def make_server(game, port=8765):
                 if not isinstance(data, dict):
                     raise ValueError('Expected an object.')
                 route = urlparse(self.path).path
+                if multiplayer:
+                    with game.lock:
+                        return self.multiplayer_post(route, data)
                 if route == '/api/create':
                     return self.reply(200, game.create(data.get('name', ''), data.get('race', 'human'), data.get('class', 'warrior')))
                 if route == '/api/command':
@@ -100,19 +176,61 @@ def make_server(game, port=8765):
                 traceback.print_exc()
                 return self.reply(500, {'error': 'The server hit an error. Check the launcher window.'})
 
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+        def multiplayer_post(self, route, data):
+            session = self.session()
+            ident = session['player_id'] if session else None
+            if route == '/api/host':
+                code = data.get('code', '')
+                if not isinstance(code, str) or not hmac.compare_digest(code, owner_key):
+                    raise ValueError('Reopen the host link from the game launcher.')
+                session = self.select_character(game.owner_id, owner=True)
+                return self.reply(200, self.player_state(session))
+            if route in ('/api/join', '/api/create', '/api/leave'):
+                owner = bool(session and session['owner'])
+                if route == '/api/join':
+                    ident = data.get('player_id')
+                    if not isinstance(ident, str) or ident not in game.state['players']:
+                        raise ValueError('Choose a character from the list.')
+                elif route == '/api/create':
+                    if ident:
+                        raise ValueError('Choose Switch character before creating another character.')
+                    ident = game.create_character(data.get('name', ''), data.get('race', 'human'), data.get('class', 'warrior'), owner=owner)
+                else:
+                    ident = None
+                session = self.select_character(ident, owner=owner)
+                return self.reply(200, self.player_state(session))
+            if route == '/api/world':
+                if not self.require_owner(): return
+                with game.as_player(ident):
+                    game.update_world(data)
+                return self.reply(200, {'ok': True})
+            if route == '/api/command':
+                if not ident:
+                    return self.reply(401, {'error': 'Choose a character first.'})
+                game.touch(ident)
+                with game.as_player(ident):
+                    result = game.command(data.get('command', ''))
+                result['session'] = dict(owner=session['owner'])
+                return self.reply(200, result)
+            return self.reply(404, {'error': 'Not found.'})
+
+    server = ThreadingHTTPServer((host, port), Handler)
+    server.owner_key = owner_key
+    return server
 
 
 def main():
     parser = argparse.ArgumentParser(description='Run Relic Frontier locally.')
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--no-browser', action='store_true')
+    parser.add_argument('--host', choices=['127.0.0.1', '0.0.0.0'], default='127.0.0.1', help='Use 0.0.0.0 to allow players on your local network.')
     args = parser.parse_args()
     (ROOT / 'saves').mkdir(exist_ok=True)
     database_path = ROOT / 'saves' / 'game.sqlite3'
     try:
-        game = Game(ROOT / 'content' / 'world.json', database_path)
-        server = make_server(game, args.port)
+        from multiplayer import MultiplayerGame
+        game = MultiplayerGame(ROOT / 'content' / 'world.json', database_path)
+        server = make_server(game, args.port, args.host)
     except (OSError, ValueError) as error:
         print(f'Could not start the game: {error}')
         print('If another copy is running, use its browser window. Otherwise try: python server.py --port 8766')
@@ -132,14 +250,22 @@ def main():
 
     thread = threading.Thread(target=ticker, daemon=True); thread.start()
     address = f'http://127.0.0.1:{server.server_port}'
-    print(f'\nRELIC FRONTIER v0.9.1\nFolder: {ROOT}\n\nPlay:  {address}\nOwner: {address}/admin\n\nKeep this window open while playing.\nReturn to safety before closing your browser: combat keeps running.\nPress Ctrl+C here to stop the server and save.\n', flush=True)
+    print(f'\nRELIC FRONTIER v0.9.1\nFolder: {ROOT}\n\nPlay:  {address}\nHost link (includes owner editor): {address}/?owner={server.owner_key}\n\nChoose a character to play. Passwords are not enabled during multiplayer testing.\nKeep this window open while playing.\nReturn to safety before closing your browser: combat keeps running.\nPress Ctrl+C here to stop the server and save.\n', flush=True)
+    if args.host == '0.0.0.0':
+        print(f'LAN play enabled. Other players can open http://{socket.gethostname()}:{server.server_port} on this network. Share the play address; keep the host link for yourself.', flush=True)
+        try:
+            addresses = sorted({row[4][0] for row in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET) if not ipaddress.ip_address(row[4][0]).is_loopback})
+            for network_address in addresses:
+                print(f'Network play address: http://{network_address}:{server.server_port}', flush=True)
+        except OSError:
+            pass
     print(f'Save file: {database_path}', flush=True)
     if game.p:
         print(f'Loaded character: {game.p["name"]} | Level {game.p["level"]} | XP {game.p["xp"]} | Location: {game.w["rooms"][game.p["room"]]["name"]}\n', flush=True)
     else:
         print('This copy has no saved character.\n', flush=True)
     if not args.no_browser:
-        webbrowser.open(address)
+        webbrowser.open(address+'/?owner='+server.owner_key)
     try:
         server.serve_forever(poll_interval=.2)
     except KeyboardInterrupt:

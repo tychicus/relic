@@ -14,7 +14,7 @@ for the shared development workflow.
 
 ## Start
 
-Stop any old game with **Ctrl+C** in its launcher. On Windows, open
+Stop any old game with **Ctrl+C** in its launcher if it does not support QUIT. On Windows, open
 `Start_Game.cmd` in this folder. On Mac/Linux, run `python3 server.py`.
 Play at http://127.0.0.1:8765 and edit at http://127.0.0.1:8765/admin.
 Check the displayed version; refresh with Ctrl+F5 if the browser is stale.
@@ -63,6 +63,27 @@ There is no player-versus-player combat or party reward splitting. Switching cha
 does not stop a character's combat; return to safety first. All characters and
 their private logs persist in the host's `saves/game.sqlite3`; never replace it
 with a different host's save.
+
+## Saving and quitting
+
+Progress saves automatically after commands and world updates. **SAVE** saves
+immediately and keeps you playing. Type **QUIT** (also **LOGOUT** or **EXIT**),
+or click **save & quit**, to save and leave. Finish combat or FLEE first.
+
+- Your character stays out of play until you choose it again. Location,
+  inventory and progress are preserved; it cannot be attacked while logged out.
+- If you are using the launcher's host link and no other players are online,
+  QUIT also stops the game server. The Windows launcher closes normally without
+  Ctrl+C, a Y prompt or an extra keypress.
+- If other players are online, or you are a visiting player, the shared game
+  stays running. A host who has left can click **Stop game when everyone has
+  left** on the saved screen later; it still refuses to interrupt online players.
+- Wait for **Progress saved**, then close the browser tab. The page stops
+  checking for updates and does not show a false disconnected error.
+
+Closing the browser without QUIT, or using **switch character**, leaves that
+character in the running world. Combat can continue. Ctrl+C remains a fallback
+for stopping the server. Body decay deadlines still pass while you are away.
 
 Read **UPDATE_v0.9.1.txt** for the wider layout and screen controls.
 Read **UPDATE_v0.9.0.txt** for the full mechanics guide, editable balance values,
@@ -234,8 +255,8 @@ New rooms and enemy XP remain owner-authored and are unchanged by this update.
   handles BALANCE, DEPOSIT <amount or ALL> and WITHDRAW <amount or ALL>. Accounts belong
   to the character's permanent identity. Banked gold remains safe after death.
 
-Combat continues while the server runs, including with the browser closed.
-Ctrl+C in the launcher stops and saves. Characters stay on the host;
+Combat continues while the server runs if you close the browser without QUIT.
+QUIT saves and leaves; when hosting alone, it also stops the server. Characters stay on the host;
 no external service is used.
 
 ## Edit and preserve

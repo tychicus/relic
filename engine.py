@@ -321,6 +321,8 @@ class LegacyGame(PlayerHelp, Abilities):
                     result = self.finish()
                     if verb in ('show', 'display') and target == 'map':
                         result['ui_action'] = 'show_map'  # Reply-only event; never persisted or replayed by polling.
+                    elif verb == 'quit':
+                        result['ui_action'] = 'quit'
                     return result
                 if verb in ('north', 'south', 'east', 'west', 'up', 'down'):
                     if self.p['combat']:

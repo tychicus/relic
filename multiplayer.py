@@ -123,8 +123,31 @@ class MultiplayerGame(Social, Game):
         if ident in self.state['players']:
             self._presence[ident] = self.clock()
 
+    def resume_character(self, ident):
+        with self.as_player(ident):
+            if self.p and self.p.pop('logged_out', False):
+                self._mana_tick = self.clock()
+                self.save()
+
+    def leave_character(self, ident):
+        with self.as_player(ident):
+            if self.p.get('combat'):
+                raise ValueError('Finish combat or FLEE before quitting.')
+            previous = self.p.get('logged_out')
+            self.p['logged_out'] = True
+            try:
+                self.save()
+            except Exception:
+                if previous is None:
+                    self.p.pop('logged_out', None)
+                else:
+                    self.p['logged_out'] = previous
+                raise
+        self._presence.pop(ident, None)
+
     def social_players(self):
-        return [p for p in self.all_players() if p is self.p or self.clock()-self._presence.get(p['id'], float('-inf')) < 30]
+        return [p for p in self.all_players() if not p.get('logged_out') and
+                (p is self.p or self.clock()-self._presence.get(p['id'], float('-inf')) < 30)]
 
     def deliver_message(self, player_id, text, kind):
         with self.as_player(player_id):
@@ -247,6 +270,8 @@ class MultiplayerGame(Social, Game):
                     self.state['corpses'] = [c for c in self.state['corpses'] if c['expires'] > self.clock() and not c.get('harvested')]
                     self.heal_enemies()
                 for player in players:
+                    if player.get('logged_out'):
+                        continue
                     with self.as_player(player['id']):
                         self.retarget()
                         if not player.get('combat'):

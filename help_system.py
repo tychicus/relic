@@ -18,6 +18,7 @@ ALIASES = {
     'meditate': 'mana', 'skill': 'cast', 'chat': 'talk',
     'socials': 'emotes', 'social': 'emote',
     'enchanting': 'enchant', 'sharpening': 'sharpen',
+    'logout': 'quit', 'exit': 'quit',
 }
 
 # Syntax and help use one command index. These are implemented commands, not a
@@ -79,6 +80,7 @@ COMMANDS = {
     'emote': ('emotes', 'EMOTE <emote name or command> [target]', 'EMOTE WAVE TAMSIN'),
     'me': ('emotes', 'ME <your character\'s action>', 'ME brushes dust from a weathered coat.'),
     'save': ('saving', 'SAVE', 'SAVE'),
+    'quit': ('saving', 'QUIT (also LOGOUT or EXIT)', 'QUIT'),
 }
 
 TOPICS = ('help', 'movement', 'exploration', 'map', 'combat', 'capture', 'skills',
@@ -97,7 +99,7 @@ TOPIC_ALIASES = {
     'banking': 'bank', 'body': 'death', 'corpse': 'death',
     'dialogue': 'talk', 'conversation': 'talk', 'npc': 'talk',
     'emote': 'emotes', 'social': 'emotes', 'socials': 'emotes',
-    'logout': 'saving', 'quit': 'saving',
+    'logout': 'saving', 'quit': 'saving', 'exit': 'saving',
 }
 
 
@@ -211,6 +213,11 @@ class PlayerHelp:
         return message
 
     def guide_command(self, verb, target):
+        if verb == 'quit':
+            if target: raise ValueError('Use QUIT by itself to save and leave the game.')
+            if self.p.get('combat'): raise ValueError('Finish combat or FLEE before quitting. SAVE still works during combat.')
+            self.log('Progress saved. Leaving the game.', 'notice')
+            return True
         if verb in ('show', 'display'):
             if target != 'map': raise ValueError('Use SHOW MAP or DISPLAY MAP to open your explored map.')
             self.remember_room()
@@ -393,7 +400,7 @@ class PlayerHelp:
             'bank': 'At a bank: BALANCE shows your account; DEPOSIT <amount or ALL> moves carried gold into it; WITHDRAW <amount or ALL> returns gold to your purse.\nExample: DEPOSIT 20. Use positive whole amounts. Finish combat first.\nBanked gold belongs to your character and survives death. Carried gold remains at risk. Banking does not store equipment.',
             'death': (f'Death leaves all carried gold, inventory and worn gear in your body for {r["player_body_seconds"] / 60:g} real minutes, including time with the game closed. Banked gold stays safe.\nReturn and LOOK BODY, then GET ALL FROM BODY or LOOT BODY. GET GOLD FROM BODY or GET <item> FROM BODY recovers specific contents.\nUse BODY <number> if several remain. Recovered equipment goes into the bag and must be equipped again. Anything left when the body expires is lost.' if r['player_bodies'] else f'Recoverable bodies are disabled. Death loses {self.w["settings"]["gold_loss"] * 100:g}% of carried gold and has a {self.w["settings"]["item_loss_chance"] * 100:g}% chance to lose an unprotected bag item. You return to the starting room.'),
             'talk': 'TALK TAMSIN or TALK TO TAMSIN says hello.\nTALK TAMSIN ABOUT COOKING and ASK TAMSIN ABOUT COOKING say "cooking" to her.\nSAY <phrase> TO <NPC | creature | CAGE number> still works. Example: SAY HELLO TO TAMSIN.\nConversation phrases ignore capitalization and repeated spaces but otherwise need the complete phrase. Hidden creature phrases are not revealed in help.\nEmotes are separate cosmetic actions; HELP EMOTES.',
-            'saving': 'Progress saves automatically. SAVE also saves. Reopening the browser reconnects to this local character.\nThere is currently no logout command. Return to safety before closing the browser: combat continues while the server runs.\nCtrl+C in the launcher stops the server and saves. Body deadlines still pass while the server is closed. HELP DEATH.',
+            'saving': 'Progress saves automatically after commands and world updates. SAVE saves immediately and keeps you playing.\nQUIT (also LOGOUT or EXIT) saves and leaves the game. Finish combat or FLEE first. In multiplayer, your character stays out of play until you choose it again; your location and belongings are preserved.\nIf you are the host and no other players are online, QUIT also stops the server and closes the Windows launcher. Otherwise the shared game keeps running. Wait for the saved message; you can then close the browser tab.\nClosing the browser without QUIT leaves your character in the running world, including combat. Ctrl+C remains a fallback for stopping the server. Body deadlines still pass while you are away. HELP DEATH.',
         }
         if topic == 'emotes':
             rows = ['EMOTES — cosmetic expressions', 'Use a command directly, such as WAVE TAMSIN, or EMOTE WAVE TAMSIN.',

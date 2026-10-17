@@ -300,6 +300,7 @@ class MultiplayerTests(unittest.TestCase):
         class PreviewServer:
             server_port = 8765
             owner_key = 'test-owner-key'
+            stop_requested = threading.Event()
             def serve_forever(self, **kwargs): raise KeyboardInterrupt
             def server_close(self): pass
             def shutdown(self): pass

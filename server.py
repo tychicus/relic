@@ -65,6 +65,8 @@ def make_server(game, port=8765, host='127.0.0.1'):
             return None
 
         def select_character(self, ident, owner=False):
+            if ident:
+                game.resume_character(ident)
             key = secrets.token_urlsafe(32)
             previous = self.session()
             # Prune expired sessions instead of accumulating them indefinitely.
@@ -94,6 +96,44 @@ def make_server(game, port=8765, host='127.0.0.1'):
                 return False
             return True
 
+        def quit_reply(self, session, stopped):
+            return dict(title=game.w['title'], time=game.clock(), player=None, log=[],
+                        multiplayer=multiplayer, session=dict(owner=bool(session and session['owner'])),
+                        token=token, ui_action='quit', quit=dict(server_stopped=stopped))
+
+        def quit_game(self, session):
+            ident = session['player_id'] if session else None
+            if multiplayer:
+                if not session:
+                    return self.reply(401, {'error': 'Choose a character first.'})
+                if ident:
+                    with game.as_player(ident):
+                        result = game.command('quit')
+                    if result.get('ui_action') != 'quit':
+                        result['session'] = dict(owner=session['owner'])
+                        return self.reply(200, result)
+                    game.leave_character(ident)
+                else:
+                    game.save()
+                # Clear every view of this character, including other browser tabs.
+                for value in sessions.values():
+                    if value['player_id'] == ident:
+                        value['player_id'] = None
+                with game.as_player(None):
+                    others = game.social_players()
+                stopped = session['owner'] and not others
+            else:
+                result = game.command('quit')
+                if result.get('ui_action') != 'quit':
+                    return self.reply(200, result)
+                stopped = True
+            if stopped:
+                self.server.stop_requested.set()
+            self.reply(200, self.quit_reply(session, stopped))
+            if stopped:
+                # shutdown() must run outside serve_forever's thread, after the reply.
+                threading.Thread(target=self.server.shutdown, daemon=True).start()
+
         def reply(self, status, body, content_type='application/json; charset=utf-8', cache='no-store'):
             if not isinstance(body, bytes):
                 body = json.dumps(body).encode('utf-8')
@@ -119,10 +159,12 @@ def make_server(game, port=8765, host='127.0.0.1'):
                 return self.reply(403, {'error': 'Local access only.'})
             route = urlparse(self.path).path
             if route == '/api/state':
-                if multiplayer:
-                    with game.lock:
+                with game.lock:
+                    if self.server.stop_requested.is_set():
+                        return self.reply(200, self.quit_reply(self.session(), True))
+                    if multiplayer:
                         return self.reply(200, self.player_state(self.session()))
-                return self.reply(200, dict(game.snapshot(), token=token))
+                    return self.reply(200, dict(game.snapshot(), token=token))
             if route == '/api/world':
                 if not self.require_owner(): return
                 with game.lock:
@@ -158,8 +200,13 @@ def make_server(game, port=8765, host='127.0.0.1'):
                 if not isinstance(data, dict):
                     raise ValueError('Expected an object.')
                 route = urlparse(self.path).path
-                if multiplayer:
-                    with game.lock:
+                with game.lock:
+                    if self.server.stop_requested.is_set():
+                        return self.reply(503, {'error': 'The game has been saved and stopped. Reopen the launcher to play.'})
+                    raw = ' '.join(str(data.get('command', '')).split())
+                    if route == '/api/quit' or route == '/api/command' and raw.casefold() in ('quit', 'logout', 'exit'):
+                        return self.quit_game(self.session() if multiplayer else None)
+                    if multiplayer:
                         return self.multiplayer_post(route, data)
                 if route == '/api/create':
                     return self.reply(200, game.create(data.get('name', ''), data.get('race', 'human'), data.get('class', 'warrior')))
@@ -216,6 +263,7 @@ def make_server(game, port=8765, host='127.0.0.1'):
 
     server = ThreadingHTTPServer((host, port), Handler)
     server.owner_key = owner_key
+    server.stop_requested = threading.Event()
     return server
 
 
@@ -235,22 +283,26 @@ def main():
         print(f'Could not start the game: {error}')
         print('If another copy is running, use its browser window. Otherwise try: python server.py --port 8766')
         return 1
-    stop = threading.Event()
+    stop = server.stop_requested
+    failed = threading.Event()
 
     def ticker():
         while not stop.wait(.1):
             try:
-                game.tick()
+                with game.lock:
+                    if not stop.is_set():
+                        game.tick()
             except Exception:
                 import traceback
                 traceback.print_exc()
                 print('Game clock stopped after an error. Restart the launcher after checking the error above.')
+                failed.set()
                 stop.set()
                 server.shutdown()
 
     thread = threading.Thread(target=ticker, daemon=True); thread.start()
     address = f'http://127.0.0.1:{server.server_port}'
-    print(f'\nRELIC FRONTIER v0.9.1\nFolder: {ROOT}\n\nPlay:  {address}\nHost link (includes owner editor): {address}/?owner={server.owner_key}\n\nChoose a character to play. Passwords are not enabled during multiplayer testing.\nKeep this window open while playing.\nReturn to safety before closing your browser: combat keeps running.\nPress Ctrl+C here to stop the server and save.\n', flush=True)
+    print(f'\nRELIC FRONTIER v0.9.1\nFolder: {ROOT}\n\nPlay:  {address}\nHost link (includes owner editor): {address}/?owner={server.owner_key}\n\nChoose a character to play. Passwords are not enabled during multiplayer testing.\nKeep this window open while playing.\nType QUIT in the game to save and leave. If the host is alone, the server stops too.\nClosing the browser without QUIT leaves combat running. Ctrl+C is a fallback to stop and save.\n', flush=True)
     if args.host == '0.0.0.0':
         print(f'LAN play enabled. Other players can open http://{socket.gethostname()}:{server.server_port} on this network. Share the play address; keep the host link for yourself.', flush=True)
         try:
@@ -275,7 +327,7 @@ def main():
         with game.lock:
             game.save(); game.db.close()
         print('Progress saved. See you at the fountain.')
-    return 0
+    return 1 if failed.is_set() else 0
 
 
 if __name__ == '__main__':

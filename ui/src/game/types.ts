@@ -153,7 +153,8 @@ export interface Snapshot {
   characters?: { id: string; name: string; level: number }[]
   players_here?: { name: string; level: number }[]
   exploration_map?: ExplorationMap
-  ui_action?: 'show_map'
+  ui_action?: 'show_map' | 'quit'
+  quit?: { server_stopped: boolean }
   recall_rules?: { reusable_below: number; disabled_from: number; starting_scroll: boolean }
   learning_enabled?: boolean
   learning_schedule?: string

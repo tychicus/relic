@@ -32,6 +32,14 @@ browser profiles to play different characters on the same computer; tabs in
 one profile share a character selection. Refreshing the page keeps your selection;
 after a server restart, choose the character again.
 
+During character creation, choose **Male** or **Female** alongside your race
+and class. The green portrait updates immediately and appears above your stats
+while playing. All 20 available combinations have portraits: Humans and Elves
+in every class, and Orc Warriors and Rogues. This is an appearance choice;
+stats and abilities are the same. The choice saves with each character and
+also appears when selecting a saved character. Older characters without a
+recorded choice display the male portrait for their race and class.
+
 Login and passwords are deferred. This is an open character picker for testing
 on this computer or a trusted local network: anyone connected can choose any
 saved character, including its progress and message history. TELL messages are

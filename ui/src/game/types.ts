@@ -45,12 +45,20 @@ export interface Effect {
   remaining: number
 }
 
-export interface Player {
+export type Gender = 'male' | 'female'
+
+export interface CharacterAppearance {
+  race: string
+  class: string
+  gender: Gender
+  race_name: string
+  class_name: string
+}
+
+export interface Player extends CharacterAppearance {
   id: string
   defense?: number
   name: string
-  race_name: string
-  class_name: string
   level: number
   hp: number
   max_hp: number
@@ -150,7 +158,7 @@ export interface ExplorationMap {
 export interface Snapshot {
   multiplayer?: boolean
   session?: { owner: boolean }
-  characters?: { id: string; name: string; level: number }[]
+  characters?: (CharacterAppearance & { id: string; name: string; level: number })[]
   players_here?: { name: string; level: number }[]
   exploration_map?: ExplorationMap
   ui_action?: 'show_map' | 'quit'

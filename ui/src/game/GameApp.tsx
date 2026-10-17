@@ -9,7 +9,7 @@ import { HeaderPanel } from './HeaderPanel'
 import { SidePanels } from './SidePanels'
 import { Welcome } from './Welcome'
 import { PlayerMap } from './PlayerMap'
-import type { LogLine, Snapshot } from './types'
+import type { Gender, LogLine, Snapshot } from './types'
 
 const POLL_MS = 750
 const LOG_LIMIT = 180
@@ -87,12 +87,12 @@ export function GameApp() {
   )
 
   const create = useCallback(
-    async (name: string, race: string, cls: string) => {
+    async (name: string, race: string, cls: string, gender: Gender) => {
       while (busy.current) await new Promise((resolve) => setTimeout(resolve, 60))
       busy.current = true
       setCharacterError('')
       try {
-        apply(await api<Snapshot>('/api/create', { name, race, class: cls }))
+        apply(await api<Snapshot>('/api/create', { name, race, class: cls, gender }))
         focusAfterCreate.current = true
       } catch (e) {
         setCharacterError((e as Error).message)

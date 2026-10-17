@@ -1,0 +1,21 @@
+Relic Frontier character portraits
+
+Approved by the owner on 2026-10-17. Generated with the built-in image_gen
+tool using the owner's existing green terminal warrior screenshot as the
+style reference. This PNG is the unchanged approved preview, retained as a
+sprite atlas. CharacterPortrait.tsx displays the individual character regions.
+
+Source: exec-9e51e0d0-b7b4-4515-8599-cf969ef517d3.png
+Dimensions: 1145 x 1374
+SHA256: 267be067016e827f7481a1f93fb1129fe9ae0381d602b7e3044a3d47c0137765
+
+Prompt brief: A labeled design approval sheet of twenty distinct full-body,
+coarse green pixel-art adventurers on near-black, matching the existing
+terminal character. Four columns: Warrior, Rogue, Mage, Cleric. Six rows:
+Human Male, Human Female, Elf Male, Elf Female, Orc Male, Orc Female. Orcs
+have Warrior and Rogue only. Warriors carry a shield and sword; Rogues carry
+two daggers; Mages wear pointed hats and carry a staff; Clerics carry a mace
+and book. Elves have pointed ears and slender proportions; Orcs are stockier
+with square jaws and tusks. Male and female figures have distinct practical
+silhouettes and hairstyles, with comparable clothing and equipment. Keep
+the green palette and chunky pixel scale consistent across all characters.

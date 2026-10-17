@@ -128,7 +128,7 @@ class LegacyGame(PlayerHelp, Abilities):
         self.state['log'].append({'id': self.state['sequence'], 'text': message, 'kind': kind})
         self.state['log'] = self.state['log'][-180:]
 
-    def create(self, name, race="human", character_class="warrior"):
+    def create(self, name, race="human", character_class="warrior", gender="male"):
         with self.lock:
             if self.p:
                 raise ValueError('A character already exists. Continue your saved adventure.')
@@ -139,11 +139,14 @@ class LegacyGame(PlayerHelp, Abilities):
                 raise ValueError('Choose an existing race and class.')
             if not self.class_eligible(race,character_class):
                 raise ValueError(self.w['races'][race]['name']+' characters cannot choose a class that requires magic.')
+            if gender not in ('male', 'female'):
+                raise ValueError('Choose Male or Female for your character.')
             a = self.w['starting']
             if not self.can_use_magic(race) and any(self.magical_item(self.w['items'][iid]) for iid in a['equipment'].values()):
                 raise ValueError('This race needs nonmagical starting equipment. Change the starting equipment in the owner editor.')
             self.p = self.state['player'] = {'id': 'player-'+uuid.uuid4().hex, 'name': name, 'race': race, 'class': character_class, 'level': 1, 'xp': 0, 'hp': self.w['classes'][character_class]['hp'] + self.w['races'][race]['hp_bonus'], 'gold': a['gold'], 'room': a['room'], 'inventory': a['inventory'][:], 'equipment': dict(a['equipment']), 'cooldowns': {}, 'combat': None, 'learned_skills': {}, 'ability_points_spent': 0}
             self.p['hp'] = self.max_hp()
+            self.p['gender'] = gender
             self.init_adventure()
             self.log(f'Welcome, {name}. Your story begins in Center Square.', 'story')
             self.state['announced_skills']=[]
@@ -452,6 +455,8 @@ class LegacyGame(PlayerHelp, Abilities):
                     race['class_stats']={cid:self.character_stats(race['id'],cid) for cid in race['available_classes']}
                 return result
             p = copy.deepcopy(self.p); p['max_hp'] = self.max_hp()
+            # Older saves have no appearance choice; keep their progress untouched.
+            p.setdefault('gender', 'male')
             thresholds = self.w['settings']['level_xp']; p['next_xp'] = thresholds[p['level']] if p['level'] < len(thresholds) else None
             p['level_start_xp'] = thresholds[min(p['level'] - 1, len(thresholds) - 1)]
             r = self.w['rooms'][p['room']]; light = self.visible(); e = self.enemy()

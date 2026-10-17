@@ -2,26 +2,7 @@ import type { ReactNode } from 'react'
 import { Heading, Rule, TerminalBox, TextMeter } from '@/components/Terminal'
 import { ActionButton, ItemRow, countItems, type Send } from './ItemRow'
 import type { Snapshot } from './types'
-
-// A helmeted warrior with shield and sword, drawn in half-blocks (two pixels per character).
-// Every row is the same width so the figure stays aligned when centred.
-const WARRIOR = [
-  '      ▄█▄    ▄ ',
-  '     █▀▀▀█   █ ',
-  '     ▀███▀   █ ',
-  ' ▄▄█▀█████▀█ █ ',
-  '████ █████ ▀▀█▀',
-  ' ▀▀  ██▀██     ',
-  '    ▄██ ██▄    ',
-].join('\n')
-
-export function Emblem() {
-  return (
-    <pre aria-hidden className="my-2 text-center text-xs leading-[1.05] text-primary">
-      {WARRIOR}
-    </pre>
-  )
-}
+import { CharacterPortrait } from './CharacterPortrait'
 
 function Line({ children }: { children: ReactNode }) {
   return <div className="my-1.5 flex flex-wrap items-center gap-2">{children}</div>
@@ -34,7 +15,7 @@ function CharacterSummary({ data }: { data: Snapshot }) {
   return (
     <div className="flex flex-col items-center text-center">
       <p className="font-bold break-all">Welcome back, {p.name}!</p>
-      <Emblem />
+      <CharacterPortrait race={p.race} characterClass={p.class} gender={p.gender} label={`${p.gender === 'female' ? 'Female' : 'Male'} ${p.race_name} ${p.class_name} portrait`} />
       <p className="text-muted-foreground">
         {p.race_name} {p.class_name} · Level {p.level}
       </p>

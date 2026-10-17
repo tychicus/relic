@@ -209,7 +209,7 @@ def make_server(game, port=8765, host='127.0.0.1'):
                     if multiplayer:
                         return self.multiplayer_post(route, data)
                 if route == '/api/create':
-                    return self.reply(200, game.create(data.get('name', ''), data.get('race', 'human'), data.get('class', 'warrior')))
+                    return self.reply(200, game.create(data.get('name', ''), data.get('race', 'human'), data.get('class', 'warrior'), gender=data.get('gender', 'male')))
                 if route == '/api/command':
                     return self.reply(200, game.command(data.get('command', '')))
                 if route == '/api/world':
@@ -241,7 +241,7 @@ def make_server(game, port=8765, host='127.0.0.1'):
                 elif route == '/api/create':
                     if ident:
                         raise ValueError('Choose Switch character before creating another character.')
-                    ident = game.create_character(data.get('name', ''), data.get('race', 'human'), data.get('class', 'warrior'), owner=owner)
+                    ident = game.create_character(data.get('name', ''), data.get('race', 'human'), data.get('class', 'warrior'), owner=owner, gender=data.get('gender', 'male'))
                 else:
                     ident = None
                 session = self.select_character(ident, owner=owner)

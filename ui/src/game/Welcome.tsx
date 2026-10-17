@@ -4,15 +4,15 @@ import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Callout, Heading, Rule, TerminalBox } from '@/components/Terminal'
-import { Emblem } from './HeaderPanel'
-import type { Choice, Snapshot } from './types'
+import { CharacterPortrait } from './CharacterPortrait'
+import type { Choice, Gender, Snapshot } from './types'
 
 interface Props {
   choices?: { races: Choice[]; classes: Choice[] }
   recallRules?: Snapshot['recall_rules']
   multiplayer?: boolean
   characters?: Snapshot['characters']
-  onCreate: (name: string, race: string, cls: string) => void
+  onCreate: (name: string, race: string, cls: string, gender: Gender) => void
   onJoin?: (id: string) => void
 }
 
@@ -31,11 +31,17 @@ export function Welcome({ choices, recallRules, onCreate, multiplayer, character
   const selectedCharacter = characters.some(c => c.id === character) ? character : characters[0]?.id ?? ''
   const [race, setRace] = useState('human')
   const [cls, setCls] = useState('warrior')
+  const [gender, setGender] = useState<Gender>('male')
   const races = choices?.races ?? []
   const selectedRace = races.find(r => r.id === race)
   const classes = (choices?.classes ?? []).filter(c => !selectedRace?.available_classes || selectedRace.available_classes.includes(c.id))
   const selectedClass = pick(cls, classes, 'warrior')
   const stats = selectedRace?.class_stats?.[selectedClass]
+  const savedCharacter = choosing ? characters.find(c => c.id === selectedCharacter) : undefined
+  const portraitGender = savedCharacter?.gender ?? gender
+  const portraitRace = savedCharacter?.race ?? race
+  const portraitClass = savedCharacter?.class ?? selectedClass
+  const portraitDescription = `${portraitGender === 'female' ? 'Female' : 'Male'} ${savedCharacter?.race_name ?? selectedRace?.name ?? race} ${savedCharacter?.class_name ?? classes.find(c => c.id === selectedClass)?.name ?? selectedClass}`
 
   useEffect(() => {
     setRace((current) => pick(current, races, 'human'))
@@ -48,7 +54,8 @@ export function Welcome({ choices, recallRules, onCreate, multiplayer, character
         <div className="grid gap-4 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="flex flex-col items-center justify-center text-center">
             <p className="font-bold">Welcome, traveler!</p>
-            <Emblem />
+            <CharacterPortrait race={portraitRace} characterClass={portraitClass} gender={portraitGender} label={`${portraitDescription} portrait`} />
+            <p className="mb-2 text-sm text-primary">{portraitDescription}</p>
             <p className="text-sm text-muted-foreground">A frontier of steel, spellwork &amp; forgotten machines</p>
           </div>
           <div className="min-w-0 border-t border-primary pt-4 md:border-t-0 md:border-l md:pt-0 md:pl-4">
@@ -63,7 +70,7 @@ export function Welcome({ choices, recallRules, onCreate, multiplayer, character
               onSubmit={(event) => {
                 event.preventDefault()
                 if (choosing) onJoin?.(selectedCharacter)
-                else onCreate(name, race, selectedClass)
+                else onCreate(name, race, selectedClass, gender)
               }}
             >
               {choosing ? <Field>
@@ -86,6 +93,18 @@ export function Welcome({ choices, recallRules, onCreate, multiplayer, character
                   </NativeSelect>
                 </Field>
               </div>
+              <fieldset className="min-w-0">
+                <legend className="mb-2 text-sm font-medium">Male or female</legend>
+                <div className="flex flex-wrap gap-3">
+                  {(['male', 'female'] as const).map(option => (
+                    <label key={option} className="flex cursor-pointer items-center gap-2 rounded border border-primary px-3 py-2 text-sm has-checked:bg-accent">
+                      <input type="radio" name="gender" value={option} checked={gender === option} onChange={() => setGender(option)} className="accent-primary" />
+                      {option === 'male' ? 'Male' : 'Female'}
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">Changes your portrait. Stats and abilities are the same.</p>
+              </fieldset>
               {stats && <p className="text-sm text-story" aria-label="Starting character stats">
                 Start: {stats.hp} HP · {stats.mana} mana<br />
                 Per character level: +{Number(stats.hp_per_level.toFixed(2))} HP · +{Number(stats.mana_per_level.toFixed(2))} mana (totals rounded).

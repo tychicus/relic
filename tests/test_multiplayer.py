@@ -121,7 +121,9 @@ class MultiplayerTests(unittest.TestCase):
         self.g.save(); self.g.db.close()
         self.g = MultiplayerGame(self.path, self.db, clock=lambda: self.now)
         self.assertEqual({p['id']: p for p in self.g.all_players()}, expected)
-        self.assertIn(dict(id=self.alice, name='Alice', level=1), self.g.character_choices())
+        self.assertIn(dict(id=self.alice, name='Alice', level=1, race='human',
+                           **{'class': 'warrior'}, gender='male', race_name='Human',
+                           class_name='Warrior'), self.g.character_choices())
         self.assertIn('Saved private message', self.log(self.bob))
         self.assertNotIn('Saved private message', self.log(self.clara))
 

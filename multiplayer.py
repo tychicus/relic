@@ -97,9 +97,12 @@ class MultiplayerGame(Social, Game):
 
     def character_choices(self):
         with self.lock:
-            return [dict(id=p['id'], name=p['name'], level=p['level']) for p in self.all_players()]
+            return [dict(id=p['id'], name=p['name'], level=p['level'],
+                         race=p['race'], **{'class': p['class']}, gender=p.get('gender', 'male'),
+                         race_name=self.w['races'][p['race']]['name'],
+                         class_name=self.w['classes'][p['class']]['name']) for p in self.all_players()]
 
-    def create_character(self, name, race='human', character_class='warrior', owner=False):
+    def create_character(self, name, race='human', character_class='warrior', owner=False, gender='male'):
         with self.lock:
             name = ' '.join(str(name).split())
             if any(p['name'].casefold() == name.casefold() for p in self.all_players()):
@@ -108,7 +111,7 @@ class MultiplayerGame(Social, Game):
                 raise ValueError('That name belongs to a townsfolk NPC. Choose another character name.')
             healing = self._enemy_heal_at
             with self.as_player(None):
-                super().create(name, race, character_class)
+                super().create(name, race, character_class, gender=gender)
                 ident = self.p['id']
                 self._selected = ident
                 self._flush_player()

@@ -130,7 +130,7 @@ export function GameApp() {
               </div>
               <Console data={data} log={log} send={send} logRef={logRef} commandRef={commandRef} />
             </div>
-            <aside className="game-sidebar min-w-0" aria-label="Skills, equipment and inventory" tabIndex={0}>
+            <aside className="game-sidebar min-w-0" aria-label="Equipment, inventory and skills" tabIndex={0}>
               <SidePanels data={data} send={send} />
             </aside>
           </div>

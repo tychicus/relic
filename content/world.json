@@ -7746,6 +7746,51 @@
       "description": "Release a weary sigh.",
       "message": "{actor} sighs.",
       "target_message": ""
+    },
+    "clap": {
+      "name": "clap",
+      "command": "clap",
+      "aliases": [
+        "claps"
+      ],
+      "enabled": true,
+      "description": "Clap {target}",
+      "message": "{actor} claps",
+      "target_message": "{actor} claps for {target}."
+    },
+    "faint": {
+      "name": "Faint",
+      "command": "faint",
+      "aliases": [
+        "fainting",
+        "swoon"
+      ],
+      "enabled": true,
+      "description": "Pretend to faint dramatically.",
+      "message": "{actor} faints dramatically.",
+      "target_message": "{actor} faints dramatically at the sight of {target}."
+    },
+    "thumbsup": {
+      "name": "Thumbs Up",
+      "command": "thumbsup",
+      "aliases": [
+        "thumbs_up"
+      ],
+      "enabled": true,
+      "description": "Give a thumbs up to show approval.",
+      "message": "{actor} gives a thumbs up.",
+      "target_message": "{actor} gives {target} a thumbs up."
+    },
+    "yell": {
+      "name": "Yell",
+      "command": "yell",
+      "aliases": [
+        "shout"
+      ],
+      "enabled": true,
+      "description": "Let out a loud yell.",
+      "message": "{actor} lets out a loud yell!",
+      "target_message": "{actor} yells at {target}!"
     }
   }
 }

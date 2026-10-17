@@ -23,6 +23,27 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
   const skills = data.player_skills ?? []
   return (
     <div className="grid min-w-0 content-start gap-6">
+      <TerminalBox title="Equipment" muted>
+        <p className="text-sm text-story">Total protection: {p.defense || 0}</p>
+        {Object.entries(p.equipment).map(([slot, id]) => (
+          <ItemRow key={slot} id={id} count={1} mode="equipment" data={data} send={send} slot={slotNames[slot] || slot}>
+            <ActionButton send={send} command={`unequip ${slot}`}>Remove</ActionButton>
+          </ItemRow>
+        ))}
+        {Object.keys(slotNames)
+          .filter((slot) => !p.equipment[slot])
+          .map((slot) => (
+              <p key={slot} className="text-sm text-muted-foreground">{slotNames[slot]}: {slot === 'left_hand' && (data.items[p.equipment.weapon]?.hands || 1) === 2 ? 'occupied by two-handed weapon' : slot === 'pants' ? 'boxers' : 'nothing'}</p>
+          ))}
+      </TerminalBox>
+
+      <TerminalBox title={`Inventory · ${p.inventory.length} items`} muted>
+        {countItems(p.inventory).map(([id, n]) => (
+          <ItemRow key={id} id={id} count={n} mode="bag" data={data} send={send} />
+        ))}
+        {!p.inventory.length && <p className="text-sm text-muted-foreground">Your bag is empty.</p>}
+      </TerminalBox>
+
       <TerminalBox title="Skills" muted>
         {p.ward && <p className="mb-2 text-sm text-story" role="status">Ward active: {p.ward.power}% less incoming attack damage · {p.ward.remaining}s remaining. Status damage is unaffected.</p>}
         {!!p.max_mana && <p className="mb-3 text-sm text-story">Mana mastery {p.mana_progress?.level || 1} · {p.mana_progress?.next_xp === null ? 'Maximum level' : `${p.mana_progress?.level_xp || 0}/${p.mana_progress?.next_xp || 100} XP to next level`}<br />Recover mana between fights; rest at an inn to refill it.</p>}
@@ -37,7 +58,6 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
             {s.effect === 'enchant' && p.enchanting?.[s.id] && <span className="block text-xs text-muted-foreground">
               Crafting mastery {p.enchanting[s.id].level} · {p.enchanting[s.id].next_xp === null ? 'Maximum level' : `${p.enchanting[s.id].level_xp}/${p.enchanting[s.id].next_xp} XP to next level`}
             </span>}
-            <ActionButton send={send} command={`help ${s.id}`} aria-label={`Help for ${s.name}`} className="ml-1">Help</ActionButton>
             {!s.unlocked && <span className="text-muted-foreground"> (level {s.unlock_level ?? 1})</span>}
           </div>
         ))}
@@ -60,7 +80,6 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
                   <p className="text-gold">Rank {s.next_rank.rank} · {s.next_rank.cost} point(s) · character level {s.next_rank.required_level}</p>
                   {s.next_rank.lines.map((line, i) => <p key={i}>{line}</p>)}
                 </div>}
-                <ActionButton send={send} command={`help ${s.id}`} aria-label={`Learn about ${s.name}`} className="mr-1">Help</ActionButton>
                 <ActionButton send={send} command={`learn ${s.id}`} disabled={!!p.combat || capped || locked || (p.ability_points || 0) < (s.learn_cost || 1)}>
                   {capped ? 'Maximum rank' : `${s.rank ? 'Improve' : 'Learn'} · ${s.learn_cost || 1} point(s)${locked ? ` · level ${s.learn_level}` : ''}`}
                 </ActionButton>
@@ -71,26 +90,6 @@ export function SidePanels({ data, send }: { data: Snapshot; send: Send }) {
         {!!p.combat && <p className="mt-2 text-sm text-muted-foreground">Finish combat before learning.</p>}
       </TerminalBox>}
 
-      <TerminalBox title="Equipment" muted>
-        <p className="text-sm text-story">Total protection: {p.defense || 0}</p>
-        {Object.entries(p.equipment).map(([slot, id]) => (
-          <ItemRow key={slot} id={id} count={1} mode="equipment" data={data} send={send} slot={slotNames[slot] || slot}>
-            <ActionButton send={send} command={`unequip ${slot}`}>Remove</ActionButton>
-          </ItemRow>
-        ))}
-        {Object.keys(slotNames)
-          .filter((slot) => !p.equipment[slot])
-          .map((slot) => (
-              <p key={slot} className="text-sm text-muted-foreground">{slotNames[slot]}: {slot === 'left_hand' && (data.items[p.equipment.weapon]?.hands || 1) === 2 ? 'occupied by two-handed weapon' : slot === 'pants' ? 'boxers' : 'nothing'}</p>
-          ))}
-      </TerminalBox>
-
-      <TerminalBox title={`Inventory · ${p.inventory.length} items`} muted>
-        {countItems(p.inventory).map(([id, n]) => (
-          <ItemRow key={id} id={id} count={n} mode="bag" data={data} send={send} />
-        ))}
-        {!p.inventory.length && <p className="text-sm text-muted-foreground">Your bag is empty.</p>}
-      </TerminalBox>
     </div>
   )
 }

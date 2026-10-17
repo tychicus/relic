@@ -29,8 +29,8 @@ and verification. Older UPDATE files in docs/history describe earlier releases.
 HELP is a short topic index. HELP COMBAT, HELP CAPTURE and HELP BANK explain
 those systems; HELP FIREBALL (or any skill name/ID) shows live mana costs,
 cooldowns, shared recovery, damage/healing, status effects, targets and combat-start rules. Values include class, race, equipped gear, learned rank and mastery. SYNTAX CAST, SYNTAX GET
-and SYNTAX TALK give command formats and examples. Skill cards include a Help
-button. Mistakes suggest useful commands; suggestions never execute actions.
+and SYNTAX TALK give command formats and examples. Use HELP <skill> for more
+information about a skill. Mistakes suggest useful commands; suggestions never execute actions.
 
 TALK TAMSIN and TALK TO TAMSIN say hello. TALK TAMSIN ABOUT COOKING or
 ASK TAMSIN ABOUT COOKING uses the existing conversation. SAY COOKING TO TAMSIN

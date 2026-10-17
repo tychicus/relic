@@ -36,7 +36,7 @@ COMMANDS = {
     'move': ('movement', 'MOVE <direction>', 'MOVE N'),
     'show': ('map', 'SHOW MAP', 'SHOW MAP'),
     'display': ('map', 'DISPLAY MAP', 'DISPLAY MAP'),
-    'look': ('exploration', 'LOOK [MAP | SELF | direction [distance] | object | item | creature | BODY [number]]', 'LOOK NORTH 2'),
+    'look': ('exploration', 'LOOK [MAP | COOKBOOK | SELF | direction [distance] | object | item | creature | BODY [number]]', 'LOOK NORTH 2'),
     'attack': ('combat', 'ATTACK [creature name | description | ID]', 'ATTACK BEETLE'),
     'target': ('combat', 'TARGET <creature name | description | ID>', 'TARGET SCARRED COPPER BEETLE'),
     'flee': ('combat', 'FLEE', 'FLEE'),
@@ -85,7 +85,7 @@ COMMANDS = {
 
 TOPICS = ('help', 'movement', 'exploration', 'map', 'combat', 'capture', 'skills',
           'learning', 'mana', 'inventory', 'equipment', 'storage', 'shops',
-          'items', 'rest', 'recall', 'crafting', 'cooking', 'bank', 'death',
+          'items', 'rest', 'recall', 'crafting', 'cooking', 'cookbook', 'bank', 'death',
           'talk', 'emotes', 'saving')
 TOPIC_ALIASES = {
     'start': 'help', 'getting started': 'help', 'navigation': 'movement',
@@ -96,6 +96,7 @@ TOPIC_ALIASES = {
     'bag': 'inventory', 'chest': 'storage', 'chests': 'storage',
     'shop': 'shops', 'store': 'shops', 'trading': 'shops',
     'potion': 'items', 'potions': 'items', 'food': 'cooking',
+    'look cookbook': 'cookbook', 'recipes': 'cookbook', 'recipe': 'cookbook',
     'banking': 'bank', 'body': 'death', 'corpse': 'death',
     'dialogue': 'talk', 'conversation': 'talk', 'npc': 'talk',
     'emote': 'emotes', 'social': 'emotes', 'socials': 'emotes',
@@ -317,6 +318,7 @@ class PlayerHelp:
         if kind == 'topic':
             rows = [usage for topic, usage, _ in COMMANDS.values() if topic == value]
             if value == 'capture': rows += ['CAST KNOCKOUT <creature>', 'GET <unconscious creature>', 'PUT <creature> IN CAGE <number>']
+            if value == 'cookbook': rows += ['LOOK COOKBOOK', 'COOK <recipe name | ingredient>']
             self.log('Syntax — ' + value.upper() + '\n' + '\n'.join(dict.fromkeys(rows)) + '\nDetails: HELP ' + value.upper()); return
         self.unknown_help(query)
 
@@ -379,7 +381,7 @@ class PlayerHelp:
         elif kind != 'topic': self.unknown_help(query); return
         r = self.rules()
         text = {
-            'help': 'HELP — choose a topic\nGetting around: HELP MOVEMENT · HELP EXPLORATION\nFighting: HELP COMBAT · HELP CAPTURE · HELP DEATH\nYour character: HELP SKILLS · HELP LEARNING · HELP MANA\nBelongings: HELP INVENTORY · HELP EQUIPMENT · HELP STORAGE\nTown & supplies: HELP SHOPS · HELP BANK · HELP ITEMS · HELP REST · HELP RECALL\nMaking things: HELP CRAFTING · HELP COOKING\nConversation: HELP TALK · HELP EMOTES\nLeaving & progress: HELP SAVING\nDetails: HELP <skill or command>, such as HELP FIREBALL. Formats: SYNTAX <command>.',
+            'help': 'HELP — choose a topic\nGetting around: HELP MOVEMENT · HELP EXPLORATION\nFighting: HELP COMBAT · HELP CAPTURE · HELP DEATH\nYour character: HELP SKILLS · HELP LEARNING · HELP MANA\nBelongings: HELP INVENTORY · HELP EQUIPMENT · HELP STORAGE\nTown & supplies: HELP SHOPS · HELP BANK · HELP ITEMS · HELP REST · HELP RECALL\nMaking things: HELP CRAFTING · HELP COOKING · HELP COOKBOOK\nConversation: HELP TALK · HELP EMOTES\nLeaving & progress: HELP SAVING\nDetails: HELP <skill or command>, such as HELP FIREBALL. Formats: SYNTAX <command>.',
             'map': 'LOOK MAP, SHOW MAP or DISPLAY MAP opens your exploration map in a pop-up. It stays closed until you ask for it.\nOnly rooms you have entered and connections between those rooms appear. Enemy locations, NPCs, loot and hidden discoveries are never shown. Looking into the distance does not chart a room.\nYour current room is highlighted. Choose a visited elevation, zoom, or center on yourself. Click a room to read its known connections; this does not move you. Close or press Escape to return to the command box. Combat continues while the map is open.\nExploration saves with your character and survives death. Older saves start mapping from their current room; past travel cannot be reconstructed. Rooms entered in darkness remain unnamed until you see them.',
             'movement': 'MOVE: N, S, E, W, UP, DOWN (or GO NORTH / MOVE N).\nLOOK shows the room and its exits; LOOK NORTH scouts an exit.\nMovement is blocked during combat; use FLEE. HELP EXPLORATION explains visibility.',
             'exploration': f'LOOK [object | item | creature] examines something. LOOK SELF shows equipment.\nLOOK NORTH 2 scouts farther along a straight route, up to {r["perception_distance"]} rooms. Darkness, terrain and fog may block the view. Carry a lantern for dark rooms.\nRoom descriptions and inspectable objects contain clues. Discoveries may require a defeat, an inspection or a key; help does not reveal puzzle answers.',
@@ -396,7 +398,8 @@ class PlayerHelp:
             'rest': 'REST at a rest location, such as The Quiet Coil, restores health and mana without a fee. It cannot be used during combat.\nUse HELP ITEMS for potions or HELP COOKING for food away from the inn.',
             'recall': f'RECALL or USE RECALL SCROLL returns you to the starting room. Carry a recall scroll.\nReusable below level {r["recall_reusable_below_level"]}; single-use from there until level {r["recall_disabled_from_level"]}. At level {r["recall_disabled_from_level"]} and above it cannot be used.\nCombat and recall-blocked rooms prevent recall. A blocked single-use attempt ' + ('consumes its scroll.' if r['recall_failure_consumes'] else 'preserves its scroll.') + '\nReusable scrolls and attempts above the level limit preserve the scroll. Race magic restrictions and the race\'s recall exception still apply.',
             'crafting': 'SHARPEN [weapon] temporarily improves your right-hand weapon outside combat; learn Sharpening first.\nENCHANT <item> temporarily enchants a held weapon or worn/held armor; learn Enchanting first. HOLD <armor> places it in your left hand.\nHELP SHARPENING and HELP ENCHANTING show current requirements, bonuses, costs and risks. Enchanting can damage or destroy weapons.\nREPAIR lists damaged equipment and prices at a repair service; REPAIR <item> repairs it. Individual magical-item mastery is separate from temporary enchantments. HELP COOKING.',
-            'cooking': f'HARVEST <remains> collects configured ingredients after combat; not every creature yields food. Remains last {r["corpse_seconds"]:g}s.\nCOOK <recipe or ingredient> uses ingredients and any required fire, tool or skill. COOK by itself lists recipe names.\nEAT <food> restores some health, with {r["food_cooldown"]:g}s between meals. Eating in combat is ' + ('allowed.' if r['food_in_combat'] else 'blocked.') + '\nA full-health attempt preserves food. The inn has a cooking fire.',
+            'cooking': f'HARVEST <remains> collects configured ingredients after combat; not every creature yields food. Remains last {r["corpse_seconds"]:g}s.\nLOOK COOKBOOK lists recipes with ingredients and requirements; HELP COOKBOOK explains the entries.\nCOOK <recipe or ingredient> uses ingredients and any required fire, tool or skill. COOK by itself lists recipe names outside combat.\nEAT <food> restores some health, with {r["food_cooldown"]:g}s between meals. Eating in combat is ' + ('allowed.' if r['food_in_combat'] else 'blocked.') + '\nA full-health attempt preserves food. The inn has a cooking fire.',
+            'cookbook': 'LOOK COOKBOOK lists all recipes in the adventure log when requested. There is no cookbook sidebar or book item to carry.\nEach entry shows ingredient quantities and how many you carry, the result and quantity made, food healing, any required fire, tool or skill, success chance, and whether failed cooking consumes ingredients.\nReady to cook means you currently meet the requirements; otherwise the entry lists what is missing. Required tools must be in your bag. All recipes are listed without separate recipe learning, though some can require a learned skill.\nReading consumes nothing and works during combat, but cooking requires finishing combat first. Combat continues while you read.\nUse the COOK command shown under an entry. Example: COOK BEETLE TOAST. LOOK COOKBOOK again refreshes the details after you move or change your inventory. HELP COOKING explains harvesting and eating.',
             'bank': 'At a bank: BALANCE shows your account; DEPOSIT <amount or ALL> moves carried gold into it; WITHDRAW <amount or ALL> returns gold to your purse.\nExample: DEPOSIT 20. Use positive whole amounts. Finish combat first.\nBanked gold belongs to your character and survives death. Carried gold remains at risk. Banking does not store equipment.',
             'death': (f'Death leaves all carried gold, inventory and worn gear in your body for {r["player_body_seconds"] / 60:g} real minutes, including time with the game closed. Banked gold stays safe.\nReturn and LOOK BODY, then GET ALL FROM BODY or LOOT BODY. GET GOLD FROM BODY or GET <item> FROM BODY recovers specific contents.\nUse BODY <number> if several remain. Recovered equipment goes into the bag and must be equipped again. Anything left when the body expires is lost.' if r['player_bodies'] else f'Recoverable bodies are disabled. Death loses {self.w["settings"]["gold_loss"] * 100:g}% of carried gold and has a {self.w["settings"]["item_loss_chance"] * 100:g}% chance to lose an unprotected bag item. You return to the starting room.'),
             'talk': 'TALK TAMSIN or TALK TO TAMSIN says hello.\nTALK TAMSIN ABOUT COOKING and ASK TAMSIN ABOUT COOKING say "cooking" to her.\nSAY <phrase> TO <NPC | creature | CAGE number> still works. Example: SAY HELLO TO TAMSIN.\nConversation phrases ignore capitalization and repeated spaces but otherwise need the complete phrase. Hidden creature phrases are not revealed in help.\nEmotes are separate cosmetic actions; HELP EMOTES.',

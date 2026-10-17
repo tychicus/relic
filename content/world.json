@@ -5943,10 +5943,10 @@
       "food": true
     },
     "toasted_beetle": {
-      "name": "Toasted beetle",
+      "name": "Beetle toast",
       "kind": "consumable",
       "price": 5,
-      "description": "A crunchy frontier snack restores 8 HP.",
+      "description": "Beetle toast is a crunchy frontier snack that restores 8 HP.",
       "heal": 8,
       "food": true
     },
@@ -7418,7 +7418,7 @@
       "message": "Roast turkey is ready."
     },
     "toast_beetle": {
-      "name": "Toast beetle",
+      "name": "Beetle toast",
       "input": "beetle_meat",
       "output": "toasted_beetle",
       "count": 1,
@@ -7426,7 +7426,7 @@
       "fire": true,
       "chance": 100,
       "consume_failure": false,
-      "message": "Toast beetle is ready."
+      "message": "Beetle toast is ready."
     }
   },
   "npcs": {

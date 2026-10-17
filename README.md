@@ -221,6 +221,9 @@ New rooms and enemy XP remain owner-authored and are unchanged by this update.
   at a repair service; Anthony's shop offers repairs.
 - QUAFF POTION retains the old healing behavior. EAT [food], HARVEST [remains],
   COOK [recipe], SHARPEN, ENCHANT [item] and RECALL access the new systems.
+  LOOK COOKBOOK lists recipes on request, with ingredients carried/required,
+  results, food healing, fire/tool/skill requirements, success chances and readiness.
+  HELP COOKBOOK explains the entries. COOK BEETLE TOAST prepares Beetle toast.
   Enchant a held weapon or worn/held armor; HOLD [armor] holds it in your left
   hand. Enchantments temporarily boost damage/protection, shown as a separate
   (+bonus) with a glow cue. SKILLS shows the slowly trained enchanting level.

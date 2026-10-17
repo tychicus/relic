@@ -505,6 +505,8 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
         if right.get('kind')=='weapon' and left.get('kind')=='weapon' and (self.p['level']<rules['dual_level'] or self.p['class'] not in rules['dual_classes']):raise ValueError('Dual wielding requires two one-handed weapons, an eligible class and the configured unlock level.')
 
     def look(self,target):
+        if target=='cookbook':
+            self.show_cookbook();return
         self.remember_room()
         if target=='self':
             self.show_equipment();return
@@ -584,10 +586,49 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
         self.p['inventory'].extend(self.grant(i) for i in yields);corpse['harvested']=True
         self.log('Harvested: '+', '.join(self.w['items'][i]['name'] for i in yields)+'.','reward')
 
+    def show_cookbook(self):
+        recipes=self.w.get('recipes',{})
+        self.log('COOKBOOK\nUse COOK <recipe name> to prepare a meal. HELP COOKBOOK explains the entries.')
+        if not recipes:
+            self.log('There are no recipes in your cookbook yet.');return
+        inv=self.p['inventory']
+        fire=self.w['rooms'][self.p['room']].get('cooking_fire',False)
+        for rid,r in recipes.items():
+            ingredient=self.w['items'][r['input']];output=self.w['items'][r['output']]
+            count=r.get('count',1);have=inv.count(r['input']);missing=[]
+            lines=[r['name'],f'Ingredients: {count} × {ingredient["name"]} (carrying {have}).',
+                   f'Makes: {r.get("output_count",1)} × {output["name"]}.']
+            if output.get('food'):
+                lines.append(f'Food: restores up to {output.get("heal",0):g} HP per serving.')
+            if have<count:missing.append('not enough ingredients')
+            if r.get('fire',True):
+                lines.append('Cooking fire: required — '+('available here.' if fire else 'not here.'))
+                if not fire:missing.append('a cooking fire')
+            else:lines.append('Cooking fire: not required.')
+            if r.get('tool'):
+                carried=r['tool'] in inv
+                lines.append('Tool: '+self.w['items'][r['tool']]['name']+(' (carried).' if carried else ' (not carried).'))
+                if not carried:missing.append('the required tool')
+            if r.get('skill'):
+                try:
+                    self.require_skill(r['skill'])
+                    lines.append('Skill: '+self.w['skills'][r['skill']]['name']+' (ready).')
+                except ValueError as error:
+                    lines.append('Skill: '+str(error));missing.append('the required skill')
+            chance=r.get('chance',100)
+            lines.append(f'Success chance: {chance:g}%.'+(' On failure, ingredients are '+('consumed.' if r.get('consume_failure') else 'kept.') if chance<100 else ''))
+            if self.p['combat']:missing.append('finish combat')
+            lines.append('Not ready: '+', '.join(missing)+'.' if missing else 'Ready to cook.')
+            # Use the display name unless another recipe makes it ambiguous.
+            name=r['name'].casefold()
+            matches=[other for key,other in recipes.items() if name in (key,other['name'].casefold(),other['input'],self.w['items'][other['input']]['name'].casefold())]
+            lines.append('COOK '+(r['name'] if len(matches)==1 else rid).upper())
+            self.log('\n'.join(lines))
+
     def cook(self,target):
         if self.p['combat']:raise ValueError('Finish combat before cooking.')
         recipes=self.w.get('recipes',{});matches=[r for rid,r in recipes.items() if target in (rid,r['name'].casefold(),r['input'],self.w['items'][r['input']]['name'].casefold())]
-        if len(matches)!=1:raise ValueError('Use COOK <recipe name>: '+', '.join(r['name'] for r in recipes.values())+'.')
+        if len(matches)!=1:raise ValueError('Use COOK <recipe name>: '+', '.join(r['name'] for r in recipes.values())+'. LOOK COOKBOOK shows ingredients and requirements.')
         r=matches[0];inv=self.p['inventory']
         if r.get('fire',True) and not self.w['rooms'][self.p['room']].get('cooking_fire'):raise ValueError('You need a cooking fire.')
         if r.get('skill'):self.require_skill(r['skill'])

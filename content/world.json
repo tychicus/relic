@@ -6547,8 +6547,8 @@
       },
       "objects": {
         "fountain": "Water circles a humming crystal. No one remembers who built it.  It seems to hum magically.",
-        "sign": "EAST: Anthony's General Supply.\nWEST: Local Inn.\nNORTH: Out of Town\nSouth: Jake's Acquisitions  ",
-        "crumbled stone": "It looks ancient.  If you look carefully there is a small inscription carved into the stone.  It reads: \"Nic and Anthony were here\""
+        "sign": "EAST: Grubbs General Store.\nWEST: Local Inn.\nNORTH: Out of Town\nSouth: Jake's Acquisitions  ",
+        "crumbled stone": "It looks ancient.  If you look carefully there is a small inscription carved into the stone.  It reads: \"Nic and Fizzlewick P. Grubbs were here\""
       },
       "region": "Town",
       "code": "TOWN-001",
@@ -6559,8 +6559,8 @@
       ]
     },
     "shop": {
-      "name": "Anthony's General Store",
-      "description": "Dried herbs hang above jars of luminous powder. Anthony taps the counter: 'A potion before trouble is cheaper than a funeral.' Type BUY to see his stock.",
+      "name": "Grubbs General Store",
+      "description": "Dried herbs hang above jars of luminous powder. Fizzlewick P. Grubbs taps the counter: 'A potion before trouble is cheaper than a funeral.' Type BUY to see his stock.",
       "safe": true,
       "exits": {
         "west": "square"
@@ -6581,7 +6581,7 @@
         "greatsword"
       ],
       "objects": {
-        "mara": "Anthony buys spare equipment and ancient scrap. BUY or SELL an item by name.",
+        "mara": "Fizzlewick P. Grubbs buys spare equipment and ancient scrap. BUY or SELL an item by name.",
         "counter": "Potions, a crystal lantern, and dependable ironwork."
       },
       "region": "Town",
@@ -7430,10 +7430,10 @@
     }
   },
   "npcs": {
-    "anthony": {
-      "name": "Anthony",
+    "grubbs": {
+      "name": "Fizzlewick P. Grubbs",
       "room": "shop",
-      "appearance": "Anthony stands behind the counter, sorting supplies.",
+      "appearance": "Fizzlewick P. Grubbs stands behind the counter, sorting supplies.",
       "description": "The shopkeeper checks his stock of potions, lanterns, and ironwork, keeping everything within easy reach of the counter.",
       "interactions": [
         "look",

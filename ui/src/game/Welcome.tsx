@@ -127,9 +127,6 @@ export function Welcome({ choices, recallRules, onCreate, multiplayer, character
               </>}
             </form>
             <Rule className="my-4" />
-            <Heading>Tips for getting started</Heading>
-            <p className="mt-1 text-sm">Move with N, S, E, W, UP and DOWN. LOOK around; descriptions hide clues.</p>
-            <p className="text-sm">ATTACK starts automatic combat. Type HELP for topics, HELP FIREBALL for skill details, or SYNTAX CAST for a command format.</p>
             {recallRules?.starting_scroll && <p className="mt-2 text-sm text-story">You start with a recall scroll: reusable below level {recallRules.reusable_below}, then single-use. Recall scrolls stop working at level {recallRules.disabled_from}.</p>}
           </div>
         </div>

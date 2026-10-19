@@ -58,9 +58,9 @@ picker does not grant permission to edit the world.
   receives either the message or the command. Bob can be anywhere in the world,
   but must be online. `WHO` lists online players; disconnected players disappear
   from presence after 30 seconds. Messages arrive through the normal live game log.
-- `TELL Anthony hi` privately uses Anthony's existing NPC dialogue when you are
+- `TELL Fizzlewick P. Grubbs hi` privately uses Fizzlewick P. Grubbs's existing NPC dialogue when you are
   in his store. `SAY hello` can get a public greeting from NPCs in the room.
-  `TALK ANTHONY`, `ASK ANTHONY ABOUT BUYING`, and `SAY BUYING TO ANTHONY` remain
+  `TALK GRUBBS`, `ASK GRUBBS ABOUT BUYING`, and `SAY BUYING TO GRUBBS` remain
   available. NPC conversations use authored phrases, not generated responses.
 - Full names with spaces work: `TELL Sam Green Hello!`. If a player and NPC
   share a name, use `TELL PLAYER <name> <message>` or `TELL NPC <name> <message>`.
@@ -226,7 +226,7 @@ New rooms and enemy XP remain owner-authored and are unchanged by this update.
   chest, pants and arms have separate armor slots. Worn armor and shields add defense.
   Items have no carrying weight, and your bag has no item-count limit. Chests and
   cages retain their own storage capacities. REPAIR [item] repairs damaged gear
-  at a repair service; Anthony's shop offers repairs.
+  at a repair service; Grubbs General Store offers repairs.
 - QUAFF POTION retains the old healing behavior. EAT [food], HARVEST [remains],
   COOK [recipe], SHARPEN, ENCHANT [item] and RECALL access the new systems.
   LOOK COOKBOOK lists recipes on request, with ingredients carried/required,

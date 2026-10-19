@@ -84,15 +84,15 @@ class MultiplayerTests(unittest.TestCase):
     def test_npc_public_and_private_conversations_keep_existing_dialogue(self):
         for ident in (self.alice, self.bob):
             self.player(ident)['room'] = 'shop'
-        self.command(self.alice, 'tell Anthony hi')
-        self.assertIn('Anthony tells you: Welcome to my general store', self.log(self.alice))
+        self.command(self.alice, 'tell Fizzlewick P. Grubbs hi')
+        self.assertIn('Fizzlewick P. Grubbs tells you: Welcome to my general store', self.log(self.alice))
         self.assertNotIn('Welcome to my general store', self.log(self.bob))
         self.command(self.alice, 'say hello')
-        self.assertIn('Anthony says: Welcome to my general store', self.log(self.bob))
-        self.assertNotIn('Anthony says:', self.log(self.clara))
-        self.command(self.alice, 'SAY buying TO ANTHONY')
+        self.assertIn('Fizzlewick P. Grubbs says: Welcome to my general store', self.log(self.bob))
+        self.assertNotIn('Fizzlewick P. Grubbs says:', self.log(self.clara))
+        self.command(self.alice, 'SAY buying TO GRUBBS')
         self.assertIn('Type BUY to browse', self.log(self.bob))
-        self.command(self.alice, 'talk anthony about selling')
+        self.command(self.alice, 'talk grubbs about selling')
         self.assertIn('I buy spare equipment', self.log(self.alice))
 
     def test_multiword_names_offline_recipients_and_invalid_syntax(self):
@@ -153,7 +153,7 @@ class MultiplayerTests(unittest.TestCase):
 
     def test_character_names_and_world_validation_cover_every_player(self):
         with self.assertRaises(ValueError): self.g.create_character('ALICE')
-        with self.assertRaises(ValueError): self.g.create_character('Anthony')
+        with self.assertRaises(ValueError): self.g.create_character('Fizzlewick P. Grubbs')
         self.assertNotIn('accounts', self.g.state)
         world = copy.deepcopy(self.g.w)
         self.player(self.bob)['room'] = 'shop'

@@ -5,7 +5,7 @@ your previous game untouched as a backup. Automatic migration adds the new
 save fields on startup. No character reset is required.
 
 1. SHOPS AND INVENTORY
-Visit Anthony's Supply and type BUY. Each grouped entry has its own line:
+Visit Grubbs General Store and type BUY. Each grouped entry has its own line:
   (Healing potion) — 8 gold each
   [Iron sword] — 35 gold each
 Duplicate entries show (x2), (x3), etc. Shop entries are an unlimited catalogue,
@@ -93,7 +93,7 @@ Leave line lists empty for silence. These are descriptive text; they do not
 change damage or grant items. The vampire and cave troll include examples.
 
 6. CAPTURE AND PORTABLE CAGES
-Buy a cage at Anthony's Supply:
+Buy a cage at Grubbs General Store:
   BUY IRON CAGE
 It costs 45 gold and holds up to five creatures of ONE type. Edit its price or
 capacity under Weapons & items > Iron cage. Occupied cages cannot be sold.

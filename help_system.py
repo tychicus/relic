@@ -74,7 +74,7 @@ COMMANDS = {
     'talk': ('talk', 'TALK [TO] <NPC or creature> [ABOUT <phrase>]', 'TALK TAMSIN ABOUT COOKING'),
     'ask': ('talk', 'ASK <NPC or creature> ABOUT <phrase>', 'ASK TAMSIN ABOUT COOKING'),
     'say': ('talk', 'SAY <phrase> TO <NPC | creature | CAGE number>', 'SAY HELLO TO TAMSIN'),
-    'tell': ('talk', 'TELL <full player or NPC name> <message>', 'TELL ANTHONY Hi!'),
+    'tell': ('talk', 'TELL <full player or NPC name> <message>', 'TELL GRUBBS Hi!'),
     'who': ('talk', 'WHO', 'WHO'),
     'emotes': ('emotes', 'EMOTES', 'HELP EMOTES'),
     'emote': ('emotes', 'EMOTE <emote name or command> [target]', 'EMOTE WAVE TAMSIN'),

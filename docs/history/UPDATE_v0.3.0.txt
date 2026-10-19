@@ -33,7 +33,7 @@ TEST: DROP POTION, wait ten minutes, LOOK. Try GET before the deadline to cancel
 Cages, keys and chests remain even after the timer would have expired.
 
 2. PURCHASE AND USE A STORAGE CHEST
-Anthony's Supply now sells a Storage chest for 60 gold. Edit its price/capacity
+Grubbs General Store now sells a Storage chest for 60 gold. Edit its price/capacity
 under Weapons & items. Default capacity: 30 items. Each item counts as one slot,
 even when several identical items display as a stack. A full cage counts as one
 stored item; the creatures inside stay in that cage.
@@ -55,7 +55,7 @@ empty chests sell at a normal shop for half price. Chests cannot go inside other
 chests. Full storage or a full bag leaves items in their original place.
 
 3. JAKE'S CRITTERS
-From Anthony's Supply: WEST to Center Square, SOUTH to South Market Street,
+From Grubbs General Store: WEST to Center Square, SOUTH to South Market Street,
 then EAST into Jake's Critters. There is no direct doorway between the shops.
 Return exits are present. Jake buys occupied cages only.
 

@@ -114,7 +114,7 @@ All worn armor and a held shield add to defense; each incoming hit still deals
 at least 1 damage if it connects. Holding ordinary body armor for enchanting
 does not grant protection. Each armor piece can keep its own enchantment and
 magic XP. The equipment panel shows total defense and empty/occupied slots.
-Anthony's shop stocks example helmet, pants, bracers, a shield and a greatsword.
+Grubbs General Store stocks example helmet, pants, bracers, a shield and a greatsword.
 
 Every item has an editable weight in pounds. Inventory shows total weight and
 capacity; WEIGHT reports it in the console. Worn gear, chest contents, cages and
@@ -220,7 +220,7 @@ one saved player. Network sessions, a shared room registry, party/reward rules a
 multi-user command resolution remain future multiplayer integration work.
 
 EQUIPMENT REPAIR
-Anthony's shop offers repairs. REPAIR lists damaged carried/equipped equipment and
+Grubbs General Store offers repairs. REPAIR lists damaged carried/equipped equipment and
 prices; REPAIR <item name or ID>, REPAIR RIGHT, REPAIR LEFT or REPAIR ARMOR repairs
 one item. A Repair button appears beside damaged gear when service is available.
 Default price is 5 gold per lost damage/protection point, with no additional fee.

@@ -95,7 +95,7 @@ export function Console({ data, log, send, logRef, commandRef }: Props) {
           value={command}
           onChange={(event) => setCommand(event.target.value)}
           onKeyDown={browseHistory}
-          placeholder={data.multiplayer ? 'Try "say hello", "tell Anthony hi" or "help"' : 'Try "look north" or "help"'}
+          placeholder={data.multiplayer ? 'Try "say hello", "tell Fizzlewick P. Grubbs hi" or "help"' : 'Try "look north" or "help"'}
           aria-label="Game command"
           maxLength={160}
           autoComplete="off"

@@ -171,8 +171,8 @@ class MultiplayerGame(Social, Game):
             self.log('SAY <message> speaks to everyone currently in your room. Example: SAY Hello everyone!\n'
                      'TELL <full name> <message> is private between you and one online player, even in another room. Example: TELL Bob Hi!\n'
                      'Use WHO to see online players. Multiword names work: TELL Sam Green Hello!\n'
-                     'NPCs must be in your room: TELL Anthony hi starts a private conversation. SAY hello can receive a public NPC reply.\n'
-                     'TALK ANTHONY, ASK ANTHONY ABOUT BUYING, and SAY BUYING TO ANTHONY also work. NPC replies use their authored dialogue.\n'
+                     'NPCs must be in your room: TELL Fizzlewick P. Grubbs hi starts a private conversation. SAY hello can receive a public NPC reply.\n'
+                     'TALK GRUBBS, ASK GRUBBS ABOUT BUYING, and SAY BUYING TO GRUBBS also work. NPC replies use their authored dialogue.\n'
                      'If a name matches both a player and NPC, specify TELL PLAYER <name> <message> or TELL NPC <name> <message>.')
             return
         return super().show_help(query)

@@ -189,7 +189,7 @@ view; obscured-from-outside prevents seeing into that room. Weather is
 owner-authored, not a dynamically simulated weather cycle.
 
 RECALL, FOOD AND COOKING
-Anthony's General Store sells a 150-gold recall scroll, a 30-gold wooden
+Grubbs General Store sells a 150-gold recall scroll, a 30-gold wooden
 buckler and 3-gold prairie apples. RECALL or USE RECALL SCROLL returns to the
 starting square and consumes one scroll. Combat or Recall disabled on the
 current room blocks it. Blocked attempts preserve the scroll by default;

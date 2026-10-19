@@ -7516,7 +7516,7 @@
     "lilla": {
       "name": "Lilla",
       "room": "gate",
-      "appearance": "Lilla is a beautiful little fairy, barely three inches tall, with bright eyes and delicate wings that shimmer with iridescent light.",
+      "appearance": "Lilla is a beautiful fairy that stands barely three inches tall.  She floats here with bright eyes and delicate wings that shimmer with iridescent light.",
       "description": "Lilla darts here and there, trailing tiny sparks of magic, her musical laughter making ordinary moments feel enchanted.\n\nAn adult fairy with boundless youthful spunk, she finds delight in the smallest things. Depending on her mood, she can be a perfect little angel—tenderhearted and eager to help—or a mischievous pest, delivering teasing remarks and insults before darting just beyond reach.\n\nFor all her tiny stature, Lilla has a wonderfully bold spirit. She sees a world full of friends to meet, secrets to discover, and rules that might be more fun with a few exceptions.",
       "interactions": [
         "look",

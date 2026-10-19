@@ -50,8 +50,7 @@ class PlayerBodies:
         for body in expired:
             for iid in descendants(body['items']) - retained:
                 self.state['instances'].pop(iid, None)
-            if self.p and body['owner'] == self.p['id']:
-                self.log(f'Your old body {body["number"]} fades away. Anything left inside is gone.', 'notice')
+            self.player_event(body['owner'], f'Your old body {body["number"]} fades away. Anything left inside is gone.', 'notice')
 
     def bodies_here(self):
         return [b for b in self.state.get('player_bodies', [])

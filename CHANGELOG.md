@@ -1,3 +1,13 @@
+# Unreleased — Combat recovery and multiplayer notices
+
+- Stun clears when a character leaves combat, including fleeing or defeating the
+  last opponent. Older saves stuck with an out-of-combat stun recover on the next
+  active tick. Stun still blocks attacks and skills during combat; other effects
+  remain paused outside combat without offline damage bursts.
+- Creature movement and healing messages reach each player who can see the event.
+  Body and equipment-enchantment expiry notices reach the affected owner, including
+  body expiry during a server restart. Shared events still execute only once.
+
 # Unreleased — Exploration map and unlimited carrying
 
 - SHOW MAP and DISPLAY MAP open a responsive exploration-map dialog. Visited

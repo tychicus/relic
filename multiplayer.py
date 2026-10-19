@@ -156,6 +156,25 @@ class MultiplayerGame(Social, Game):
         with self.as_player(player_id):
             self.log(text, kind)
 
+    def player_event(self, player_id, text, kind='info'):
+        if not self._ready:
+            return super().player_event(player_id, text, kind)
+        if player_id in self.state['players']:
+            self.deliver_message(player_id, text, kind)
+
+    def room_event(self, room, text, kind='info'):
+        if not self._ready:
+            return super().room_event(room, text, kind)
+        for player in self.all_players():
+            if player['room'] == room and not player.get('logged_out'):
+                with self.as_player(player['id']):
+                    super().room_event(room, text, kind)
+
+    def expire_player_bodies(self):
+        # Wait until every saved character has a routable log during startup.
+        if self._ready:
+            super().expire_player_bodies()
+
     def guide_command(self, verb, target):
         if verb == 'say':
             self.say(target); return True
@@ -318,6 +337,10 @@ class MultiplayerGame(Social, Game):
                                 self.enemy_strike(actor)
                         actor['attack_ready'] = self.clock()+2*self.w['settings']['attack_interval']*self.slow(actor)
                     encounter['next_at'] = self.clock()+self.w['settings']['attack_interval']
+                for player in players:
+                    if not player.get('logged_out'):
+                        with self.as_player(player['id']):
+                            self.clear_idle_stun()
                 self._flush_player()
                 if before != self.state:
                     self.save()

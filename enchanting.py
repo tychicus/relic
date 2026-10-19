@@ -92,13 +92,13 @@ class Enchanting:
                 inst.pop('rank', None)
 
     def expire_enchantments(self):
-        visible = set(self.p['inventory']) | set(self.p['equipment'].values())
         for iid, inst in self.state['instances'].items():
             effect = inst.get('enchantment')
             if effect and effect['until'] <= self.clock():
                 inst.pop('enchantment')
-                if iid in visible:
-                    self.log(f'The enchantment on {self.w["items"][inst["item"]]["name"]} fades. Its magical glow is gone.')
+                for player in self.all_players():
+                    if iid in player['inventory'] or iid in player['equipment'].values():
+                        self.player_event(player['id'], f'The enchantment on {self.w["items"][inst["item"]]["name"]} fades. Its magical glow is gone.')
 
     def modified_item(self, inst):
         item = copy.deepcopy(self.w['items'][inst['item']])

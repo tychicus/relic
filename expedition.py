@@ -37,6 +37,13 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
     def all_players(self):
         return [self.p] if self.p else []
 
+    def player_event(self,player_id,text,kind='info'):
+        if self.p and self.p['id']==player_id:self.log(text,kind)
+
+    def room_event(self,room,text,kind='info'):
+        if self.p and not self.p.get('logged_out') and self.p['room']==room and self.visible():
+            self.log(text,kind)
+
     def engaged_creature_ids(self):
         return set((self.p.get('combat') or {}).get('engaged',[])) if self.p else set()
 
@@ -216,8 +223,8 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
             if e.get('region'):options=[rid for rid in options if rid in self.regional_destinations(e['region'])]
             if options:
                 old=e['location'];e['location']=self.rng.choice(options)
-                if old==self.p['room'] and self.visible():self.log(self.creature_name(e)+' leaves the area.')
-                if e['location']==self.p['room'] and self.visible():self.log(self.creature_name(e)+' arrives.')
+                self.room_event(old,self.creature_name(e)+' leaves the area.')
+                self.room_event(e['location'],self.creature_name(e)+' arrives.')
 
     def start_combat(self,initiated=True):
         e=self.enemy()
@@ -283,8 +290,22 @@ class Revision(PlayerMap, RareDrops, Regions, EnemyHealing, Banking, PlayerBodie
                             self.enemy_strike(actor)
                         actor['attack_ready']=self.clock()+2*self.w['settings']['attack_interval']*self.slow(actor)
                     if self.p['combat']:c['next_at']=self.clock()+self.w['settings']['attack_interval']
-            # Effects pause with combat, so offline time never causes a damage burst.
+            self.clear_idle_stun()
+            # Other effects pause with combat, so offline time never causes a damage burst.
             if before!=self.state:self.save()
+
+    def clear_idle_stun(self):
+        # Stun ends with the fight; it must not lock healing/crafting until another fight.
+        if not self.p or self.p.get('combat'):return
+        for active in list(self.p.get('effects',[])):
+            spec=self.w.get('status_effects',{}).get(active['id'],{})
+            if spec.get('kind')=='stun':
+                self.p['effects'].remove(active)
+                self.effect_message('expiration',spec,self.p)
+
+    def finish(self):
+        self.clear_idle_stun()
+        return super().finish()
 
     def slow(self,actor):
         return max([1]+[self.w['status_effects'][s['id']].get('slow',1.5) for s in actor.get('effects',[]) if self.w['status_effects'][s['id']]['kind']=='slow'])

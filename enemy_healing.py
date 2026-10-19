@@ -32,5 +32,4 @@ class EnemyHealing:
             e['hp']+=gain
             # A delayed clock tick restores only one installment, not missed ones.
             self._enemy_heal_at[uid]=now+self.enemy_heal_setting(spec,'heal_interval')
-            if e['location']==self.p['room'] and self.visible():
-                self.log(f'{self.creature_name(e)} recovers {gain} HP.','notice')
+            self.room_event(e['location'],f'{self.creature_name(e)} recovers {gain} HP.','notice')
